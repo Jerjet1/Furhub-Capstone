@@ -3,7 +3,7 @@ import React from "react";
 export default function App() {
   return (
     <div>
-      <h1 className="text-3xl font-bold underline bg-amber-200">HOYYY!</h1>
+      <h1 className="text-3xl font-bold underline bg-amber-200">HOYYYyy!</h1>
       <h2>Testing</h2>
     </div>
   );
