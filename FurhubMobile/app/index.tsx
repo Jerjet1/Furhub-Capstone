@@ -1,15 +1,17 @@
 import { Text, View } from "react-native";
 import "@/global.css";
+import LoginPage from "./auth/LoginPage";
+import RegisterPage from "./auth/RegisterPage";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+
+const Stack = createNativeStackNavigator();
 export default function Index() {
   return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-      className="bg-green-300">
-      <Text className="bg-slate-400">HOYY!!!</Text>
-    </View>
+    <Stack.Navigator
+      initialRouteName="Login"
+      screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Login" component={LoginPage} />
+      <Stack.Screen name="Registration" component={RegisterPage} />
+    </Stack.Navigator>
   );
 }
