@@ -56,12 +56,12 @@ MIDDLEWARE = [
 ]
 
 # CORS_ALLOWED_ORIGINS = ['http://localhost:5173', 'exp://192.168.1.3:8081']
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '192.168.1.3']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '192.168.1.3'] #change sa Ip address para makaconnect sa web & mobile
 CORS_ALLOWED_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8081",  # React Native Web/Expo Go via browser
     "http://127.0.0.1:8081",  # In case you use this format
-    "http://192.168.1.3:8000",
+    "http://192.168.1.3:8000", # change sa inyong IP address para makaconnect sa web & mobile
     "http://localhost:5173",
 ]
 
