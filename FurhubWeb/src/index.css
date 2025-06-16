@@ -1,1 +1,8 @@
+@import url("https://fonts.googleapis.com/css2?family=Fugaz+One&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Open+Sans&display=swap");
 @import "tailwindcss";
+
+@theme {
+  --font-Fugaz: "Fugaz One", sans-serif;
+  --font-open-sans: "Open Sans", sans-serif;
+}

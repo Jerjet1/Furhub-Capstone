@@ -1,10 +1,20 @@
 import React from "react";
-
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import { Login } from "./pages/Login";
+import { Registration } from "./pages/Registration";
 export default function App() {
   return (
-    <div>
-      <h1 className="text-3xl font-bold underline bg-amber-200">HOYYYyy!</h1>
-      <h2>Testing</h2>
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/register" element={<Registration />} />
+      </Routes>
+    </Router>
+
   );
 }
