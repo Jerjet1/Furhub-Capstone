@@ -6,19 +6,43 @@ import {
   TouchableOpacity,
   ScrollView,
 } from "react-native";
+import { useLocalSearchParams } from "expo-router";
 import Icon from "@expo/vector-icons/Ionicons";
 import Ionicons from "@expo/vector-icons/FontAwesome";
 import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import * as Yup from "yup";
 import { router } from "expo-router";
-import { ActivityIndicator } from "react-native";
-import React, { useState } from "react";
 import Layout from "@/components/Layout";
+import * as Yup from "yup";
 import { registerUser } from "@/services/api";
 import CustomToast from "@/components/CustomToast";
+import ProgressIndicator from "@/components/ProgressIndicator";
+import { ActivityIndicator } from "react-native";
+import React, { useState } from "react";
 
-export default function RegisterPage() {
+const formValidation = Yup.object().shape({
+  first_name: Yup.string().required("Fill this field"),
+  last_name: Yup.string().required("Fill this field"),
+  phone_no: Yup.string()
+    .required("Fill this field")
+    .matches(/^[0-9]{11}$/, "Phone number must be 11 digit"),
+  email: Yup.string().email("invalid email").required("Email is required"),
+  password: Yup.string()
+    .required("Password is required")
+    .matches(/[A-Z]/, "Password must have atleast one uppercase letter")
+    .matches(/[a-z]/, "Password must have atleast one lowercase letter")
+    .matches(/[0-9]/, "Password must have atleast one number")
+    .matches(
+      /[!@#$%^&*]/,
+      "Password must have atleast special characters (!@#$%^&*)"
+    ),
+  confirm_password: Yup.string()
+    .required("Confirm password required")
+    .oneOf([Yup.ref("password")], "Password does not match"),
+});
+
+export default function RegistrationForm() {
+  const { role } = useLocalSearchParams<{ role: "Owner" | "Walker" }>();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setshowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -27,26 +51,10 @@ export default function RegisterPage() {
     type?: "success" | "error";
   } | null>(null);
 
-  const formValidation = Yup.object().shape({
-    first_name: Yup.string().required("Fill this field"),
-    last_name: Yup.string().required("Fill this field"),
-    phone_no: Yup.string()
-      .required("Fill this field")
-      .matches(/^[0-9]{11}$/, "Phone number must be 11 digit"),
-    email: Yup.string().email("invalid email").required("Email is required"),
-    password: Yup.string()
-      .required("Password is required")
-      .matches(/[A-Z]/, "Password must have atleast one uppercase letter")
-      .matches(/[a-z]/, "Password must have atleast one lowercase letter")
-      .matches(/[0-9]/, "Password must have atleast one number")
-      .matches(
-        /[!@#$%^&*]/,
-        "Password must have atleast special characters (!@#$%^&*)"
-      ),
-    confirm_password: Yup.string()
-      .required("Confirm password required")
-      .oneOf([Yup.ref("password")], "Password does not match"),
-  });
+  const steps =
+    role === "Walker"
+      ? ["Choose Role", "Fill Form", "Upload Requirements"]
+      : ["Choose Role", "Fill Form"];
 
   const {
     control,
@@ -57,10 +65,20 @@ export default function RegisterPage() {
   const registerForm = async (data: any) => {
     setLoading(true);
     try {
-      const result = await registerUser(data);
-      console.log("Success", result);
-      router.push({ pathname: "/auth/VerificationPage", params: data.email });
-      // return result;
+      if (role === "Walker") {
+        // router.push({
+        //   pathname: "/auth/WalkerRequirements",
+        //   params: { ...formData, role }, // pass form data and role
+        // });
+      } else {
+        const result = await registerUser({ ...data, role });
+        console.log("Success", result);
+        router.replace({
+          pathname: "/auth/VerificationPage",
+          params: { email: data.email },
+        });
+        // return result;
+      }
     } catch (error: any) {
       console.log("error", error);
       let message = "Login failed. Please try again.";
@@ -92,20 +110,20 @@ export default function RegisterPage() {
       <ScrollView
         contentContainerStyle={{
           flexGrow: 1,
-          paddingBottom: 150, // Extra space for keyboard
+          paddingBottom: 300, // Extra space for keyboard
         }}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}>
         {/* Header */}
-        <View className="h-[10rem] w-full justify-start items-start">
+        <View className="h-[12rem] mt-1 w-full justify-start items-start flex-col gap-10">
           <TouchableOpacity
             className="mt-[25px] ml-[20px]"
-            onPress={() => router.replace("/auth/LoginPage")}>
+            onPress={() => router.push("/auth/Forms/RoleSelectionPage")}>
             <Ionicons name="long-arrow-left" size={30} color="white" />
           </TouchableOpacity>
-          <Text className="ml-[50px] text-[45px] text-gray-200 font-poppins">
-            Registration
-          </Text>
+          <View>
+            <ProgressIndicator currentStep={2} steps={steps} />
+          </View>
         </View>
 
         {toast && (
@@ -116,7 +134,6 @@ export default function RegisterPage() {
             onHide={() => setToast(null)}
           />
         )}
-
         {/* Form Container (no absolute positioning!) */}
         <View className="w-[85%] mx-auto bg-white rounded-xl p-5">
           {/* First & Last Name Row */}
@@ -309,22 +326,20 @@ export default function RegisterPage() {
           <TouchableOpacity
             className="bg-indigo-500 p-4 rounded-full mt-5"
             onPress={handleSubmit(registerForm)}>
-            <Text className="text-center text-lg text-white font-semibold">
-              Register
-            </Text>
+            {role === "Owner" ? (
+              <Text className="text-center text-lg text-white font-semibold">
+                Register
+              </Text>
+            ) : (
+              <Text className="text-center text-lg text-white font-semibold">
+                Proceed
+              </Text>
+            )}
           </TouchableOpacity>
         </View>
 
         {/* Footer Spacer (ensures scrolling works) */}
       </ScrollView>
-
-      {/* Loading Overlay (outside ScrollView to avoid conflicts) */}
-      {loading && (
-        <View className="absolute top-0 left-0 right-0 bottom-0 z-50 justify-center items-center bg-black/20">
-          <ActivityIndicator size={50} color="black" />
-          <Text className="text-black mt-3 text-xl">Registering...</Text>
-        </View>
-      )}
     </Layout>
   );
 }

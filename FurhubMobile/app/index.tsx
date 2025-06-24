@@ -1,17 +1,20 @@
-import { Text, View } from "react-native";
+import { Text, View, ActivityIndicator } from "react-native";
 import "@/global.css";
-import LoginPage from "./auth/LoginPage";
-import RegisterPage from "./auth/RegisterPage";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
-
-const Stack = createNativeStackNavigator();
+import { Redirect, router } from "expo-router";
+import { useEffect, useState } from "react";
+import { useAuth } from "../context/AuthProvider";
 export default function Index() {
-  return (
-    <Stack.Navigator
-      initialRouteName="Login"
-      screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="Login" component={LoginPage} />
-      <Stack.Screen name="Registration" component={RegisterPage} />
-    </Stack.Navigator>
-  );
+  const { user } = useAuth();
+
+  useEffect(() => {
+    // Check if auth state has been determined
+    if (user?.activeRole === "Owner") {
+      router.replace("/(owner)/Home");
+    } else if (user?.activeRole === "Walker") {
+      router.replace("/(walker)/Home");
+    } else {
+      router.replace("/auth/LoginPage");
+    }
+  }, [user]);
+  return null;
 }

@@ -1,6 +1,9 @@
 from django.db import models
+import random
+from django.utils import timezone
+from datetime import timedelta
 from django.contrib.gis.db import models as gis_models
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 # Create your models here.
 
 
@@ -26,6 +29,8 @@ class Users(AbstractBaseUser):
     phone_no = models.CharField(max_length=15)
     email = models.EmailField(unique=True)
     password = models.CharField(max_length=255)
+    verification_code = models.CharField(max_length=6, blank=True, null=True)
+    code_expiry = models.DateTimeField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     is_verified = models.BooleanField(default=False)
@@ -36,6 +41,13 @@ class Users(AbstractBaseUser):
 
     objects = CustomUserManager()
     
+    def generate_verification_code(self):
+        code = f"{random.randint(100000,999999)}"
+        self.verification_code = code
+        self.code_expiry = timezone.now() + timedelta(minutes = 4)
+        self.save()
+        return code
+
     @property
     def id(self):
         return self.user_id
@@ -56,6 +68,12 @@ class User_roles(models.Model):
     user = models.ForeignKey(Users, on_delete=models.CASCADE)
     role = models.ForeignKey(Roles, on_delete=models.CASCADE)
     class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'role'], 
+                name='unique_user_role'
+            )
+        ]
         db_table = 'user_roles'
 
 class User_logs(models.Model):

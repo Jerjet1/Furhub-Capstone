@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://192.168.1.3:8000/";
+const API_URL = "http://192.168.1.24:8000/"; //bogo mani ip address
 const loginURL = new URL("users/login/", API_URL).toString();
 const registerURL = new URL("users/register/", API_URL).toString();
 export const loginAuth = async (email, password) => {
