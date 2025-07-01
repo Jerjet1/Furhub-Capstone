@@ -17,7 +17,7 @@ export default function ProgressIndicator({ currentStep, steps }: Props) {
           <View key={index} className="flex-row items-center">
             {/* Step Circle */}
             <View
-              className={`w-10 h-10 rounded-full items-center justify-center
+              className={`w-12 h-12 rounded-full items-center justify-center
                 ${
                   isCompleted
                     ? "bg-green-500"
@@ -31,7 +31,7 @@ export default function ProgressIndicator({ currentStep, steps }: Props) {
             </View>
 
             {/* Label */}
-            <Text className="text-[15px] font-medium text-white w-[80px] ml-2">
+            <Text className="text-[12px] font-medium text-white w-[80px] ml-2">
               {step}
             </Text>
           </View>

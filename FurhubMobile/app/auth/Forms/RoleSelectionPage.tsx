@@ -7,7 +7,10 @@ import ProgressIndicator from "@/components/ProgressIndicator";
 
 export default function RoleSelectionPage() {
   const selectRole = (role: "Owner" | "Walker") => {
-    router.push({ pathname: "/auth/Forms/RegistrationForm", params: { role } });
+    router.replace({
+      pathname: "/auth/Forms/RegistrationForm",
+      params: { role },
+    });
   };
   return (
     <Layout>
@@ -21,7 +24,7 @@ export default function RoleSelectionPage() {
         <View>
           <ProgressIndicator
             currentStep={1}
-            steps={["Choose Role", "Fill Form"]}
+            steps={["Choose Role", "Account details"]}
           />
         </View>
       </View>

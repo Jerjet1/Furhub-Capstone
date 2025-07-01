@@ -22,10 +22,10 @@ export default function WalkerTabs() {
           backgroundColor: "#666666",
           height: 54,
           paddingBottom: 27,
-          marginBottom: Platform.select({
-            android: 43,
-            ios: insets.bottom,
-          }),
+          // marginBottom: Platform.select({
+          //   android: 43,
+          //   ios: insets.bottom,
+          // }),
         },
       }}>
       <Tabs.Screen name="Home" options={{ title: "Home" }} />

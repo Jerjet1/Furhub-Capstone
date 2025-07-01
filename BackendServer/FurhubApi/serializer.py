@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Users, Roles, User_roles
+from .models import Users, Roles, User_roles, PetOwner, PetWalker,Admin, PetBoarding, UploadedImage, Service
 from django.utils import timezone
 
 class LoginSerializer(serializers.Serializer):
@@ -32,6 +32,16 @@ class RegisterSerializer(serializers.ModelSerializer):
         user = Users.objects.create_user(**validated_data)
         #Assigned role
         role = Roles.objects.get(role_name = role_name)
+
+        if role.role_name == 'Walker':
+            PetWalker.objects.create(user = user)
+        if role.role_name == 'Boarding':
+            PetBoarding.objects.create(user = user)
+        if role.role_name == 'Admin':
+            Admin.objects.create(user = user)
+        if role.role_name == 'Owner':
+            PetOwner.objects.create(user = user)
+
         User_roles.objects.create(user = user, role = role)
         return user
     
@@ -67,3 +77,50 @@ class EmailVerificationSerializer(serializers.Serializer):
         user.code_expiry = None
         user.save()
         return user
+    
+class UploadImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UploadedImage
+        fields = ['user', 'image', 'category', 'label', 'uploaded_at']
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Users
+        fields = ['user_id', 'first_name', 'last_name', 'email', 'phone_no']
+
+class PetWalkerSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+    uploaded_images = serializers.SerializerMethodField()
+    class Meta:
+        model = PetWalker
+        fields = ['user', 'availability', 'status', 'uploaded_images']
+
+    def get_upload_images(self, obj):
+        images = UploadedImage.objects.filter(user = obj.user, category='walker_requirements')
+        return UploadImageSerializer(images, many=True).data
+    
+class PetBoardingSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+    uploaded_images = serializers.SerializerMethodField()
+    class Meta:
+        model = PetBoarding
+        fields = ['user', 'hotel_name', 'availability', 'status', 'uploaded_images']
+    
+    def get_uploaded_images(self, obj):
+        images = UploadedImage.objects.filter(user = obj.user, category='boarding_requirements')
+        return UploadImageSerializer(images, many=True).data
+
+class ServiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Service
+        fields = [ 'service_id','service_name']
+
+# class BulkUploadImageSerializer(serializers.Serializer):
+#     images = UploadImageSerializer(many=True)
+
+#     def create(self, validated_data):
+#         images_data = validated_data.pop('images')
+#         uploaded_images = []
+#         for image_data in images_data:
+#             uploaded_images.append(UploadedImage.objects.create(**image_data))
+#         return uploaded_images

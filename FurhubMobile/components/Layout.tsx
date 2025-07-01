@@ -18,16 +18,12 @@ export default function Layout({ children }: { children: ReactNode }) {
       className="flex-1"
       keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <SafeAreaView
-          style={{
-            flex: 1,
-            paddingBottom: 5,
-          }}>
+        <View style={{ flex: 1 }}>
           {/* Top container color */}
           <View className="absolute top-0 left-0 right-0 h-[30%] bg-indigo-600" />
           <View className="absolute top-[30%] left-0 right-0 bottom-0 bg-slate-100" />
           {children}
-        </SafeAreaView>
+        </View>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
   );

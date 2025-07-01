@@ -1,7 +1,13 @@
+import { debouncePromise } from "@/utils/debounce";
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
 const API_URL = "http://192.168.1.24:8000/"; //atay mani agad man sa ip address
 const registerURL = new URL("users/register/", API_URL).toString();
+const checkEmailURL = new URL("users/check-email", API_URL).toString();
+const walkerRequirementsURL = new URL(
+  "users/image_upload/",
+  API_URL
+).toString();
 const loginURL = new URL("users/login/", API_URL).toString();
 const resendCodeURL = new URL("users/resend-code/", API_URL).toString();
 const verifyEmailURL = new URL("users/verify/", API_URL).toString();
@@ -13,7 +19,12 @@ type RegisterUser = {
   email: string;
   password: string;
   confirm_password: string;
-  role: "pet_owner" | "pet_walker";
+  role: "Owner" | "Walker";
+};
+
+type userCredentials = {
+  email: string;
+  password: string;
 };
 
 export const registerUser = async ({
@@ -41,9 +52,33 @@ export const registerUser = async ({
   }
 };
 
-type userCredentials = {
-  email: string;
-  password: string;
+export const requirementsUpload = async (FormData: any) => {
+  try {
+    const response = await axios.post(walkerRequirementsURL, FormData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  } catch (error: any) {
+    throw error.response?.data || { details: "Something went wrong" };
+  }
+};
+
+export const checkEmailAvailability = async (
+  email: string
+): Promise<boolean> => {
+  try {
+    await axios.get(checkEmailURL, { params: { email } });
+    // If 200, email does NOT exist (available)
+    return false;
+  } catch (error: any) {
+    if (error.response?.status === 400 && error.response.data?.exist) {
+      // If 400 and response is "exist: true", then email is in use
+      return true;
+    }
+    throw error.response?.data || { details: "Something went wrong" };
+  }
 };
 
 export const login = async ({ email, password }: userCredentials) => {

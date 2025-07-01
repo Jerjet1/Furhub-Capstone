@@ -11,7 +11,7 @@ export const BoardingNavbar = () => {
             <h2>Bookings</h2>
           </Link>
           <Link
-            to=""
+            to="/Petboarding/FacilityProfile"
             className="block py-3 px-5 hover:bg-gray-600/30 hover:border-e-1">
             <h2>Facility Profile</h2>
           </Link>

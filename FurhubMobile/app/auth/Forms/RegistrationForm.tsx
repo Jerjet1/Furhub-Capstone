@@ -14,11 +14,12 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { router } from "expo-router";
 import Layout from "@/components/Layout";
 import * as Yup from "yup";
-import { registerUser } from "@/services/api";
+import { registerUser, checkEmailAvailability } from "@/services/api";
 import CustomToast from "@/components/CustomToast";
 import ProgressIndicator from "@/components/ProgressIndicator";
 import { ActivityIndicator } from "react-native";
-import React, { useState } from "react";
+import { useRegistration } from "@/context/RegistrationProvider";
+import React, { useState, useEffect } from "react";
 
 const formValidation = Yup.object().shape({
   first_name: Yup.string().required("Fill this field"),
@@ -44,34 +45,72 @@ const formValidation = Yup.object().shape({
 export default function RegistrationForm() {
   const { role } = useLocalSearchParams<{ role: "Owner" | "Walker" }>();
   const [showPassword, setShowPassword] = useState(false);
+  const [emailError, setEmailError] = useState("");
   const [showConfirmPassword, setshowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<{
     message: string;
     type?: "success" | "error";
   } | null>(null);
+  const { formData, setFormData, setUploadedImages } = useRegistration();
 
   const steps =
     role === "Walker"
-      ? ["Choose Role", "Fill Form", "Upload Requirements"]
+      ? ["Choose Role", "Account details", "Upload Requirements"]
       : ["Choose Role", "Fill Form"];
 
   const {
     control,
     handleSubmit,
+    setValue,
     formState: { errors },
-  } = useForm({ resolver: yupResolver(formValidation), mode: "onChange" });
+    reset,
+  } = useForm({
+    resolver: yupResolver(formValidation),
+    mode: "onChange",
+    defaultValues: formData,
+  });
+
+  useEffect(() => {
+    Object.entries(formData).forEach(([key, value]) => {
+      setValue(key as any, value);
+    });
+  }, []);
 
   const registerForm = async (data: any) => {
+    setFormData(data);
     setLoading(true);
+    setEmailError("");
     try {
+      const emailInUse = await checkEmailAvailability(data.email);
+      if (emailInUse) {
+        setEmailError("Email already in use");
+        setLoading(false);
+        return;
+      }
+
       if (role === "Walker") {
-        // router.push({
-        //   pathname: "/auth/WalkerRequirements",
-        //   params: { ...formData, role }, // pass form data and role
-        // });
+        router.replace({
+          pathname: "/auth/Forms/RequirementsUpload",
+          params: { ...data, role }, // pass form data and role
+        });
       } else {
         const result = await registerUser({ ...data, role });
+        // ✅ Reset the form after successful registration
+        setUploadedImages({
+          barangayClearance: null,
+          validID: null,
+          selfieWithID: null,
+        });
+        setFormData({
+          first_name: "",
+          last_name: "",
+          email: "",
+          phone_no: "",
+          password: "",
+          confirm_password: "",
+        });
+        // ✅ Optionally clear stored context formData
         console.log("Success", result);
         router.replace({
           pathname: "/auth/VerificationPage",
@@ -81,7 +120,7 @@ export default function RegistrationForm() {
       }
     } catch (error: any) {
       console.log("error", error);
-      let message = "Login failed. Please try again.";
+      let message = "Unexpected error occured";
 
       if (typeof error === "string") {
         message = error;
@@ -118,7 +157,7 @@ export default function RegistrationForm() {
         <View className="h-[12rem] mt-1 w-full justify-start items-start flex-col gap-10">
           <TouchableOpacity
             className="mt-[25px] ml-[20px]"
-            onPress={() => router.push("/auth/Forms/RoleSelectionPage")}>
+            onPress={() => router.replace("/auth/Forms/RoleSelectionPage")}>
             <Ionicons name="long-arrow-left" size={30} color="white" />
           </TouchableOpacity>
           <View>
@@ -231,11 +270,17 @@ export default function RegistrationForm() {
                   keyboardType="email-address"
                   className="border-b border-gray-500 text-lg font-poppins"
                   onBlur={onBlur}
-                  onChangeText={(text) => onChange(text)}
+                  onChangeText={(text) => {
+                    setEmailError("");
+                    onChange(text);
+                  }}
                   value={value}
                   autoCapitalize="none"
                   autoComplete="off"
                 />
+                {emailError && (
+                  <Text className="text-red-600 mt-1">{emailError}</Text>
+                )}
                 {errors.email && (
                   <Text className="text-red-600 mt-1">
                     {errors.email.message}

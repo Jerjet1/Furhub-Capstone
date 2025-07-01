@@ -7,8 +7,8 @@ export const UserLayoutPage = ({ children }) => {
   const location = useLocation();
   const path = location.pathname;
 
-  const isPetboarding = path.includes("/Petboarding/Dashboard");
-  const isReport = path.includes("/Admin/Reports");
+  const isPetboarding = path.includes("/Petboarding/");
+  const isReport = path.includes("/Admin/Reports/");
 
   const navbarSelection = isReport ? "reports" : "default";
 
@@ -21,29 +21,31 @@ export const UserLayoutPage = ({ children }) => {
           <div className="flex space-x-5">
             {isPetboarding ? (
               <>
-                <div className="border-b-0 hover:border-b-1 hover:border-b-amber-900 w-full h-full flex justify-center items-center">
-                  <Link to="">
-                    <h2 className="text-xl font-semibold">Dashboard</h2>
-                  </Link>
-                </div>
-                <div className="border-b-0 hover:border-b-1 hover:border-b-amber-900 w-full h-full flex justify-center items-center">
-                  <Link to="">
-                    <h2 className="text-xl font-semibold">Reports</h2>
-                  </Link>
-                </div>
+                <Link
+                  to="/Petboarding/Dashboard/"
+                  className="border-b-0 hover:border-b-1 hover:border-b-amber-900 w-full h-full flex justify-center items-center">
+                  <h2 className="text-xl font-semibold">Dashboard</h2>
+                </Link>
+
+                <Link
+                  to="/Petboarding/Reports/"
+                  className="border-b-0 hover:border-b-1 hover:border-b-amber-900 w-full h-full flex justify-center items-center">
+                  <h2 className="text-xl font-semibold">Reports</h2>
+                </Link>
               </>
             ) : (
               <>
-                <div className="border-b-0 hover:border-b-1 hover:border-b-amber-900 w-full h-full flex justify-center items-center">
-                  <Link to="/Admin/Dashboard">
-                    <h2 className="text-xl font-semibold">Dashboard</h2>
-                  </Link>
-                </div>
-                <div className="border-b-0 hover:border-b-1 hover:border-b-amber-900 w-full h-full flex justify-center items-center">
-                  <Link to="/Admin/Reports">
-                    <h2 className="text-xl font-semibold">Reports</h2>
-                  </Link>
-                </div>
+                <Link
+                  to="/Admin/Dashboard/"
+                  className="border-b-0 hover:border-b-1 hover:border-b-amber-900 w-full h-full flex justify-center items-center">
+                  <h2 className="text-xl font-semibold">Dashboard</h2>
+                </Link>
+
+                <Link
+                  to="/Admin/Reports/"
+                  className="border-b-0 hover:border-b-1 hover:border-b-amber-900 w-full h-full flex justify-center items-center">
+                  <h2 className="text-xl font-semibold">Reports</h2>
+                </Link>
               </>
             )}
           </div>

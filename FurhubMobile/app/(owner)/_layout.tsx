@@ -18,15 +18,15 @@ export default function OwnerTabs() {
           fontSize: 11,
         },
         tabBarStyle: {
-          height: 60,
-          paddingTop: 5,
+          height: 55,
+          // paddingTop: 5,
           paddingBottom: 5,
-          marginBottom: Platform.select({
-            android: 43,
-            ios: insets.bottom,
-          }),
-          elevation: 0,
-          shadowOpacity: 0, // Removes shadow on iOS
+          // marginBottom: Platform.select({
+          //   android: 43,
+          //   ios: insets.bottom,
+          // }),
+          // elevation: 0,
+          // shadowOpacity: 0, // Removes shadow on iOS
           backgroundColor: "#F9F8F9",
         },
       }}>

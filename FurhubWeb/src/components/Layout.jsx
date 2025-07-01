@@ -16,7 +16,7 @@ export const Layout = ({ children }) => {
           </Link>
         </nav>
       </header>
-      <main className="flex-1 flex items-center justify-center">
+      <main className="flex-1 flex items-center justify-center p-5">
         {children}
       </main>
     </div>
