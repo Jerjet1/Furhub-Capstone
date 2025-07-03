@@ -16,6 +16,7 @@ import { BoardingReports } from "./pages/PetBoardingPage/BoardingReports";
 import { AuthProvider } from "./context/AuthProvider";
 import { AuthRoute } from "./context/AuthRoute";
 import { FacilityProfile } from "./pages/PetBoardingPage/FacilityProfile";
+import { ManageUser } from "./pages/AdminPage/ManageUser";
 export default function App() {
   return (
     <Router>
@@ -43,6 +44,7 @@ export default function App() {
           {/* Admin Routes */}
           <Route path="/Admin/Dashboard/" element={<AdminDashboard />} />
           <Route path="/Admin/Reports/" element={<AdminReports />} />
+          <Route path="/Admin/ManageUsers/" element={<ManageUser />} />
 
           {/* Pet Boarding Routes */}
           <Route

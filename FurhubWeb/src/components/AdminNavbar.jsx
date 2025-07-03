@@ -7,45 +7,33 @@ export const AdminNavbar = ({ section }) => {
         <div className="mt-5 w-full">
           {section === "reports" ? (
             <>
-              <Link
-                to=""
-                className="py-3 px-5 hover:bg-gray-600/30  block hover:border-e-1">
+              <Link to="" className="py-3 px-5 hover:bg-gray-600/30  block ">
                 <h2>Report Summary</h2>
               </Link>
-              <Link
-                to=""
-                className="py-3 px-5 hover:bg-gray-600/30  block hover:border-e-1">
+              <Link to="" className="py-3 px-5 hover:bg-gray-600/30  block ">
                 <h2>User Logs</h2>
               </Link>
-              <Link
-                to=""
-                className="py-3 px-5 hover:bg-gray-600/30  block hover:border-e-1">
+              <Link to="" className="py-3 px-5 hover:bg-gray-600/30  block ">
                 <h2>Revenue</h2>
               </Link>
             </>
           ) : (
             <>
-              <Link
-                to=""
-                className="block py-3 px-5 hover:bg-gray-600/30 hover:border-e-1">
+              <Link to="" className="block py-3 px-5 hover:bg-gray-600/30 ">
                 <h2>Manage Location</h2>
               </Link>
-              <Link
-                to=""
-                className="block py-3 px-5 hover:bg-gray-600/30 hover:border-e-1">
+              <Link to="" className="block py-3 px-5 hover:bg-gray-600/30 ">
                 <h2>View Subscriptions</h2>
               </Link>
               <Link
-                to=""
-                className="block py-3 px-5 hover:bg-gray-600/30 hover:border-e-1">
+                to="/Admin/ManageUsers/"
+                className="block py-3 px-5 hover:bg-gray-600/30 ">
                 <h2>Manage Users</h2>
               </Link>
             </>
           )}
         </div>
-        <div className="block px-5 py-3 hover:border-e-1 hover:bg-gray-600/30 ">
-          Logout
-        </div>
+        <div className="block px-5 py-3  hover:bg-gray-600/30 ">Logout</div>
       </nav>
     </div>
   );
