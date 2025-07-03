@@ -1,7 +1,11 @@
 from pathlib import Path
 import os
 from datetime import timedelta
+import socket
 # from dotenv import load_dotenv
+
+hostname = socket.gethostname()
+local_ip = socket.gethostbyname(hostname)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -56,14 +60,26 @@ MIDDLEWARE = [
 ]
 
 # CORS_ALLOWED_ORIGINS = ['http://localhost:5173', 'exp://192.168.1.3:8081']
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '192.168.1.3'] #change sa Ip address para makaconnect sa web & mobile
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', local_ip] #change sa Ip address para makaconnect sa web & mobile
 CORS_ALLOWED_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8081",  # React Native Web/Expo Go via browser
     "http://127.0.0.1:8081",  # In case you use this format
-    "http://192.168.1.3:8000", # change sa inyong IP address para makaconnect sa web & mobile
+    f"http://{local_ip}:8081", # change sa inyong IP address para makaconnect sa web & mobile
     "http://localhost:5173",
 ]
+
+# EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_FILE_PATH = '/tmp/django-emails'  # Folder where emails will be saved
+
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com'
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = 'furhub.test.mail@gmail.com'  # The new email you created
+# EMAIL_HOST_PASSWORD = 'viex akeq dzux ysck'    # The app password you generated
+# DEFAULT_FROM_EMAIL = 'Furhub@gmail.com'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -155,3 +171,6 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'FurhubApi.Users'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'

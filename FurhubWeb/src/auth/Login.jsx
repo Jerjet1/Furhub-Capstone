@@ -7,7 +7,8 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { LottieSpinner } from "../components/LottieSpinner";
 import { FiMail, FiLock, FiEye, FiEyeOff } from "react-icons/fi";
-import { loginAuth } from "../auth/api";
+import { loginAuth } from "../api/api";
+import { useAuth } from "../context/AuthProvider";
 
 const validationSchema = yup.object().shape({
   email: yup.string().email("invalid email").required("Email is required"),
@@ -16,7 +17,10 @@ const validationSchema = yup.object().shape({
 export const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { login: setUser } = useAuth();
   const [showMessage, setShowMessage] = useState(false);
+
+  const navigate = useNavigate();
 
   const {
     register,
@@ -30,6 +34,17 @@ export const Login = () => {
     setLoading(true);
     try {
       const result = await loginAuth(email, password);
+      const token = result.access;
+      const roles = result.roles || [];
+      setUser(token, roles);
+
+      if (roles.includes("Boarding")) {
+        navigate("/Petboarding/Dashboard");
+      } else if (roles.includes("Admin")) {
+        navigate("/Admin/Dashboard");
+      } else {
+        navigate("/unauthorize");
+      }
     } catch (error) {
       console.log("error", error);
     } finally {

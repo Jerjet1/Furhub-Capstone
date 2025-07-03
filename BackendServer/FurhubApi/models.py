@@ -1,6 +1,9 @@
 from django.db import models
+import random
+from django.utils import timezone
+from datetime import timedelta
 from django.contrib.gis.db import models as gis_models
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 # Create your models here.
 
 
@@ -26,6 +29,8 @@ class Users(AbstractBaseUser):
     phone_no = models.CharField(max_length=15)
     email = models.EmailField(unique=True)
     password = models.CharField(max_length=255)
+    verification_code = models.CharField(max_length=6, blank=True, null=True)
+    code_expiry = models.DateTimeField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     is_verified = models.BooleanField(default=False)
@@ -36,6 +41,13 @@ class Users(AbstractBaseUser):
 
     objects = CustomUserManager()
     
+    def generate_verification_code(self):
+        code = f"{random.randint(100000,999999)}"
+        self.verification_code = code
+        self.code_expiry = timezone.now() + timedelta(minutes = 4)
+        self.save()
+        return code
+
     @property
     def id(self):
         return self.user_id
@@ -56,6 +68,12 @@ class User_roles(models.Model):
     user = models.ForeignKey(Users, on_delete=models.CASCADE)
     role = models.ForeignKey(Roles, on_delete=models.CASCADE)
     class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'role'], 
+                name='unique_user_role'
+            )
+        ]
         db_table = 'user_roles'
 
 class User_logs(models.Model):
@@ -91,23 +109,35 @@ class Location(models.Model):
 
 class PetOwner(models.Model):
     user = models.OneToOneField(Users, on_delete=models.CASCADE, primary_key=True)
-    emergency_no = models.CharField(max_length=15)
-    bio = models.TextField(blank=True)
+    emergency_no = models.CharField(max_length=15, blank=True, null=True)
+    bio = models.TextField(blank=True, null=True)
 
     class Meta:
         db_table = 'pet_owner'
 
 class PetWalker(models.Model):
+
+    STATUS_CHOICE = [("pending", "Pending") ,
+                     ("approved", "Approved"), 
+                     ("rejected", "Rejected")]
+
     user = models.OneToOneField(Users, on_delete=models.CASCADE, primary_key=True)
-    availability = models.CharField(max_length=255)
+    availability = models.CharField(max_length=255, null=True, blank=True)
+    status = status = models.CharField(max_length=20,default="pending")
 
     class Meta:
         db_table = 'pet_walker'
 
 class PetBoarding(models.Model):
+
+    STATUS_CHOICE = [("pending", "Pending") ,
+                     ("approved", "Approved"), 
+                     ("rejected", "Rejected")]
+    
     user = models.OneToOneField(Users, on_delete=models.CASCADE, primary_key=True)
-    hotel_name = models.CharField(max_length=255)
-    availability = models.CharField(max_length=255)
+    hotel_name = models.CharField(max_length=255, null=True, blank=True)
+    availability = models.CharField(max_length=255, null=True, blank=True)
+    status = status = models.CharField(max_length=20,default="pending")
 
     class Meta:
         db_table = 'pet_boarding'
@@ -121,3 +151,41 @@ class Admin(models.Model):
     class Meta:
         db_table = 'admin'
 
+class UploadedImage(models.Model):
+    CATEGORY_CHOICES = [
+        ("profile_picture", "Profile Picture"),
+        ("community_post", "Community Post"),
+        ("walker_requirement", "Walker Requirement"),
+        ("boarding_requirement", "Boarding Requirement"),
+    ]
+
+    user = models.ForeignKey(Users, on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='uploads/')
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
+    label = models.CharField(max_length=100, blank=True)  # e.g., "NBI Clearance", "Barangay Clearance"
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'uploaded_images'
+
+class Service(models.Model):
+    service_id = models.AutoField(primary_key=True)
+    service_name = models.CharField(max_length=100)
+
+    class Meta:
+        db_table = 'service'
+
+class ProviderService(models.Model):
+    PROVIDER_TYPE_CHOICE = [
+        ('walker', 'Pet Walker'),
+        ('boarding', 'Pet Boarding')
+    ]
+    providerService_id = models.AutoField(primary_key=True)
+    service = models.ForeignKey(Service, on_delete=models.CASCADE)
+    provider = models.ForeignKey(Users, on_delete=models.CASCADE)
+    provider_type = models.CharField(max_length=15, choices=PROVIDER_TYPE_CHOICE)
+    provider_rate = models.DecimalField(decimal_places=2, max_digits=10)
+
+    class Meta:
+        unique_together = ['service', 'provider', 'provider_type']
+        db_table = 'provider_service'
