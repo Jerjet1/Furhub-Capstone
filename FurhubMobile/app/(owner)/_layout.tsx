@@ -1,12 +1,8 @@
 import { Tabs } from "expo-router";
-import { Platform } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
-import CustomTabBarButton from "@/components/CustomTabBarButton";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import CustomTabBarButton from "@/components/Buttons/CustomTabBarButton";
 import React from "react";
-
 export default function OwnerTabs() {
-  const insets = useSafeAreaInsets();
   return (
     <Tabs
       screenOptions={{
@@ -19,14 +15,7 @@ export default function OwnerTabs() {
         },
         tabBarStyle: {
           height: 55,
-          // paddingTop: 5,
           paddingBottom: 5,
-          // marginBottom: Platform.select({
-          //   android: 43,
-          //   ios: insets.bottom,
-          // }),
-          // elevation: 0,
-          // shadowOpacity: 0, // Removes shadow on iOS
           backgroundColor: "#F9F8F9",
         },
       }}>
@@ -35,7 +24,7 @@ export default function OwnerTabs() {
         options={{
           title: "Home",
           tabBarIcon: ({ color }) => (
-            <FontAwesome name="home" size={20} color="#512DA8" />
+            <FontAwesome name="home" size={20} color={color} />
           ),
           tabBarButton: (props) => <CustomTabBarButton {...props} />,
         }}

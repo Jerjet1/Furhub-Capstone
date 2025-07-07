@@ -1,11 +1,4 @@
-import React, { useEffect } from "react";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-  useNavigate,
-} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Login } from "./auth/Login";
 import { Registration } from "./auth/Registration";
 import { AdminDashboard } from "./pages/AdminPage/AdminDashboard";
@@ -16,6 +9,14 @@ import { BoardingReports } from "./pages/PetBoardingPage/BoardingReports";
 import { AuthProvider } from "./context/AuthProvider";
 import { AuthRoute } from "./context/AuthRoute";
 import { FacilityProfile } from "./pages/PetBoardingPage/FacilityProfile";
+import { ManageUser } from "./pages/AdminPage/ManageUser";
+import { ProtectedRoute } from "./auth/ProtectedRoute";
+
+export const ROLES = {
+  ADMIN: "Admin",
+  BOARDING: "Boarding",
+};
+
 export default function App() {
   return (
     <Router>
@@ -41,18 +42,41 @@ export default function App() {
           <Route path="/unauthorize" element={<Unauthorize />} />
 
           {/* Admin Routes */}
-          <Route path="/Admin/Dashboard/" element={<AdminDashboard />} />
-          <Route path="/Admin/Reports/" element={<AdminReports />} />
+          <Route
+            path="/Admin/Dashboard"
+            element={
+              <ProtectedRoute allowedRoles={ROLES.ADMIN}>
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/Admin/Reports" element={<AdminReports />} />
+          <Route path="/Admin/ManageUsers" element={<ManageUser />} />
 
           {/* Pet Boarding Routes */}
           <Route
-            path="/Petboarding/Dashboard/"
-            element={<BoardingDashboard />}
+            path="/Petboarding/Dashboard"
+            element={
+              <ProtectedRoute allowedRoles={ROLES.BOARDING}>
+                <BoardingDashboard />
+              </ProtectedRoute>
+            }
           />
-          <Route path="/Petboarding/Reports/" element={<BoardingReports />} />
           <Route
-            path="/Petboarding/FacilityProfile/"
-            element={<FacilityProfile />}
+            path="/Petboarding/Reports"
+            element={
+              <ProtectedRoute allowedRoles={ROLES.BOARDING}>
+                <BoardingReports />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/Petboarding/FacilityProfile"
+            element={
+              <ProtectedRoute allowedRoles={ROLES.BOARDING}>
+                <FacilityProfile />
+              </ProtectedRoute>
+            }
           />
         </Routes>
       </AuthProvider>

@@ -8,7 +8,7 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import { FontAwesome } from "@expo/vector-icons";
 import ProgressIndicator from "@/components/ProgressIndicator";
-import Layout from "@/components/Layout";
+import Layout from "@/components/Layouts/Layout";
 import { router, useLocalSearchParams } from "expo-router";
 import CustomToast from "@/components/CustomToast";
 import { registerUser, requirementsUpload } from "@/services/api";

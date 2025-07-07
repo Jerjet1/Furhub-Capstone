@@ -1,7 +1,7 @@
 import { View, Text, TouchableOpacity } from "react-native";
 import { router } from "expo-router";
 import React from "react";
-import Layout from "@/components/Layout";
+import Layout from "@/components/Layouts/Layout";
 import { FontAwesome } from "@expo/vector-icons";
 import ProgressIndicator from "@/components/ProgressIndicator";
 

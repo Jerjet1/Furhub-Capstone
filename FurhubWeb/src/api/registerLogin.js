@@ -17,7 +17,7 @@ export const loginAuth = async (email, password) => {
         localStorage.setItem("roles", JSON.stringify(response.data.role));
       }
     }
-    console.log("role", response.data.role);
+    // console.log("role", response.data.role);
     return response.data;
   } catch (error) {
     throw error.response?.data || { details: "Something went wrong" };
@@ -62,6 +62,8 @@ export const requirementsUpload = async (formData) => {
   }
 };
 
-export const logout = () => {
-  localStorage.removeItem("token");
-};
+// export const logout = () => {
+//   localStorage.removeItem("token");
+//   localStorage.removeItem("roles");
+//   localStorage.removeItem("activeRole");
+// };

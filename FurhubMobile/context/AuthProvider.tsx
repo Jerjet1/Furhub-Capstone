@@ -3,6 +3,11 @@ import { router } from "expo-router";
 import { useState, createContext, useContext, useEffect } from "react";
 import * as SecureStore from "expo-secure-store";
 
+export const ROLES = {
+  OWNER: "Owner",
+  WALKER: "Walker",
+};
+
 type AuthContextType = {
   user: {
     token: string;
@@ -53,7 +58,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       await SecureStore.setItemAsync("activeRole", role);
       setUser({ ...user, activeRole: role });
       // Navigate based on new role
-      if (role === "Owner") {
+      if (role === ROLES.OWNER) {
         router.replace("/(owner)/Home");
       } else {
         router.replace("/(walker)/Home");

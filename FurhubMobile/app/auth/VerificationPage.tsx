@@ -8,7 +8,7 @@ import {
 import { useLocalSearchParams, router } from "expo-router";
 import { FontAwesome } from "@expo/vector-icons";
 import CustomToast from "@/components/CustomToast";
-import Layout from "@/components/Layout";
+import Layout from "@/components/Layouts/Layout";
 import { resendCodeAPI, verifyEmailAPI } from "@/services/api";
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthProvider";

@@ -1,38 +1,54 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { logout as LogoutAPI } from "../api/api";
-
+import { ROLES } from "../App";
 export const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
   const navigate = useNavigate();
+
   useEffect(() => {
     const loadUserFromStorage = async () => {
-      const token = localStorage.getItem("token");
-      const roles = localStorage.getItem("role");
-      const activeRole = localStorage.getItem("activeRole");
+      setIsLoading(true);
+      try {
+        const token = localStorage.getItem("token");
+        const roles = localStorage.getItem("roles");
+        const activeRole = localStorage.getItem("activeRole");
 
-      if (token && roles) {
-        const parsedRole = JSON.parse(roles);
-        const roleToSet = activeRole || parsedRole[0];
+        if (token && roles) {
+          const parsedRole = JSON.parse(roles);
+          const roleToSet = activeRole || parsedRole[0];
 
-        setUser({
-          token,
-          roles: parsedRole,
-          activeRole: roleToSet,
-        });
-
-        if (parsedRole.includes("Boarding")) {
-          navigate("/Petboarding/Dashboard");
-        } else if (parsedRole.includes("Admin")) {
-          navigate("/Admin/Dashboard");
-        } else {
-          navigate("/unauthorize");
+          setUser({
+            token,
+            roles: parsedRole,
+            activeRole: roleToSet,
+          });
+          // Wait for state to update before navigating
+          await new Promise((resolve) => setTimeout(resolve, 0));
+          if (
+            window.location.pathname === "/" ||
+            window.location.pathname === "/register"
+          ) {
+            if (parsedRole.includes(ROLES.ADMIN)) {
+              navigate("/Admin/Dashboard");
+            } else if (parsedRole.includes(ROLES.BOARDING)) {
+              navigate("/Petboarding/Dashboard");
+            } else {
+              navigate("/unauthorize");
+            }
+          }
         }
+      } catch (error) {
+        console.error("Auth load error:", error);
+        logout(); // Clear invalid data
+      } finally {
+        setIsInitialized(true);
+        setIsLoading(false);
       }
-      setIsInitialized(true);
     };
     loadUserFromStorage();
   }, [navigate]);
@@ -44,10 +60,10 @@ export const AuthProvider = ({ children }) => {
 
     setUser({ token, roles, activeRole: roles[0] });
 
-    if (roles.includes("boarding")) {
-      navigate("/Petboarding/Dashboard");
-    } else if (roles.includes("admin")) {
+    if (roles.includes(ROLES.ADMIN)) {
       navigate("/Admin/Dashboard");
+    } else if (roles.includes(ROLES.BOARDING)) {
+      navigate("/Petboarding/Dashboard");
     } else {
       navigate("/unauthorize");
     }
@@ -58,10 +74,10 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem("activeRole", role);
       setUser({ ...user, activeRole: role });
 
-      if (role === "Boarding") {
-        navigate("/Petboarding/Dashboard");
-      } else if (role === "Admin") {
+      if (role === ROLES.ADMIN) {
         navigate("/Admin/Dashboard");
+      } else if (role === ROLES.BOARDING) {
+        navigate("/Petboarding/Dashboard");
       } else {
         navigate("/unauthorized");
       }
@@ -72,7 +88,6 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("token");
     localStorage.removeItem("roles");
     localStorage.removeItem("activeRole");
-    await LogoutAPI();
     setUser(null);
     navigate("/");
   };
@@ -84,6 +99,7 @@ export const AuthProvider = ({ children }) => {
         logout,
         setActiveRole,
         isInitialized,
+        isLoading,
       }}>
       {children}
     </AuthContext.Provider>

@@ -1,34 +1,35 @@
 import { Tabs } from "expo-router";
-import { Platform } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FontAwesome } from "@expo/vector-icons";
+import CustomTabBarButton from "@/components/Buttons/CustomTabBarButton";
 import React from "react";
 
 export default function WalkerTabs() {
-  const insets = useSafeAreaInsets();
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: "#007AFF",
-        tabBarInactiveTintColor: "#888",
+        tabBarInactiveTintColor: "#512DA8",
         tabBarShowLabel: true,
         tabBarLabelStyle: {
           fontSize: 11,
         },
         tabBarStyle: {
-          elevation: 0,
-          shadowOpacity: 0, // Removes shadow on iOS
-          backgroundColor: "#666666",
-          height: 54,
-          paddingBottom: 27,
-          // marginBottom: Platform.select({
-          //   android: 43,
-          //   ios: insets.bottom,
-          // }),
+          backgroundColor: "#F9F8F9",
+          height: 55,
+          paddingBottom: 5,
         },
       }}>
-      <Tabs.Screen name="Home" options={{ title: "Home" }} />
+      <Tabs.Screen
+        name="Home"
+        options={{
+          title: "Home",
+          tabBarIcon: ({ color }) => (
+            <FontAwesome name="home" size={20} color={color} />
+          ),
+          tabBarButton: (props) => <CustomTabBarButton {...props} />,
+        }}
+      />
     </Tabs>
   );
 }

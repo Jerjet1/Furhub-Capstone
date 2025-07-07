@@ -1,13 +1,13 @@
 import React from "react";
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Layout } from "../components/Layout";
+import { Layout } from "../components/Layout/Layout";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { LottieSpinner } from "../components/LottieSpinner";
 import { FiMail, FiLock, FiEye, FiEyeOff } from "react-icons/fi";
-import { loginAuth } from "../api/api";
+import { loginAuth } from "../api/registerLogin";
 import { useAuth } from "../context/AuthProvider";
 
 const validationSchema = yup.object().shape({
