@@ -12,7 +12,7 @@ import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { ActivityIndicator } from "react-native";
 import { login } from "@/services/api";
-import Layout from "@/components/Layout";
+import Layout from "@/components/Layouts/Layout";
 import * as Yup from "yup";
 import React, { useState } from "react";
 import { useAuth } from "@/context/AuthProvider";
@@ -101,9 +101,10 @@ export default function LoginPage() {
       <ScrollView
         contentContainerStyle={{
           flexGrow: 1,
-          paddingBottom: 50, // Extra space for keyboard
+          paddingBottom: 200, // Extra space for keyboard
         }}
-        keyboardShouldPersistTaps="handled">
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}>
         {/* Loading Overlay */}
         {loading && (
           <View className="absolute top-0 left-0 right-0 bottom-0 z-50 justify-center items-center bg-black/20">

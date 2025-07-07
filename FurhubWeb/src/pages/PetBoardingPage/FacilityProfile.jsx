@@ -1,5 +1,5 @@
 import React from "react";
-import { UserLayoutPage } from "../../components/UserLayoutPage";
+import { UserLayoutPage } from "../../components/Layout/UserLayoutPage";
 
 export const FacilityProfile = () => {
   return (

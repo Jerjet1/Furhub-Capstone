@@ -2,13 +2,13 @@ import React from "react";
 import { FiBell } from "react-icons/fi";
 import { AdminNavbar } from "./AdminNavbar";
 import { BoardingNavbar } from "./BoardingNavbar";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 export const UserLayoutPage = ({ children }) => {
   const location = useLocation();
   const path = location.pathname;
 
-  const isPetboarding = path.includes("/Petboarding/");
-  const isReport = path.includes("/Admin/Reports/");
+  const isPetboarding = path.includes("/Petboarding");
+  const isReport = path.includes("/Admin/Reports");
 
   const navbarSelection = isReport ? "reports" : "default";
 
@@ -22,13 +22,13 @@ export const UserLayoutPage = ({ children }) => {
             {isPetboarding ? (
               <>
                 <Link
-                  to="/Petboarding/Dashboard/"
+                  to="/Petboarding/Dashboard"
                   className="border-b-0 hover:border-b-1 hover:border-b-amber-900 w-full h-full flex justify-center items-center">
                   <h2 className="text-xl font-semibold">Dashboard</h2>
                 </Link>
 
                 <Link
-                  to="/Petboarding/Reports/"
+                  to="/Petboarding/Reports"
                   className="border-b-0 hover:border-b-1 hover:border-b-amber-900 w-full h-full flex justify-center items-center">
                   <h2 className="text-xl font-semibold">Reports</h2>
                 </Link>
@@ -36,13 +36,13 @@ export const UserLayoutPage = ({ children }) => {
             ) : (
               <>
                 <Link
-                  to="/Admin/Dashboard/"
+                  to="/Admin/Dashboard"
                   className="border-b-0 hover:border-b-1 hover:border-b-amber-900 w-full h-full flex justify-center items-center">
                   <h2 className="text-xl font-semibold">Dashboard</h2>
                 </Link>
 
                 <Link
-                  to="/Admin/Reports/"
+                  to="/Admin/Reports"
                   className="border-b-0 hover:border-b-1 hover:border-b-amber-900 w-full h-full flex justify-center items-center">
                   <h2 className="text-xl font-semibold">Reports</h2>
                 </Link>

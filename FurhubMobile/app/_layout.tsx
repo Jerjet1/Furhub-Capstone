@@ -1,6 +1,6 @@
 import { Stack } from "expo-router";
 import { AuthProvider, useAuth } from "@/context/AuthProvider";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, StatusBar, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { RegistrationProvider } from "@/context/RegistrationProvider";
@@ -19,7 +19,12 @@ function RootLayoutNav() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       {!user ? (
-        <Stack.Screen name="auth/LoginPage" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="auth/LoginPage"
+          options={{
+            headerShown: false,
+          }}
+        />
       ) : user.activeRole === "Owner" ? (
         <Stack.Screen name="(owner)" options={{ headerShown: false }} />
       ) : (
@@ -32,6 +37,7 @@ function RootLayoutNav() {
 export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
+      <StatusBar barStyle={"light-content"} />
       <SafeAreaView style={{ flex: 1 }}>
         <AuthProvider>
           <RegistrationProvider>

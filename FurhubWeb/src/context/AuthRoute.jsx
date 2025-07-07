@@ -3,9 +3,9 @@ import { useAuth } from "./AuthProvider";
 import { Navigate } from "react-router-dom";
 
 export const AuthRoute = ({ children }) => {
-  const { user, isInitialized } = useAuth();
+  const { user, isInitialized, isLoading } = useAuth();
 
-  if (!isInitialized) {
+  if (!isInitialized || isLoading) {
     return <div>loading....</div>;
   }
 

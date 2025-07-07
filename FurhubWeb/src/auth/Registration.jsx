@@ -1,15 +1,16 @@
 import React, { useState } from "react";
-import { Layout } from "../components/Layout";
+import { Layout } from "../components/Layout/Layout";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { FiMail, FiLock, FiEye, FiEyeOff, FiImage } from "react-icons/fi";
+import { FiMail, FiLock, FiEye, FiEyeOff } from "react-icons/fi";
 import { MdContactPhone } from "react-icons/md";
 import { PiUserRectangle } from "react-icons/pi";
 import { LottieSpinner } from "../components/LottieSpinner";
-import { ModalService } from "../components/ModalService";
+import { ModalService } from "../components/Modals/ModalService";
 import { handleNumberChange } from "../utils/handler";
-import { registerAuth, requirementsUpload } from "../api/api";
+import { registerAuth, requirementsUpload } from "../api/registerLogin";
+import { ROLES } from "../App";
 
 const validationSchema = yup.object().shape({
   first_name: yup.string().required("field required"),
@@ -46,7 +47,6 @@ export const Registration = () => {
   const [offeredServices, setOfferedServices] = useState([]);
   const [loading, setLoading] = useState(false);
   const [value, setValue] = useState("");
-  const role = "Boarding";
 
   const {
     register,
@@ -86,7 +86,7 @@ export const Registration = () => {
         email,
         password,
         confirm_password,
-        role
+        ROLES.BOARDING
       );
       const user_id = result.user_id;
       const barangayFormData = formData;

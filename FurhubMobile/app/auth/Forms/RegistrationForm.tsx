@@ -12,7 +12,7 @@ import Ionicons from "@expo/vector-icons/FontAwesome";
 import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { router } from "expo-router";
-import Layout from "@/components/Layout";
+import Layout from "@/components/Layouts/Layout";
 import * as Yup from "yup";
 import { registerUser, checkEmailAvailability } from "@/services/api";
 import CustomToast from "@/components/CustomToast";
