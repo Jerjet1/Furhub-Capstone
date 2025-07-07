@@ -24,7 +24,7 @@ export default function OwnerTabs() {
         options={{
           title: "Home",
           tabBarIcon: ({ color }) => (
-            <FontAwesome name="home" size={20} color="#512DA8" />
+            <FontAwesome name="home" size={20} color={color} />
           ),
           tabBarButton: (props) => <CustomTabBarButton {...props} />,
         }}
