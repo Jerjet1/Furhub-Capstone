@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { service_list } from "../api/service";
+import { service_list } from "../../api/service";
 export const ModalService = ({ onClose, onAddService }) => {
   const [services, setServices] = useState([]);
   const [selectedService, setSelectedService] = useState("");

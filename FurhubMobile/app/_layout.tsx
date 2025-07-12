@@ -25,10 +25,24 @@ function RootLayoutNav() {
             headerShown: false,
           }}
         />
-      ) : user.activeRole === "Owner" ? (
+      ) : !user?.is_verified ? (
+        <Stack.Screen
+          name="auth/VerificationPage"
+          options={{ headerShown: false }}
+        />
+      ) : user.activeRole?.toLowerCase() === "owner" ? (
         <Stack.Screen name="(owner)" options={{ headerShown: false }} />
+      ) : user.activeRole?.toLowerCase() === "walker" ? (
+        ["pending", "rejected"].includes(user.status) ? (
+          <Stack.Screen name="auth/PendingProviders" />
+        ) : (
+          <Stack.Screen name="(walker)" options={{ headerShown: false }} />
+        )
       ) : (
-        <Stack.Screen name="(walker)" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="auth/Unauthorize"
+          options={{ headerShown: false }}
+        />
       )}
     </Stack>
   );

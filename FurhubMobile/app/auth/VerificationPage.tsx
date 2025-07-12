@@ -5,7 +5,7 @@ import {
   useBlurOnFulfill,
   useClearByFocusCell,
 } from "react-native-confirmation-code-field";
-import { useLocalSearchParams, router } from "expo-router";
+import { router } from "expo-router";
 import { FontAwesome } from "@expo/vector-icons";
 import CustomToast from "@/components/CustomToast";
 import Layout from "@/components/Layouts/Layout";
@@ -17,8 +17,8 @@ const CELL_COUNT = 6;
 const resendTimer = 240;
 
 export default function VerificationPage() {
-  const { login: setUserAuth } = useAuth();
-  const { email } = useLocalSearchParams();
+  const { registerUser, logout, user } = useAuth();
+  const email = user?.email || "";
   const [value, setValue] = useState("");
   const [timer, setTimer] = useState(resendTimer);
   const [resendAvailable, setResendAvailable] = useState(false);
@@ -42,7 +42,6 @@ export default function VerificationPage() {
     const interval = setInterval(() => {
       setTimer((prev) => prev - 1);
     }, 1000);
-
     return () => clearInterval(interval);
   }, [timer]);
 
@@ -57,8 +56,7 @@ export default function VerificationPage() {
       const result = await verifyEmailAPI(payload);
       const token = result.access;
       const roles = result.roles || [];
-
-      setUserAuth(token, roles);
+      registerUser(token, roles, true, email, result.pet_walker?.status || "");
 
       console.log("Verified!", result);
       setToast({ message: "Email verified successfully!", type: "success" });
@@ -67,7 +65,7 @@ export default function VerificationPage() {
       if (roles.includes("Owner")) {
         router.replace("/(owner)/Home");
       } else if (roles.includes("Walker")) {
-        router.replace("/(walker)/Home");
+        router.replace("/auth/PendingProviders");
       } else {
         router.replace("/auth/LoginPage"); // fallback
       }
@@ -95,7 +93,6 @@ export default function VerificationPage() {
     try {
       if (!resendAvailable) return;
       const result = await resendCodeAPI(String(email));
-      console.log("Resending code...");
       setToast({ message: result.message, type: "success" });
       setTimer(resendTimer);
       setResendAvailable(false);
@@ -135,7 +132,9 @@ export default function VerificationPage() {
       <View className="h-[10rem] w-full justify-start items-start">
         <TouchableOpacity
           className="ml-[20px] mt-4"
-          onPress={() => router.replace("/auth/LoginPage")}>
+          onPress={() => {
+            logout();
+          }}>
           <FontAwesome name="long-arrow-left" size={30} color="white" />
         </TouchableOpacity>
         <Text className="ml-[30px] mt-[10px] text-[37px] text-gray-200 font-poppins">

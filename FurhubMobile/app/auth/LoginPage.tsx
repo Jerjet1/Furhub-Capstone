@@ -41,22 +41,43 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const result = await login(data); // result should include token and roles
-      console.log("login successfully", result);
+      console.log("login successfully", result.email);
+      console.log("is_verified", result.is_verified);
+      console.log("role: ", result.roles);
+      console.log("pet_walker status: ", result.pet_walker);
 
-      // Save token and roles in context
       const token = result.access;
       const roles = result.roles || []; // Adjust based on your backend response
+      const is_verified = result.is_verified !== false;
+      const walkerStatus = result.pet_walker;
 
-      setUserAuth(token, roles); // Update AuthContext
+      setUserAuth(token, roles, is_verified, result.email, walkerStatus || ""); // Update AuthContext
+
+      // check if user is verified
+      if (!is_verified) {
+        router.replace({
+          pathname: "/auth/VerificationPage",
+        });
+        return;
+      }
 
       // Redirect based on role
       if (roles.includes("Owner")) {
         router.replace("/(owner)/Home");
       } else if (roles.includes("Walker")) {
-        router.replace("/(walker)/Home");
+        // Check walker status
+        if (result.pet_walker === "approved") {
+          router.replace("/(walker)/Home");
+        } else {
+          // Redirect to PendingProviders if status is pending or rejected
+          router.replace({
+            pathname: "/auth/PendingProviders",
+            params: walkerStatus,
+          });
+        }
       } else {
         // fallback
-        router.replace("/auth/LoginPage");
+        router.replace("/auth/Unauthorize");
       }
     } catch (error: any) {
       console.log("Login error:", error);
@@ -74,18 +95,6 @@ export default function LoginPage() {
         message = error.join("\n");
       } else if (typeof error === "object") {
         message = Object.values(error).flat().join("\n");
-      }
-
-      if (
-        error?.details === "Account not verified." ||
-        message.toLowerCase().includes("not verified")
-      ) {
-        // Optional: pass email to verification page
-        router.push({
-          pathname: "/auth/VerificationPage",
-          params: { email: data.email },
-        });
-        return;
       }
 
       setToast({

@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ROLES } from "../App";
 export const AuthContext = createContext(null);
 
@@ -21,26 +21,18 @@ export const AuthProvider = ({ children }) => {
         if (token && roles) {
           const parsedRole = JSON.parse(roles);
           const roleToSet = activeRole || parsedRole[0];
+          const is_verified = localStorage.getItem("is_verified") === "true";
+          const email = localStorage.getItem("email");
+          const pet_boarding_status = localStorage.getItem("pet_boarding");
 
           setUser({
             token,
             roles: parsedRole,
             activeRole: roleToSet,
+            is_verified,
+            email,
+            pet_boarding_status,
           });
-          // Wait for state to update before navigating
-          await new Promise((resolve) => setTimeout(resolve, 0));
-          if (
-            window.location.pathname === "/" ||
-            window.location.pathname === "/register"
-          ) {
-            if (parsedRole.includes(ROLES.ADMIN)) {
-              navigate("/Admin/Dashboard");
-            } else if (parsedRole.includes(ROLES.BOARDING)) {
-              navigate("/Petboarding/Dashboard");
-            } else {
-              navigate("/unauthorize");
-            }
-          }
         }
       } catch (error) {
         console.error("Auth load error:", error);
@@ -53,20 +45,44 @@ export const AuthProvider = ({ children }) => {
     loadUserFromStorage();
   }, [navigate]);
 
-  const login = (token, roles) => {
+  const registerUser = (
+    token,
+    roles,
+    is_verified = false,
+    email = "",
+    pet_boarding_status
+  ) => {
+    localStorage.setItem("token", token);
+    localStorage.setItem("roles", JSON.stringify(roles));
+    localStorage.setItem("is_verified", is_verified ? "true" : "false");
+    localStorage.setItem("email", email);
+    localStorage.setItem("pet_boarding", pet_boarding_status);
+
+    setUser({ token, roles, is_verified, email, pet_boarding_status });
+  };
+
+  const login = (
+    token,
+    roles,
+    is_verified = false,
+    email = "",
+    pet_boarding_status
+  ) => {
     localStorage.setItem("token", token);
     localStorage.setItem("roles", JSON.stringify(roles));
     localStorage.setItem("activeRole", roles[0]);
+    localStorage.setItem("is_verified", is_verified ? "true" : "false");
+    localStorage.setItem("email", email);
+    localStorage.setItem("pet_boarding", pet_boarding_status);
 
-    setUser({ token, roles, activeRole: roles[0] });
-
-    if (roles.includes(ROLES.ADMIN)) {
-      navigate("/Admin/Dashboard");
-    } else if (roles.includes(ROLES.BOARDING)) {
-      navigate("/Petboarding/Dashboard");
-    } else {
-      navigate("/unauthorize");
-    }
+    setUser({
+      token,
+      roles,
+      activeRole: roles[0],
+      is_verified,
+      email,
+      pet_boarding_status,
+    });
   };
 
   const setActiveRole = (role) => {
@@ -88,6 +104,9 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("token");
     localStorage.removeItem("roles");
     localStorage.removeItem("activeRole");
+    localStorage.removeItem("is_verified");
+    localStorage.removeItem("email");
+    localStorage.removeItem("pet_boarding");
     setUser(null);
     navigate("/");
   };
@@ -97,6 +116,7 @@ export const AuthProvider = ({ children }) => {
         user,
         login,
         logout,
+        registerUser,
         setActiveRole,
         isInitialized,
         isLoading,

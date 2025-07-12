@@ -9,8 +9,10 @@ import { PiUserRectangle } from "react-icons/pi";
 import { LottieSpinner } from "../components/LottieSpinner";
 import { ModalService } from "../components/Modals/ModalService";
 import { handleNumberChange } from "../utils/handler";
-import { registerAuth, requirementsUpload } from "../api/registerLogin";
+import { registerAuth, requirementsUpload } from "../api/authAPI";
+import { useNavigate } from "react-router-dom";
 import { ROLES } from "../App";
+import { useAuth } from "../context/AuthProvider";
 
 const validationSchema = yup.object().shape({
   first_name: yup.string().required("field required"),
@@ -47,6 +49,8 @@ export const Registration = () => {
   const [offeredServices, setOfferedServices] = useState([]);
   const [loading, setLoading] = useState(false);
   const [value, setValue] = useState("");
+  const { registerUser } = useAuth();
+  const navigate = useNavigate();
 
   const {
     register,
@@ -89,12 +93,39 @@ export const Registration = () => {
         ROLES.BOARDING
       );
       const user_id = result.user_id;
+      const token = result.access;
+      const roles = result.roles || [];
+      const is_verified = result.is_verified === true;
+      const pet_boarding_status = result.pet_boarding;
+      registerUser(
+        token,
+        roles,
+        is_verified,
+        result.email || email,
+        pet_boarding_status
+      );
+
       const barangayFormData = formData;
       barangayFormData.append("user", user_id);
       barangayFormData.append("category", "boarding_requirement");
-      barangayFormData.append("label", "barangayClearance");
+      barangayFormData.append("label", "barangay_clearance");
       barangayFormData.append("image", barangayClearance);
       await requirementsUpload(barangayFormData);
+
+      const validIDFormData = formData;
+      barangayFormData.append("user", user_id);
+      barangayFormData.append("category", "boarding_requirement");
+      barangayFormData.append("label", "valid_id");
+      barangayFormData.append("image", validID);
+      await requirementsUpload(validIDFormData);
+
+      const selfieFormData = formData;
+      barangayFormData.append("user", user_id);
+      barangayFormData.append("category", "boarding_requirement");
+      barangayFormData.append("label", "selfie_with_id");
+      barangayFormData.append("image", selfieWithID);
+      await requirementsUpload(selfieFormData);
+      // navigate("/verify", { state: { email: data.email } });
     } catch (error) {
       console.log("error", error);
     } finally {
@@ -332,7 +363,7 @@ export const Registration = () => {
                 </div>
               </div>
             </div>
-            {/* Service Offered */}
+            {/* Service Offered
             <div className="border-t-1 border-b-1 py-2">
               <h2 className="text-2xl mb-2 font-semibold">Service Offer</h2>
               <button
@@ -355,7 +386,7 @@ export const Registration = () => {
                   </div>
                 )}
               </div>
-            </div>
+            </div> */}
             {/* Requirements Upload container*/}
             <div className="border-b-1 py-2">
               <h2 className="text-2xl mb-2 font-semibold">

@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import (RegisterView, LoginView, VerifyEmailView, 
-                    ResendCodeView,CheckEmailExist, UploadImageView, ServiceView, PendingPetBoarding, PendingPetWalker)
+                    ResendCodeView,CheckEmailExist, UploadImageView, ServiceView, PendingProviders)
 from rest_framework_simplejwt.views import (TokenObtainPairView, TokenRefreshView)
 
 urlpatterns = [
@@ -15,6 +15,7 @@ urlpatterns = [
     path('users/image_upload/', UploadImageView.as_view(), name='image_upload'),
     path('users/service_list/', ServiceView.as_view(), name='service_list'),
     
-    path('admin/pending_pet_walker/', PendingPetWalker.as_view(), name='pet_walker'),
-    path('admin/pending_pet_boarding/', PendingPetBoarding.as_view(), name='pet_boarding'),
+    # path('admin/pending_pet_walker/', PendingPetWalker.as_view(), name='pet_walker'),
+    # path('admin/pending_pet_boarding/', PendingPetBoarding.as_view(), name='pet_boarding'),
+    path('admin/pending_providers/', PendingProviders.as_view(), name='pending_providers')
 ]

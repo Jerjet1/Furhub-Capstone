@@ -11,8 +11,9 @@ import ProgressIndicator from "@/components/ProgressIndicator";
 import Layout from "@/components/Layouts/Layout";
 import { router, useLocalSearchParams } from "expo-router";
 import CustomToast from "@/components/CustomToast";
-import { registerUser, requirementsUpload } from "@/services/api";
+import { registerUserAPI, requirementsUpload } from "@/services/api";
 import { useRegistration } from "@/context/RegistrationProvider";
+import { useAuth } from "@/context/AuthProvider";
 import React, { useState, useEffect } from "react";
 
 export default function RequirementsUpload() {
@@ -22,16 +23,14 @@ export default function RequirementsUpload() {
   const [selfieWithID, setSelfieWithID] = useState<any>(null);
   const { uploadedImages, setUploadedImages, formData, setFormData } =
     useRegistration();
+  const { registerUser } = useAuth();
+
   const [toast, setToast] = useState<{
     message: string;
     type?: "success" | "error";
   } | null>(null);
   const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
-  // const images = [
-  //   uploadedImages.barangayClearance,
-  //   uploadedImages.validID,
-  //   uploadedImages.selfieWithID,
-  // ];
+
   useEffect(() => {
     setBarangayClearance(uploadedImages.barangayClearance);
     setValidID(uploadedImages.validID);
@@ -87,11 +86,25 @@ export default function RequirementsUpload() {
       return;
     }
 
-    // const apiRole = role === "Walker" ? "pet_walker" : "pet_owner";
     // sending data into API
     try {
       // Account Details
-      const result = await registerUser({ ...data, role });
+      const result = await registerUserAPI({ ...data, role });
+      const is_verified = result.is_verified === true;
+      console.log(
+        result.access,
+        result.roles,
+        is_verified,
+        result.email,
+        result.pet_walker
+      );
+      registerUser(
+        result.access,
+        result.roles,
+        is_verified,
+        result.email,
+        result.pet_walker
+      );
       // requirements upload
       const user_id = result.user_id;
 

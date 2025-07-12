@@ -15,6 +15,18 @@ export const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   if (!user) {
     return <Navigate to="/" replace />;
   }
+  if (!user.is_verified) {
+    return <Navigate to="/verify" replace />;
+  }
+
+  if (user.pet_boarding_status === "pending") {
+    console.log("protectedRoute: pending provider");
+    console.log("pet_boarding:", user.pet_boarding_status);
+    return <Navigate to="/pending_providers" replace />;
+  } else if (user.pet_boarding_status === "rejected") {
+    console.log("wala pay pages");
+    return;
+  }
   if (
     allowedRoles.length > 0 &&
     !user.roles.some((role) => allowedRoles.includes(role))
@@ -22,5 +34,7 @@ export const ProtectedRoute = ({ children, allowedRoles = [] }) => {
     // If user does not have the required role, redirect to unauthorized page
     return <Navigate to="/unauthorize" replace />;
   }
+  console.log("protectedRoute: approved provider");
+  console.log("pet_boarding:", user.pet_boarding_status);
   return children;
 };

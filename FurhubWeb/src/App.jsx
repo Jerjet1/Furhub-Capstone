@@ -11,6 +11,8 @@ import { AuthRoute } from "./context/AuthRoute";
 import { FacilityProfile } from "./pages/PetBoardingPage/FacilityProfile";
 import { ManageUser } from "./pages/AdminPage/ManageUser";
 import { ProtectedRoute } from "./auth/ProtectedRoute";
+import { VerificationPage } from "./auth/VerificationPage";
+import { PendingProvider } from "./pages/PendingProvider";
 
 export const ROLES = {
   ADMIN: "Admin",
@@ -39,7 +41,9 @@ export default function App() {
               </AuthRoute>
             }
           />
-          <Route path="/unauthorize" element={<Unauthorize />} />
+          <Route path="/verify" element={<VerificationPage />} />
+          <Route path="/unauthorized" element={<Unauthorize />} />
+          <Route path="/pending_providers" element={<PendingProvider />} />
 
           {/* Admin Routes */}
           <Route

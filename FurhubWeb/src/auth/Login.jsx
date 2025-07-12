@@ -7,7 +7,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { LottieSpinner } from "../components/LottieSpinner";
 import { FiMail, FiLock, FiEye, FiEyeOff } from "react-icons/fi";
-import { loginAuth } from "../api/registerLogin";
+import { loginAuth } from "../api/authAPI";
 import { useAuth } from "../context/AuthProvider";
 
 const validationSchema = yup.object().shape({
@@ -17,10 +17,8 @@ const validationSchema = yup.object().shape({
 export const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { login: setUser } = useAuth();
+  const { login } = useAuth();
   const [showMessage, setShowMessage] = useState(false);
-
-  const navigate = useNavigate();
 
   const {
     register,
@@ -36,17 +34,32 @@ export const Login = () => {
       const result = await loginAuth(email, password);
       const token = result.access;
       const roles = result.roles || [];
-      setUser(token, roles);
-
-      if (roles.includes("Boarding")) {
-        navigate("/Petboarding/Dashboard");
-      } else if (roles.includes("Admin")) {
-        navigate("/Admin/Dashboard");
-      } else {
-        navigate("/unauthorize");
-      }
+      const is_verified = result.is_verified === true;
+      const pet_boarding_status = result.pet_boarding;
+      login(
+        token,
+        roles,
+        is_verified,
+        result.email || email,
+        pet_boarding_status
+      );
     } catch (error) {
       console.log("error", error);
+      let message = "Login failed. Please try again.";
+
+      if (typeof error === "string") {
+        message = error;
+      } else if (typeof error.details === "string") {
+        message = error.details;
+      } else if (typeof error.detail === "string") {
+        message = error.detail;
+      } else if (typeof error.message === "string") {
+        message = error.message;
+      } else if (Array.isArray(error)) {
+        message = error.join("\n");
+      } else if (typeof error === "object") {
+        message = Object.values(error).flat().join("\n");
+      }
     } finally {
       setLoading(false);
     }

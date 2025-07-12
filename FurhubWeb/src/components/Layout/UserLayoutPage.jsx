@@ -1,7 +1,7 @@
 import React from "react";
 import { FiBell } from "react-icons/fi";
-import { AdminNavbar } from "./AdminNavbar";
-import { BoardingNavbar } from "./BoardingNavbar";
+import { AdminNavbar } from "../Navbar/AdminNavbar";
+import { BoardingNavbar } from "../Navbar/BoardingNavbar";
 import { Link, useLocation } from "react-router-dom";
 export const UserLayoutPage = ({ children }) => {
   const location = useLocation();

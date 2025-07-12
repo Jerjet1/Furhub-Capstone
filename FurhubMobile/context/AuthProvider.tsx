@@ -13,8 +13,24 @@ type AuthContextType = {
     token: string;
     roles: string[];
     activeRole: string;
+    is_verified: boolean;
+    email: string;
+    status: string;
   } | null;
-  login: (token: string, roles: string[]) => void;
+  login: (
+    token: string,
+    roles: string[],
+    is_verified: boolean,
+    email: string,
+    status: string
+  ) => void;
+  registerUser: (
+    token: string,
+    roles: string[],
+    is_verified: boolean,
+    email: string,
+    status: string
+  ) => void;
   setActiveRole: (role: string) => void;
   logout: () => void;
   isInitialized: boolean;
@@ -33,24 +49,57 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       const token = await SecureStore.getItemAsync("token");
       const roles = await SecureStore.getItemAsync("roles");
       const activeRole = await SecureStore.getItemAsync("activeRole");
-
+      const email = await SecureStore.getItemAsync("email");
+      const is_verified =
+        (await SecureStore.getItemAsync("is_verified")) === "true";
+      const status = (await SecureStore.getItemAsync("pet_walker")) || "";
       if (token && roles) {
         setUser({
           token,
           roles: JSON.parse(roles),
           activeRole: activeRole || JSON.parse(roles)[0],
+          is_verified,
+          email: email || "",
+          status,
         });
+        setIsInitialized(true);
+      } else {
+        setIsInitialized(true);
       }
-      setIsInitialized(true);
     };
     loadUserFromStorage();
   }, []);
 
-  const login = async (token: string, roles: string[]) => {
+  const registerUser = async (
+    token: string,
+    roles: string[],
+    is_verified: boolean = false,
+    email: string = "",
+    status: string = ""
+  ) => {
     await SecureStore.setItemAsync("token", token);
     await SecureStore.setItemAsync("roles", JSON.stringify(roles));
     await SecureStore.setItemAsync("activeRole", roles[0]); // optional
-    setUser({ token, roles, activeRole: roles[0] });
+    await SecureStore.setItemAsync("is_verified", String(is_verified));
+    await SecureStore.setItemAsync("email", email);
+    await SecureStore.setItemAsync("pet_walker", status);
+    setUser({ token, roles, activeRole: roles[0], is_verified, email, status });
+  };
+
+  const login = async (
+    token: string,
+    roles: string[],
+    is_verified: boolean = false,
+    email: string = "",
+    status: string = ""
+  ) => {
+    await SecureStore.setItemAsync("token", token);
+    await SecureStore.setItemAsync("roles", JSON.stringify(roles));
+    await SecureStore.setItemAsync("activeRole", roles[0]); // optional
+    await SecureStore.setItemAsync("is_verified", String(is_verified));
+    await SecureStore.setItemAsync("email", email);
+    await SecureStore.setItemAsync("pet_walker", status);
+    setUser({ token, roles, activeRole: roles[0], is_verified, email, status });
   };
 
   const setActiveRole = async (role: string) => {
@@ -70,6 +119,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     await SecureStore.deleteItemAsync("token");
     await SecureStore.deleteItemAsync("roles");
     await SecureStore.deleteItemAsync("activeRole");
+    await SecureStore.deleteItemAsync("email");
+    await SecureStore.deleteItemAsync("is_verified");
+    await SecureStore.deleteItemAsync("pet_walker");
     await LogoutAPI();
     setUser(null);
     router.replace("/auth/LoginPage");
@@ -77,7 +129,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   return (
     <AuthContext.Provider
-      value={{ user, login, logout, setActiveRole, isInitialized }}>
+      value={{
+        user,
+        login,
+        logout,
+        setActiveRole,
+        isInitialized,
+        registerUser,
+      }}>
       {children}
     </AuthContext.Provider>
   );

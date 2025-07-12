@@ -14,10 +14,11 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { router } from "expo-router";
 import Layout from "@/components/Layouts/Layout";
 import * as Yup from "yup";
-import { registerUser, checkEmailAvailability } from "@/services/api";
+import { checkEmailAvailability, registerUserAPI } from "@/services/api";
 import CustomToast from "@/components/CustomToast";
 import ProgressIndicator from "@/components/ProgressIndicator";
 import { ActivityIndicator } from "react-native";
+import { useAuth } from "@/context/AuthProvider";
 import { useRegistration } from "@/context/RegistrationProvider";
 import React, { useState, useEffect } from "react";
 
@@ -53,6 +54,7 @@ export default function RegistrationForm() {
     type?: "success" | "error";
   } | null>(null);
   const { formData, setFormData, setUploadedImages } = useRegistration();
+  const { registerUser } = useAuth();
 
   const steps =
     role === "Walker"
@@ -64,7 +66,6 @@ export default function RegistrationForm() {
     handleSubmit,
     setValue,
     formState: { errors },
-    reset,
   } = useForm({
     resolver: yupResolver(formValidation),
     mode: "onChange",
@@ -95,7 +96,19 @@ export default function RegistrationForm() {
           params: { ...data, role }, // pass form data and role
         });
       } else {
-        const result = await registerUser({ ...data, role });
+        const result = await registerUserAPI({ ...data, role });
+        const is_verified = result.is_verified === true;
+        console.log(result.email, result.roles, result.pet_walker);
+
+        // Save user data in context
+        registerUser(
+          result.access,
+          result.roles,
+          is_verified,
+          data.email,
+          result.pet_walker
+        );
+
         // ✅ Reset the form after successful registration
         setUploadedImages({
           barangayClearance: null,
@@ -114,7 +127,6 @@ export default function RegistrationForm() {
         console.log("Success", result);
         router.replace({
           pathname: "/auth/VerificationPage",
-          params: { email: data.email },
         });
         // return result;
       }

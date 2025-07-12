@@ -120,7 +120,7 @@ WSGI_APPLICATION = 'BackendServer.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'furhub',
+        'NAME': 'furhubv2',
         'USER': 'postgres',
         'PASSWORD': '1190716',
         'HOST': 'localhost',
