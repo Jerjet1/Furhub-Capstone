@@ -6,12 +6,17 @@ import { FiChevronLeft } from "react-icons/fi";
 import { Layout } from "../components/Layout/Layout";
 import { verifyEmail } from "../api/authAPI";
 import { ROLES } from "../App";
+import { ResendButtom } from "../components/Buttons/ResendButtom";
+import { resendCode } from "../utils/resendCode";
 
 export const VerificationPage = () => {
   const [otp, setOTP] = useState("");
   const { user, logout, registerUser } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const email =
+    location.state?.email || user?.email || localStorage.getItem("email");
 
   useEffect(() => {
     if (!user) {
@@ -86,32 +91,40 @@ export const VerificationPage = () => {
     logout();
   };
 
-  const email =
-    location.state?.email || user?.email || localStorage.getItem("email");
   return (
-    <div className="min-h-screen min-w-screen flex flex-co">
-      <main className="flex-1 flex items-center justify-start p-5 ">
-        <div className="w-[25rem] h-[29rem] flex flex-col items-start justify-start bg-white/20 p-10 rounded-2xl shadow-xl/30">
-          <div className="flex-1 w-full h-full">
+    <Layout>
+      <div className="w-[25rem] h-full flex flex-col items-start justify-start py-5">
+        <div className="flex-1 w-full h-full space-y-4">
+          <button
+            onClick={handleBack}
+            className="flex flex-row hover:bg-gray-200/55 pr-2 rounded-sm cursor-pointer">
+            <FiChevronLeft size={25} />
+            Back to Login
+          </button>
+          <h1 className="text-[20px] font-open-sans font-semibold">
+            Verify your Account
+          </h1>
+          <p>Verification code has sent to your email: {email}</p>
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <InputOTP onComplete={handleOTPChange} />
+            <div className="flex justify-start items-center space-x-1">
+              <p>Didn't receive a code?</p>
+              <ResendButtom onResend={() => resendCode(email)} />
+            </div>
             <button
-              onClick={handleBack}
-              className="flex flex-row w-fit hover:bg-gray-200/55 px-2 py-1 rounded-sm cursor-pointer">
-              <FiChevronLeft size={25} />
-              Back to Login
+              className="w-full h-10 bg-indigo-500 hover:bg-indigo-900 text-xl font-semibold rounded-sm text-white cursor-pointer"
+              type="submit">
+              Submit
             </button>
-            <h1>Verify your Account</h1>
-            <p>Verification code has sent to your email: {email}</p>
-            <form onSubmit={handleSubmit}>
-              <InputOTP onComplete={handleOTPChange} />
-              <button
-                className="w-full h-10 bg-indigo-500 text-xl font-semibold rounded-sm"
-                type="submit">
-                Submit
-              </button>
-            </form>
-          </div>
+          </form>
         </div>
-      </main>
-    </div>
+      </div>
+      <div className="flex-1 flex justify-center items-center">
+        <img
+          src="/src/assets/catdog.jpg"
+          className="object-fill h-[90%] rounded-md"
+        />
+      </div>
+    </Layout>
   );
 };

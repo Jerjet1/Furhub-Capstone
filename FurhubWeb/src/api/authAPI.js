@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://192.168.1.2:8000/"; //bogo mani ip address
+export const API_URL = "http://192.168.1.12:8000/"; //bogo mani ip address
 const loginURL = new URL("users/login/", API_URL).toString();
 const registerURL = new URL("users/register/", API_URL).toString();
 const boardingRequirementsURL = new URL(

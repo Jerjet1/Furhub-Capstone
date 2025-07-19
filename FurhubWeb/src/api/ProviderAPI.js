@@ -1,6 +1,6 @@
 import { axios } from "axios";
+import { API_URL } from "./authAPI";
 
-const API_URL = "http://192.168.1.2:8000/"; //bogo mani ip address
 const PENDING_PROVIDERS = new URL(
   "admin/pending_providers/",
   API_URL

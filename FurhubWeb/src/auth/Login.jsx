@@ -1,21 +1,22 @@
-import React from "react";
-import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useEffect } from "react";
+import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Layout } from "../components/Layout/Layout";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { LottieSpinner } from "../components/LottieSpinner";
-import { FiMail, FiLock, FiEye, FiEyeOff } from "react-icons/fi";
 import { loginAuth } from "../api/authAPI";
 import { useAuth } from "../context/AuthProvider";
+import { InputEmail } from "../components/Inputs/InputEmail";
+import { InputPassword } from "../components/Inputs/InputPassword";
+import { ImageLayout } from "../components/Layout/ImageLayout";
 
 const validationSchema = yup.object().shape({
   email: yup.string().email("invalid email").required("Email is required"),
   password: yup.string().required("password is required"),
 });
 export const Login = () => {
-  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const [showMessage, setShowMessage] = useState(false);
@@ -67,8 +68,8 @@ export const Login = () => {
 
   return (
     <Layout>
-      <div className="w-[25rem] h-[29rem] flex flex-col items-center justify-center bg-white/20 p-10 rounded-2xl shadow-xl/30">
-        <div className="flex flex-col w-full h-fit justify-normal items-center mb-[30px]">
+      <div className="w-[30rem] h-full flex flex-col items-center justify-center p-10">
+        <div className="flex flex-col w-full h-fit justify-center items-start mb-[30px]">
           <h1 className="text-[50px] font-open-sans">Login</h1>
           <p className="text-[20px] font-open-sans">Welcome to Furhub</p>
         </div>
@@ -90,21 +91,13 @@ export const Login = () => {
             <label htmlFor="email" className="block text-black mb-2">
               Email
             </label>
-            <div
-              className={`flex items-center border ${
-                errors.email ? "border-red-500" : "border-black"
-              } rounded px-3 py-2 focus-within:ring-1`}>
-              <FiMail className="to-black mr-2" />
-              <input
-                type="email"
-                id="email"
-                {...register("email")}
-                placeholder="Enter your email"
-                className={`w-full outline-none bg-transparent`}
-                autoCapitalize="none"
-                autoComplete="off"
-              />
-            </div>
+            <InputEmail
+              id="email"
+              name="email"
+              placeholder="Enter your email"
+              register={register}
+              errors={errors.email}
+            />
             {errors.email && (
               <p className="text-red-500 text-sm">{errors.email.message}</p>
             )}
@@ -115,33 +108,22 @@ export const Login = () => {
             <label htmlFor="password" className="block text-black mb-2">
               Password
             </label>
-            <div
-              className={`flex items-center border ${
-                errors.password ? "border-red-500" : "border-black"
-              } rounded px-3 py-2 focus-within:ring-1`}>
-              <FiLock className="to-black mr-2" />
-              <input
-                type={showPassword ? "text" : "password"}
-                id="password"
-                placeholder="Enter your password"
-                {...register("password")}
-                className="w-full outline-none bg-transparent"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="focus:outline-none text-black"
-                tabIndex={-1} // prevent tabbing into the icon button
-              >
-                {showPassword ? <FiEyeOff /> : <FiEye />}
-              </button>
-            </div>
+            <InputPassword
+              id="password"
+              name="password"
+              placeholder="Enter your password"
+              register={register}
+              errors={errors.password}
+            />
             {errors.password && (
               <p className="text-red-500 text-sm">{errors.password.message}</p>
             )}
           </div>
           <div className="flex justify-end">
-            <Link className="hover:text-blue-950 underline" tabIndex={-1}>
+            <Link
+              className="hover:text-blue-950 underline"
+              tabIndex={-1}
+              to={"/forgot-password"}>
               <p className="mt-2">Forgot password?</p>
             </Link>
           </div>
@@ -151,7 +133,16 @@ export const Login = () => {
             Login
           </button>
         </form>
+        <div className="flex flex-row justify-center mt-5 gap-1">
+          <p>Dont have an account?</p>
+          <Link to="/register">
+            <h2 className="font-semibold text-blue-500 underline hover:text-blue-900">
+              Register
+            </h2>
+          </Link>
+        </div>
       </div>
+      <ImageLayout src="/src/assets/catdog.jpg" />
     </Layout>
   );
 };

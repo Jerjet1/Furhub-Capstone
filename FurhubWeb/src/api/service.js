@@ -1,6 +1,6 @@
 import axios from "axios";
+import { API_URL } from "./authAPI";
 
-const API_URL = "http://192.168.1.2:8000/"; //bogo mani ip address
 const serviceURL = new URL("users/service_list/", API_URL).toString();
 export const service_list = async () => {
   try {

@@ -1,21 +1,82 @@
-# from django.shortcuts import render
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth import authenticate
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
-from .models import User_logs, User_roles, Users, Roles, Service, PetOwner, PetBoarding, PetWalker
+from FurhubApi.models import User_logs, User_roles, Users, PetOwner, PetBoarding, PetWalker
 from django.db import transaction
 from rest_framework.parsers import MultiPartParser, FormParser
-from .permission import IsAdminRole
 # import socket
 from django.utils import timezone
-from datetime import timedelta
-from .utils import send_verification_email, get_client_ip
-from FurhubApi.serializers import RegisterSerializer, LoginSerializer, EmailVerificationSerializer, UploadImageSerializer, ServiceSerializer, PetBoardingSerializer, PetWalkerSerializer
-# Create your views here.
+from FurhubApi.utils import send_verification_email, get_client_ip
+from FurhubApi.serializers import (RegisterSerializer, LoginSerializer, EmailVerificationSerializer, 
+                                   UploadImageSerializer, ForgotPasswordSerializer, VerifyCodeSerializer, ResetPasswordSerializer)
 
+class LoginView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = LoginSerializer(data=request.data)
+
+        if serializer.is_valid():
+            email = serializer.validated_data['email']
+            password = serializer.validated_data['password']
+
+            user = authenticate(email = email, password = password)
+
+            if user is not None:
+
+                User_logs.objects.create(
+                    user = user,
+                    action = "Login",
+                    ip_address = get_client_ip(request),
+                )
+                
+                refresh = RefreshToken.for_user(user)
+                user_roles = User_roles.objects.filter(user = user).select_related('role')
+                roles = [ur.role.role_name for ur in user_roles]
+
+                petwalker_status = None
+                petboarding_status = None
+
+                if PetWalker.objects.filter(user=user).exists():
+                    petwalker = PetWalker.objects.get(user=user)
+                    petwalker_status = petwalker.status
+                
+                if PetBoarding.objects.filter(user=user).exists():
+                    petboarding = PetBoarding.objects.get(user=user)
+                    petboarding_status = petboarding.status
+
+                if not user.is_verified:
+                    if user.code_expiry is None or user.code_expiry < timezone.now():
+                        send_verification_email(user)
+                    
+                    return Response({
+                        "access": str(refresh.access_token),
+                        "refresh": str(refresh),
+                        "roles": roles,
+                        "is_verified": user.is_verified,
+                        "pet_walker": petwalker_status,
+                        "pet_boarding": petboarding_status,
+                        "email": user.email,
+                        "details": "Account not verified."
+                    },status=status.HTTP_200_OK)
+                
+                # print("LoginView is_verified:", user.is_verified)
+                return Response({
+                    "access": str(refresh.access_token),
+                    "refresh": str(refresh),
+                    "roles": roles,
+                    "email": user.email,
+                    "is_verified": user.is_verified,
+                    "pet_walker": petwalker_status,
+                    "pet_boarding": petboarding_status,
+                }, status=status.HTTP_200_OK)
+            
+            return Response({"details": "Invalid credentials."}, status=status.HTTP_401_UNAUTHORIZED)       
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 class RegisterView(APIView):
     permission_classes = [AllowAny]
 
@@ -77,70 +138,6 @@ class CheckEmailExist(APIView):
         if not exists:
             return Response(status=status.HTTP_200_OK)
         return Response({"exist": exists}, status=status.HTTP_400_BAD_REQUEST)
-    
-class LoginView(APIView):
-    permission_classes = [AllowAny]
-
-    def post(self, request):
-        serializer = LoginSerializer(data=request.data)
-
-        if serializer.is_valid():
-            email = serializer.validated_data['email']
-            password = serializer.validated_data['password']
-
-            user = authenticate(email = email, password = password)
-
-            if user is not None:
-
-                User_logs.objects.create(
-                    user = user,
-                    action = "Login",
-                    ip_address = get_client_ip(request),
-                )
-                
-                refresh = RefreshToken.for_user(user)
-                user_roles = User_roles.objects.filter(user = user).select_related('role')
-                roles = [ur.role.role_name for ur in user_roles]
-
-                petwalker_status = None
-                petboarding_status = None
-
-                if PetWalker.objects.filter(user=user).exists():
-                    petwalker = PetWalker.objects.get(user=user)
-                    petwalker_status = petwalker.status
-                
-                if PetBoarding.objects.filter(user=user).exists():
-                    petboarding = PetBoarding.objects.get(user=user)
-                    petboarding_status = petboarding.status
-
-                if not user.is_verified:
-                    if user.code_expiry is None or user.code_expiry < timezone.now():
-                        send_verification_email(user)
-                    
-                    return Response({
-                        "access": str(refresh.access_token),
-                        "refresh": str(refresh),
-                        "roles": roles,
-                        "is_verified": user.is_verified,
-                        "pet_walker": petwalker_status,
-                        "pet_boarding": petboarding_status,
-                        "email": user.email,
-                        "details": "Account not verified."
-                    },status=status.HTTP_200_OK)
-                
-                print("LoginView is_verified:", user.is_verified)
-                return Response({
-                    "access": str(refresh.access_token),
-                    "refresh": str(refresh),
-                    "roles": roles,
-                    "email": user.email,
-                    "is_verified": user.is_verified,
-                    "pet_walker": petwalker_status,
-                    "pet_boarding": petboarding_status,
-                }, status=status.HTTP_200_OK)
-            
-            return Response({"details": "Invalid credentials."}, status=status.HTTP_401_UNAUTHORIZED)       
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class VerifyEmailView(APIView):
     permission_classes = [AllowAny]
@@ -175,7 +172,7 @@ class VerifyEmailView(APIView):
                 "pet_boarding": petboarding_status,
                 },status=status.HTTP_200_OK)
         return Response(serializer.errors, status=400)
-    
+
 class ResendCodeView(APIView):
     def post(self, request):
         email = request.data.get("email")
@@ -200,53 +197,35 @@ class UploadImageView(APIView):
         return Response(
             serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-class ServiceView(APIView):
+class ForgotPasswordView(APIView):
     permission_classes = [AllowAny]
 
-    def get(self, request):
-        services = Service.objects.all()
-        serializer = ServiceSerializer(services, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-# class PendingPetWalker(APIView):
-#     permission_classes = [IsAuthenticated, IsAdminRole]
-
-#     def get(self, request):
-#         queryset = PetWalker.objects.filter(status='pending')
-#         serializer = PetWalkerSerializer(queryset, many=True)
-#         return Response(serializer.data, status=status.HTTP_200_OK)
-
-# class PendingPetBoarding(APIView):
-#     permission_classes = [IsAuthenticated, IsAdminRole]
-
-#     def get(self, request):
-#         queryset = PetBoarding.objects.filter(status='pending')
-#         serializer = PetBoardingSerializer(queryset, many=True)
-#         return Response(serializer.data, status=status.HTTP_200_OK)
+    def post(self, request):
+        serializer = ForgotPasswordSerializer(data = request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Verification code has been sent to your email."}, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-class PendingProviders(APIView):
-    permission_classes = [IsAuthenticated, IsAdminRole]
+class VerifyCodeView(APIView):
+    permission_classes = [AllowAny]
 
-    def get(self, request):
-        pet_walker_queryset = PetWalker.objects.filter(status='pending')
-        pet_walker_serializer = PetWalkerSerializer(pet_walker_queryset, many=True)
+    def post(self, request):
+        serializer = VerifyCodeSerializer(data = request.data)
+        if serializer.is_valid():
+            return Response({"message": "Verified Successfuly"}, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        pet_boarding_queryset = PetBoarding.objects.filter(status='pending')
-        pet_boarding_serializer = PetBoardingSerializer(pet_boarding_queryset, many=True)
+class ResetPasswordView(APIView):
+    permission_classes = [AllowAny]
 
-        data = {
-            "pet_walkers": pet_walker_serializer.data,
-            "pet_boardings": pet_boarding_serializer.data,
-        }
-        return Response(data, status=status.HTTP_200_OK)
-    
-# class BulkUploadImageView(APIView):
-#     parser_classes = [MultiPartParser, FormParser]
-#     permission_classes = [AllowAny]
-
-#     def post(self, request):
-#         serializer = BulkUploadImageSerializer(data=request.data)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response({"message": "Images uploaded successfully."}, status=status.HTTP_201_CREATED)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def post(self, request):
+        serializer = ResetPasswordSerializer(data = request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Password change successfuly"}, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        

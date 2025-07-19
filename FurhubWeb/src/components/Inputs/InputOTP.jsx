@@ -1,13 +1,13 @@
 import React, { useState, useRef } from "react";
 
-export const InputOTP = ({ onComplete }) => {
+export const InputOTP = ({ onComplete, errors }) => {
   const [code, setCode] = useState("");
 
   const handleChange = (e) => {
     const value = e.target.value;
     if (/^\d{0,6}$/.test(value)) {
       setCode(value);
-      if (value.length === 6 && onComplete) {
+      if (onComplete) {
         onComplete(value);
       }
     }
@@ -23,7 +23,9 @@ export const InputOTP = ({ onComplete }) => {
         inputMode="numeric"
         placeholder="Enter 6 digit Code"
         autoFocus
-        className="w-full h-[50px]  text-[25px]  border-1 rounded-sm p-2"
+        className={`w-full h-[50px]  text-[25px]  border-1 rounded-sm p-2 ${
+          errors ? "border-red-500" : "border-black"
+        }`}
       />
     </div>
   );

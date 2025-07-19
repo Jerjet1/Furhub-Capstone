@@ -3,16 +3,17 @@ import { Layout } from "../components/Layout/Layout";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { FiMail, FiLock, FiEye, FiEyeOff } from "react-icons/fi";
-import { MdContactPhone } from "react-icons/md";
-import { PiUserRectangle } from "react-icons/pi";
 import { LottieSpinner } from "../components/LottieSpinner";
 import { ModalService } from "../components/Modals/ModalService";
-import { handleNumberChange } from "../utils/handler";
 import { registerAuth, requirementsUpload } from "../api/authAPI";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { ROLES } from "../App";
 import { useAuth } from "../context/AuthProvider";
+import { ImageLayout } from "../components/Layout/ImageLayout";
+import { InputName } from "../components/Inputs/InputName";
+import { InputPhone } from "../components/Inputs/InputPhone";
+import { InputEmail } from "../components/Inputs/InputEmail";
+import { InputPassword } from "../components/Inputs/InputPassword";
 
 const validationSchema = yup.object().shape({
   first_name: yup.string().required("field required"),
@@ -39,8 +40,6 @@ const validationSchema = yup.object().shape({
 });
 
 export const Registration = () => {
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [barangayClearance, setBarangayClearance] = useState(null);
   const [validID, setValidID] = useState(null);
   const [selfieWithID, setSelfieWithID] = useState(null);
@@ -48,9 +47,7 @@ export const Registration = () => {
   const [showServiceModal, setShowServiceModal] = useState(false);
   const [offeredServices, setOfferedServices] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [value, setValue] = useState("");
   const { registerUser } = useAuth();
-  const navigate = useNavigate();
 
   const {
     register,
@@ -125,7 +122,6 @@ export const Registration = () => {
       barangayFormData.append("label", "selfie_with_id");
       barangayFormData.append("image", selfieWithID);
       await requirementsUpload(selfieFormData);
-      // navigate("/verify", { state: { email: data.email } });
     } catch (error) {
       console.log("error", error);
     } finally {
@@ -139,8 +135,8 @@ export const Registration = () => {
 
   return (
     <Layout>
-      <div className="w-[34rem] h-full flex flex-col items-center justify-center bg-white/20 px-10 py-5 rounded-2xl shadow-xl/30 mt-2">
-        <div className="flex w-full h-fit justify-start items-start mb-4">
+      <div className="w-[30rem] h-full flex flex-col items-center justify-center py-5">
+        <div className="flex w-full h-fit justify-start items-start">
           <h1 className="text-[2rem] font-open-sans font-semibold">
             Register as Pet Boarding
           </h1>
@@ -166,8 +162,8 @@ export const Registration = () => {
           {/* Registration form */}
           <form onSubmit={handleSubmit(registrationForm)}>
             {/* Account details header */}
-            <h2 className="text-2xl mb-2 font-semibold">Account Details</h2>
-            <div className="border-t-1 py-5">
+            <h2 className="text-2xl mb-1 font-semibold">Account Details</h2>
+            <div className="border-t-1 py-2">
               {/* name of user container */}
               <div className="mb-2 flex lg:flex-row w-full space-x-4">
                 {/* firstname input*/}
@@ -175,21 +171,13 @@ export const Registration = () => {
                   <label htmlFor="first_name" className="block text-black mb-2">
                     First Name
                   </label>
-                  <div
-                    className={`flex items-center border ${
-                      errors.first_name ? "border-red-500" : "border-black"
-                    } rounded px-3 py-2 focus-within:ring-1`}>
-                    <PiUserRectangle className="to-black mr-2" />
-                    <input
-                      type="first_name"
-                      id="first_name"
-                      {...register("first_name")}
-                      placeholder="Enter your First name"
-                      className="w-full outline-none bg-transparent"
-                      autoCapitalize="characters"
-                      autoComplete="off"
-                    />
-                  </div>
+                  <InputName
+                    id="first_name"
+                    name="first_name"
+                    placeholder="Enter your First name"
+                    register={register}
+                    errors={errors.first_name}
+                  />
                   {errors.first_name && (
                     <p className="text-red-500 text-sm">
                       {errors.first_name.message}
@@ -201,21 +189,13 @@ export const Registration = () => {
                   <label htmlFor="last_name" className="block text-black mb-2">
                     Last Name
                   </label>
-                  <div
-                    className={`flex items-center border ${
-                      errors.last_name ? "border-red-500" : "border-black"
-                    } rounded px-3 py-2 focus-within:ring-1`}>
-                    <PiUserRectangle className="to-black mr-2" />
-                    <input
-                      type="last_name"
-                      id="last_name"
-                      {...register("last_name")}
-                      placeholder="Enter your Lastname"
-                      className="w-full outline-none bg-transparent"
-                      autoCapitalize="characters"
-                      autoComplete="off"
-                    />
-                  </div>
+                  <InputName
+                    id="last_name"
+                    name="last_name"
+                    placeholder="Enter your Lastname"
+                    register={register}
+                    errors={errors.last_name}
+                  />
                   {errors.last_name && (
                     <p className="text-red-500 text-sm">
                       {errors.last_name.message}
@@ -231,24 +211,13 @@ export const Registration = () => {
                   <label htmlFor="phone_no" className="block text-black mb-2">
                     Phone Number
                   </label>
-                  <div
-                    className={`flex items-center border ${
-                      errors.phone_no ? "border-red-500" : "border-black"
-                    } rounded px-3 py-2 focus-within:ring-1`}>
-                    <MdContactPhone className="to-black mr-2" />
-                    <input
-                      type="text"
-                      id="phone_no"
-                      {...register("phone_no")}
-                      value={value}
-                      maxLength={11}
-                      onChange={(e) => handleNumberChange(e, setValue)}
-                      placeholder="09"
-                      autoCapitalize="none"
-                      autoComplete="off"
-                      className="w-full outline-none bg-transparent"
-                    />
-                  </div>
+                  <InputPhone
+                    id="phone_no"
+                    name="phone_no"
+                    placeholder="09"
+                    register={register}
+                    errors={errors.phone_no}
+                  />
                   {errors.phone_no && (
                     <p className="text-red-500 text-sm">
                       {errors.phone_no.message}
@@ -261,21 +230,13 @@ export const Registration = () => {
                   <label htmlFor="email" className="block text-black mb-2">
                     Email
                   </label>
-                  <div
-                    className={`flex items-center border ${
-                      errors.email ? "border-red-500" : "border-black"
-                    } rounded px-3 py-2 focus-within:ring-1`}>
-                    <FiMail className="to-black mr-2" />
-                    <input
-                      type="email"
-                      id="email"
-                      {...register("email")}
-                      placeholder="sample@mail.com"
-                      className="w-full outline-none bg-transparent"
-                      autoCapitalize="characters"
-                      autoComplete="off"
-                    />
-                  </div>
+                  <InputEmail
+                    id="email"
+                    name="email"
+                    placeholder="sample@mail.com"
+                    register={register}
+                    errors={errors.email}
+                  />
                   {errors.email && (
                     <p className="text-red-500 text-sm">
                       {errors.email.message}
@@ -291,29 +252,13 @@ export const Registration = () => {
                   <label htmlFor="password" className="block text-black mb-2">
                     Password
                   </label>
-                  <div
-                    className={`flex items-center border ${
-                      errors.password ? "border-red-500" : "border-black"
-                    } rounded px-3 py-2 focus-within:ring-1`}>
-                    <FiLock className="to-black mr-2" />
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      id="password"
-                      {...register("password")}
-                      placeholder="password"
-                      className="w-full outline-none bg-transparent"
-                      autoCapitalize="characters"
-                      autoComplete="off"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="focus:outline-none text-black"
-                      tabIndex={-1} // prevent tabbing into the icon button
-                    >
-                      {showPassword ? <FiEyeOff /> : <FiEye />}
-                    </button>
-                  </div>
+                  <InputPassword
+                    id="password"
+                    name="password"
+                    placeholder="password"
+                    register={register}
+                    errors={errors.password}
+                  />
                   {errors.password && (
                     <p className="text-red-500 text-sm">
                       {errors.password.message}
@@ -328,33 +273,13 @@ export const Registration = () => {
                     className="block text-black mb-2">
                     Confirm Password
                   </label>
-                  <div
-                    className={`flex items-center border ${
-                      errors.confirm_password
-                        ? "border-red-500"
-                        : "border-black"
-                    } rounded px-3 py-2 focus-within:ring-1`}>
-                    <FiLock className="to-black mr-2" />
-                    <input
-                      type={showConfirmPassword ? "text" : "password"}
-                      id="confirm_password"
-                      {...register("confirm_password")}
-                      placeholder="Confirm password"
-                      className="w-full outline-none bg-transparent"
-                      autoCapitalize="characters"
-                      autoComplete="off"
-                    />
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setShowConfirmPassword(!showConfirmPassword)
-                      }
-                      className="focus:outline-none text-black"
-                      tabIndex={-1} // prevent tabbing into the icon button
-                    >
-                      {showConfirmPassword ? <FiEyeOff /> : <FiEye />}
-                    </button>
-                  </div>
+                  <InputPassword
+                    id="confirm_password"
+                    name="confirm_password"
+                    placeholder="Confirm password"
+                    register={register}
+                    errors={errors.confirm_password}
+                  />
                   {errors.confirm_password && (
                     <p className="text-red-500 text-sm">
                       {errors.confirm_password.message}
@@ -481,7 +406,16 @@ export const Registration = () => {
             </button>
           </form>
         </div>
+        <div className="flex flex-row justify-center mt-5 gap-1">
+          <p>Already have an account?</p>
+          <Link to="/">
+            <h2 className="font-semibold text-blue-500 underline hover:text-blue-900">
+              Login
+            </h2>
+          </Link>
+        </div>
       </div>
+      <ImageLayout src="/src/assets/catdog.jpg" />
     </Layout>
   );
 };
