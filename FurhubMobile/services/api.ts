@@ -1,7 +1,7 @@
 import { debouncePromise } from "@/utils/debounce";
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
-const API_URL = "http://192.168.1.2:8000/"; //atay mani agad man sa ip address
+export const API_URL = "http://192.168.1.12:8000/"; //atay mani agad man sa ip address
 const registerURL = new URL("users/register/", API_URL).toString();
 const checkEmailURL = new URL("users/check-email", API_URL).toString();
 const walkerRequirementsURL = new URL(

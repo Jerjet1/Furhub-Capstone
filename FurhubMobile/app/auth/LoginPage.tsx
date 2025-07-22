@@ -1,14 +1,6 @@
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  Pressable,
-  ScrollView,
-} from "react-native";
+import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { router } from "expo-router";
-import Ionicons from "@expo/vector-icons/Ionicons";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { ActivityIndicator } from "react-native";
 import { login } from "@/services/api";
@@ -17,15 +9,18 @@ import * as Yup from "yup";
 import React, { useState } from "react";
 import { useAuth } from "@/context/AuthProvider";
 import CustomToast from "@/components/CustomToast";
+import InputEmail from "@/components/Inputs/InputEmail";
+import InputPassword from "@/components/Inputs/InputPassword";
 
 export default function LoginPage() {
   const [toast, setToast] = useState<{
     message: string;
     type?: "success" | "error";
   } | null>(null);
-  const [showPassword, setShowPassword] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const { login: setUserAuth } = useAuth();
+
   const formValidation = Yup.object().shape({
     email: Yup.string().email("invalid email").required("Email is required"),
     password: Yup.string().required("password is required"),
@@ -140,70 +135,35 @@ export default function LoginPage() {
         </View>
 
         {/* Form Container */}
-        <View className="w-[80%] mx-auto bg-white rounded-xl p-9">
+        <View className="w-[90%] mx-auto bg-white rounded-xl p-9">
           {/* Email */}
           <Text className="text-xl text-black font-poppins">Email</Text>
-          <Controller
+          <InputEmail
             control={control}
             name="email"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <>
-                <TextInput
-                  placeholder="sample@mail.com"
-                  keyboardType="email-address"
-                  className="border-b border-gray-500 text-lg font-poppins"
-                  onBlur={onBlur}
-                  onChangeText={onChange}
-                  value={value}
-                  autoComplete="off"
-                />
-                {errors.email && (
-                  <Text className="text-red-600 mt-1">
-                    {errors.email.message}
-                  </Text>
-                )}
-              </>
-            )}
+            placeholder="JohnDoe@mail.com"
           />
+          {errors.email && (
+            <Text className="text-red-600 mt-1">{errors.email.message}</Text>
+          )}
 
           {/* Password */}
           <Text className="mt-4 text-xl font-poppins text-black">Password</Text>
-          <Controller
+          <InputPassword
             control={control}
             name="password"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <>
-                <View className="flex-row items-center border-b border-gray-500">
-                  <TextInput
-                    placeholder="Password"
-                    secureTextEntry={!showPassword}
-                    className="text-lg font-poppins py-2 flex-1"
-                    onChangeText={onChange}
-                    onBlur={onBlur}
-                    value={value}
-                    autoComplete="off"
-                  />
-                  <Pressable
-                    onPress={() => setShowPassword(!showPassword)}
-                    className="px-3">
-                    <Ionicons
-                      name={showPassword ? "eye-off" : "eye"}
-                      size={20}
-                      color="#6b7280"
-                    />
-                  </Pressable>
-                </View>
-                {errors.password && (
-                  <Text className="text-red-600 mt-2">
-                    {errors.password.message}
-                  </Text>
-                )}
-              </>
-            )}
+            placeholder="Enter your password"
           />
+          {errors.password && (
+            <Text className="text-red-600 mt-2">{errors.password.message}</Text>
+          )}
 
           {/* Forgot password */}
-          <TouchableOpacity className="self-end mt-2">
+          <TouchableOpacity
+            className="self-end mt-2"
+            onPress={() =>
+              router.replace("/auth/ForgotPassword/ForgotPasswordPage")
+            }>
             <Text className="text-blue-500 text-base">Forgot password?</Text>
           </TouchableOpacity>
 

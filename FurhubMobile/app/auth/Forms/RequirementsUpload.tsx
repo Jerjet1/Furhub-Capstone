@@ -1,22 +1,18 @@
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  Pressable,
-} from "react-native";
+import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { FontAwesome } from "@expo/vector-icons";
 import ProgressIndicator from "@/components/ProgressIndicator";
 import Layout from "@/components/Layouts/Layout";
 import { router, useLocalSearchParams } from "expo-router";
 import CustomToast from "@/components/CustomToast";
+import { ActivityIndicator } from "react-native";
 import { registerUserAPI, requirementsUpload } from "@/services/api";
 import { useRegistration } from "@/context/RegistrationProvider";
 import { useAuth } from "@/context/AuthProvider";
 import React, { useState, useEffect } from "react";
 
 export default function RequirementsUpload() {
+  const [loading, setLoading] = useState(false);
   const { role } = useLocalSearchParams<{ role: "Owner" | "Walker" }>();
   const [barangayClearance, setBarangayClearance] = useState<any>(null);
   const [validID, setValidID] = useState<any>(null);
@@ -85,7 +81,7 @@ export default function RequirementsUpload() {
       });
       return;
     }
-
+    setLoading(true);
     // sending data into API
     try {
       // Account Details
@@ -185,6 +181,8 @@ export default function RequirementsUpload() {
         message: message,
         type: "error",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -251,6 +249,7 @@ export default function RequirementsUpload() {
         contentContainerStyle={{ flexGrow: 1, paddingBottom: 150 }}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}>
+        {/* display message */}
         {toast && (
           <CustomToast
             message={toast.message}
@@ -260,6 +259,12 @@ export default function RequirementsUpload() {
           />
         )}
 
+        {/* loading State */}
+        {loading && (
+          <View className="absolute top-0 left-0 right-0 bottom-0 z-50 justify-center items-center bg-black/20">
+            <ActivityIndicator size={50} color="black" />
+          </View>
+        )}
         {/* Header */}
         <View className="h-[12rem] mt-1 w-full justify-start items-start gap-10">
           <TouchableOpacity
