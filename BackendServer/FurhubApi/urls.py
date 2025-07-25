@@ -1,7 +1,12 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from .views import (RegisterView, LoginView, VerifyEmailView, 
-                    ResendCodeView,CheckEmailExist, UploadImageView, ServiceView, PendingPetBoarding, PendingPetWalker)
+                    ResendCodeView,CheckEmailExist, UploadImageView, ServiceView, PendingPetBoarding, PendingPetWalker,  ChatRoomViewSet, ChatMessageViewSet, get_or_create_room)
 from rest_framework_simplejwt.views import (TokenObtainPairView, TokenRefreshView)
+
+router = DefaultRouter()
+router.register(r'chatrooms', ChatRoomViewSet, basename='chatroom')
+router.register(r'messages', ChatMessageViewSet, basename='chatmessage')
 
 urlpatterns = [
     #JWT token for login
@@ -17,4 +22,8 @@ urlpatterns = [
     
     path('admin/pending_pet_walker/', PendingPetWalker.as_view(), name='pet_walker'),
     path('admin/pending_pet_boarding/', PendingPetBoarding.as_view(), name='pet_boarding'),
+   
+    path('', include(router.urls)),  # ✅ Use viewset routing
+    path('chatroom/get_or_create/', get_or_create_room, name='get_or_create_room'),
+
 ]

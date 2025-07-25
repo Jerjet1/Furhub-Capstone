@@ -18,7 +18,7 @@ if os.name == 'nt':  # Windows
     os.environ['GDAL_DATA'] = os.path.join(OSGEO4W, 'share', 'gdal')
     os.environ['PROJ_LIB'] = os.path.join(OSGEO4W, 'share', 'proj')
     os.environ['PATH'] = os.path.join(OSGEO4W, 'bin') + ';' + os.environ['PATH']
-    GDAL_LIBRARY_PATH = os.path.join(OSGEO4W, 'bin', 'gdal310.dll')  # Match your version
+    GDAL_LIBRARY_PATH = os.path.join(OSGEO4W, 'bin', 'gdal311.dll')  # Match your version
 
 
 
@@ -42,10 +42,12 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.gis',
     'FurhubApi',
+    'channels',
     'rest_framework',
     'corsheaders',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
+    
 ]
 
 MIDDLEWARE = [
@@ -122,7 +124,7 @@ DATABASES = {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'furhub',
         'USER': 'postgres',
-        'PASSWORD': '1190716',
+        'PASSWORD': '1312636',
         'HOST': 'localhost',
         'PORT': '5432',
     }

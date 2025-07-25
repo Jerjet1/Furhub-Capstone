@@ -8,6 +8,13 @@ export const ROLES = {
   WALKER: "Walker",
 };
 
+type CurrentUser = {
+  id: number;
+  name: string;
+  role: 'owner' | 'walker';
+};
+
+
 type AuthContextType = {
   user: {
     token: string;
@@ -18,6 +25,7 @@ type AuthContextType = {
   setActiveRole: (role: string) => void;
   logout: () => void;
   isInitialized: boolean;
+  currentUser: CurrentUser | null;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -75,9 +83,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     router.replace("/auth/LoginPage");
   };
 
+  const currentUser: CurrentUser | null = user
+  ? {
+      id: user.activeRole === ROLES.OWNER ? 1 : 2, // Later: pull from backend
+      name: user.activeRole,
+      role: user.activeRole.toLowerCase() as 'owner' | 'walker',
+    }
+  : null;
+
+
+
   return (
     <AuthContext.Provider
-      value={{ user, login, logout, setActiveRole, isInitialized }}>
+      value={{ user, login, logout, setActiveRole, isInitialized, currentUser, }}>
       {children}
     </AuthContext.Provider>
   );

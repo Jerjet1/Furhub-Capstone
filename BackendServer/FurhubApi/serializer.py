@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Users, Roles, User_roles, PetOwner, PetWalker,Admin, PetBoarding, UploadedImage, Service
+from .models import Users, Roles, User_roles, PetOwner, PetWalker,Admin, PetBoarding, UploadedImage, Service,ChatRoom, ChatMessage
 from django.utils import timezone
 
 class LoginSerializer(serializers.Serializer):
@@ -114,6 +114,18 @@ class ServiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Service
         fields = [ 'service_id','service_name']
+
+
+class ChatMessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ChatMessage
+        fields = '__all__'
+
+class ChatRoomSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ChatRoom
+        fields = '__all__'
+
 
 # class BulkUploadImageSerializer(serializers.Serializer):
 #     images = UploadImageSerializer(many=True)

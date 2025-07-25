@@ -189,3 +189,32 @@ class ProviderService(models.Model):
     class Meta:
         unique_together = ['service', 'provider', 'provider_type']
         db_table = 'provider_service'
+
+class ChatRoom(models.Model):
+    room_id = models.AutoField(primary_key=True)
+    user1 = models.ForeignKey(Users, on_delete=models.CASCADE, related_name='chat_user1')
+    user2 = models.ForeignKey(Users, on_delete=models.CASCADE, related_name='chat_user2')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'chat_room'
+        unique_together = ['user1', 'user2']
+
+    def __str__(self):
+        return f"ChatRoom between {self.user1} and {self.user2}"
+
+class ChatMessage(models.Model):
+    message_id = models.AutoField(primary_key=True)
+    room = models.ForeignKey(ChatRoom, on_delete=models.CASCADE, related_name='messages')
+    sender = models.ForeignKey(Users, on_delete=models.CASCADE, related_name='sent_messages')
+    recipient = models.ForeignKey(Users, on_delete=models.CASCADE, related_name='received_messages')
+    content = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'chat_message'
+        ordering = ['timestamp']
+
+    def __str__(self):
+        return f"{self.sender} to {self.recipient}: {self.content[:30]}"

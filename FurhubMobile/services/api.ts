@@ -1,9 +1,11 @@
 import { debouncePromise } from "@/utils/debounce";
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
-const API_URL = "http://192.168.1.24:8000/"; //atay mani agad man sa ip address
+export const API_URL =  "http://192.168.1.18:8000/"; //atay mani agad man sa ip address
 const registerURL = new URL("users/register/", API_URL).toString();
 const checkEmailURL = new URL("users/check-email", API_URL).toString();
+const chatRoomsURL = new URL("chatrooms/get-or-create/", API_URL).toString();
+const chatMessagesURL = new URL("chat/messages/", API_URL).toString();
 const walkerRequirementsURL = new URL(
   "users/image_upload/",
   API_URL
@@ -125,3 +127,72 @@ export const verifyEmailAPI = async (data: any) => {
     throw error.response?.data || { details: "Something went wrong" };
   }
 };
+
+// Chat Room APIs
+export const getOrCreateChatRoom = async (user2Id: number) => {
+  try {
+    const response = await axios.post(chatRoomsURL, { user2_id: user2Id });
+    return response.data;
+  } catch (error: any) {
+    throw error.response?.data || { details: "Failed to get/create chat room" };
+  }
+};
+
+export const getChatMessages = async (roomId: number) => {
+  try {
+    const response = await axios.get(chatMessagesURL, { params: { room: roomId } });
+    return response.data.map((msg: any) => ({
+      ...msg,
+      timestamp: new Date(msg.timestamp) // Convert string to Date
+    }));
+  } catch (error: any) {
+    throw error.response?.data || { details: "Failed to fetch messages" };
+  }
+};
+
+export const sendChatMessage = async (roomId: number, content: string, recipientId: number) => {
+  try {
+    const response = await axios.post(chatMessagesURL, {
+      room: roomId,
+      content,
+      recipient: recipientId
+    });
+    return {
+      ...response.data,
+      timestamp: new Date(response.data.timestamp) // Convert string to Date
+    };
+  } catch (error: any) {
+    throw error.response?.data || { details: "Failed to send message" };
+  }
+};
+
+// Add this interceptor to automatically add tokens
+axios.interceptors.request.use(async (config) => {
+  const token = await SecureStore.getItemAsync("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+}, (error) => {
+  return Promise.reject(error);
+});
+
+// FOR API BASE URL OF AXIOX
+const baseURL = 'http://192.168.1.18:8000'; // ✅ Your actual local IP address
+
+const api = axios.create({
+  baseURL,
+});
+
+// Add token interceptor to this axios instance
+api.interceptors.request.use(async (config) => {
+  const token = await SecureStore.getItemAsync("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+}, (error) => {
+  return Promise.reject(error);
+});
+
+export { api, baseURL };
