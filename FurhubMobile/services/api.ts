@@ -1,7 +1,7 @@
 import { debouncePromise } from "@/utils/debounce";
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
-export const API_URL =  "http://192.168.1.18:8000/"; //atay mani agad man sa ip address
+export const API_URL =  "http://192.168.1.2:8000/"; //atay mani agad man sa ip address
 const registerURL = new URL("users/register/", API_URL).toString();
 const checkEmailURL = new URL("users/check-email", API_URL).toString();
 const chatRoomsURL = new URL("chatrooms/get-or-create/", API_URL).toString();
@@ -178,7 +178,7 @@ axios.interceptors.request.use(async (config) => {
 });
 
 // FOR API BASE URL OF AXIOX
-const baseURL = 'http://192.168.1.18:8000'; // ✅ Your actual local IP address
+const baseURL = 'http://192.168.1.2:8000'; // ✅ Your actual local IP address
 
 const api = axios.create({
   baseURL,

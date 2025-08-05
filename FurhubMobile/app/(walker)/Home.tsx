@@ -18,6 +18,13 @@ export default function Home() {
         <Text className="text-white text-lg">Go to Chat</Text>
       </TouchableOpacity>
 
+      <TouchableOpacity
+        onPress={() => router.push('/ratings')}
+        className="mt-6 bg-blue-500 px-6 py-3 rounded-lg"
+      > 
+        <Text className="text-white text-lg">Reviews and Ratings</Text>
+      </TouchableOpacity>
+
       <TouchableOpacity className="bg-red-500 p-5 mt-8" onPress={logout}>
         <Text>Logout</Text>
       </TouchableOpacity>
