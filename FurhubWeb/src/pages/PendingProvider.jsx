@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { useAuth } from "../context/AuthProvider";
 import { useNavigate } from "react-router-dom";
 export const PendingProvider = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -13,8 +13,14 @@ export const PendingProvider = () => {
   }, [user]);
 
   return (
-    <div className="flex justify-center items-center">
+    <div className="flex justify-center items-center w-full h-full">
       Admin will verify your application please wait....
+      <button
+        type="button"
+        onClick={() => logout()}
+        className="text-blue-700 underline cursor-pointer hover:text-blue-900 text-2xl">
+        Go back to login
+      </button>
     </div>
   );
 };

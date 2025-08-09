@@ -1,5 +1,5 @@
 import axios from "axios";
-import { API_URL } from "./api";
+import { API_URL } from "../constant/config";
 
 const forgotPasswordURL = new URL("users/forgot-password/", API_URL).toString();
 const verifyCodeURL = new URL("users/verify-code/", API_URL).toString();

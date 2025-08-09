@@ -106,7 +106,8 @@ export default function RegistrationForm() {
           result.roles,
           is_verified,
           result.email,
-          result.pet_walker
+          result.pet_walker,
+          result.refresh
         );
 
         // ✅ Reset the form after successful registration

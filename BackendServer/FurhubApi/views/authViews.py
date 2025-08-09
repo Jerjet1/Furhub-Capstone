@@ -112,7 +112,7 @@ class RegisterView(APIView):
                 "pet_boarding": petboarding_status,
                 "is_verified": user.is_verified,
                 "refresh": str(refresh),
-                "user_id": user.user_id
+                "id": user.id
                 },status=status.HTTP_201_CREATED)
         
         except Exception as e:
@@ -174,6 +174,9 @@ class VerifyEmailView(APIView):
         return Response(serializer.errors, status=400)
 
 class ResendCodeView(APIView):
+
+    permission_classes = [AllowAny]
+
     def post(self, request):
         email = request.data.get("email")
         try:

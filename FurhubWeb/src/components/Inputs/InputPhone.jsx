@@ -1,8 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import { MdContactPhone } from "react-icons/md";
-import { handleNumberChange } from "../../utils/handler";
+
 export const InputPhone = ({ id, name, placeholder, register, errors }) => {
-  const [value, setValue] = useState("");
   return (
     <div>
       <div
@@ -12,15 +11,18 @@ export const InputPhone = ({ id, name, placeholder, register, errors }) => {
         <MdContactPhone className="to-black mr-2" />
         <input
           type="text"
+          inputMode="numeric"
+          pattern="[0-9]*"
           id={id}
           {...register(name)}
-          value={value}
-          maxLength={11}
-          onChange={(e) => handleNumberChange(e, setValue)}
           placeholder={placeholder}
           autoCapitalize="none"
           autoComplete="off"
           className="w-full outline-none bg-transparent"
+          maxLength={11}
+          onInput={(e) => {
+            e.target.value = e.target.value.replace(/[^0-9]/g, "");
+          }}
         />
       </div>
     </div>

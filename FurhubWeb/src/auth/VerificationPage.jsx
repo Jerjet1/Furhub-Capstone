@@ -5,13 +5,16 @@ import { InputOTP } from "../components/Inputs/InputOTP";
 import { FiChevronLeft } from "react-icons/fi";
 import { Layout } from "../components/Layout/Layout";
 import { verifyEmail } from "../api/authAPI";
-import { ROLES } from "../App";
 import { ResendButtom } from "../components/Buttons/ResendButtom";
 import { resendCode } from "../utils/resendCode";
+import { LottieSpinner } from "../components/LottieSpinner";
+import { Toast } from "../components/Toast";
 
 export const VerificationPage = () => {
+  const [message, setMessage] = useState("");
   const [otp, setOTP] = useState("");
   const { user, logout, registerUser } = useAuth();
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -35,6 +38,7 @@ export const VerificationPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (otp.length !== 6) return;
+    setLoading(true);
     try {
       const payload = {
         email: user.email,
@@ -43,12 +47,14 @@ export const VerificationPage = () => {
 
       const result = await verifyEmail(payload);
       const token = result.access;
+      const refreshToken = result.refresh;
       const roles = result.roles || [];
       const is_verified = result.is_verified === true;
       const pet_boarding_status = result.pet_boarding;
       console.log("results:", result);
       registerUser(
         token,
+        refreshToken,
         roles,
         is_verified,
         result.email || email,
@@ -84,6 +90,9 @@ export const VerificationPage = () => {
       } else if (typeof error === "object") {
         message = Object.values(error).flat().join("\n");
       }
+      setMessage(message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -93,6 +102,18 @@ export const VerificationPage = () => {
 
   return (
     <Layout>
+      {/* Loading screen */}
+      {loading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 flex-col">
+          <LottieSpinner size={120} />
+          <p className="text-xl font-Fugaz">Loading...</p>
+        </div>
+      )}
+
+      {/* display message */}
+      <Toast error={message} setError={setMessage} />
+
+      {/* form container */}
       <div className="w-[25rem] h-full flex flex-col items-start justify-start py-5">
         <div className="flex-1 w-full h-full space-y-4">
           <button

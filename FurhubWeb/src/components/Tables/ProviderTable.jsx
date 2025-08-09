@@ -2,7 +2,7 @@ import React from "react";
 
 export const ProviderTable = () => {
   return (
-    <div className="w-full h-full bg-amber-300">
+    <div className="w-full h-full bg-amber-100">
       <table className="">
         <thead>
           <tr className="">

@@ -20,8 +20,8 @@ export const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   }
 
   if (user.pet_boarding_status === "pending") {
-    console.log("protectedRoute: pending provider");
-    console.log("pet_boarding:", user.pet_boarding_status);
+    // console.log("protectedRoute: pending provider");
+    // console.log("pet_boarding:", user.pet_boarding_status);
     return <Navigate to="/pending_providers" replace />;
   } else if (user.pet_boarding_status === "rejected") {
     console.log("wala pay pages");
@@ -32,9 +32,9 @@ export const ProtectedRoute = ({ children, allowedRoles = [] }) => {
     !user.roles.some((role) => allowedRoles.includes(role))
   ) {
     // If user does not have the required role, redirect to unauthorized page
-    return <Navigate to="/unauthorize" replace />;
+    return <Navigate to="/unauthorized" replace />;
   }
-  console.log("protectedRoute: approved provider");
-  console.log("pet_boarding:", user.pet_boarding_status);
+  // console.log("protectedRoute: approved provider");
+  // console.log("pet_boarding:", user.pet_boarding_status);
   return children;
 };

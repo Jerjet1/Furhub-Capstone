@@ -25,11 +25,11 @@ export const AuthRoute = ({ children }) => {
       return <Navigate to="/Admin/Dashboard" replace />;
     } else if (roles.includes("boarding") || activeRole === "boarding") {
       if (user.pet_boarding_status === "approved") {
-        console.log("approved providers");
+        // console.log("approved providers");
         return <Navigate to="/Petboarding/Dashboard" replace />;
       } else if (user.pet_boarding_status === "pending") {
-        console.log("authRoute: pending providers");
-        console.log("pet_boarding:", user.pet_boarding_status);
+        // console.log("authRoute: pending providers");
+        // console.log("pet_boarding:", user.pet_boarding_status);
         return <Navigate to="/pending_providers" replace />;
       } else {
         return <Navigate to="/Petboarding/Dashboard" replace />;

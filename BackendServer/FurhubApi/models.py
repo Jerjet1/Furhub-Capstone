@@ -23,7 +23,7 @@ class CustomUserManager(BaseUserManager):
         return self.create_user(email, password, **extra_fields)
     
 class Users(AbstractBaseUser):
-    user_id = models.AutoField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
     phone_no = models.CharField(max_length=15)
@@ -47,10 +47,6 @@ class Users(AbstractBaseUser):
         self.code_expiry = timezone.now() + timedelta(minutes = 4)
         self.save()
         return code
-
-    @property
-    def id(self):
-        return self.user_id
 
     def __str__(self):
         return f'{self.email}\n{self.first_name}\n{self.last_name}'

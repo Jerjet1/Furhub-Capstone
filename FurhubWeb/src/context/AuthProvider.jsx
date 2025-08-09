@@ -1,5 +1,12 @@
-import React, { createContext, useState, useEffect, useContext } from "react";
+import React, {
+  createContext,
+  useState,
+  useEffect,
+  useContext,
+  useCallback,
+} from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { setLogoutCallback } from "../api/axiosInterceptor"; // Import the setter
 import { ROLES } from "../App";
 
 export const AuthContext = createContext(null);
@@ -48,12 +55,14 @@ export const AuthProvider = ({ children }) => {
 
   const registerUser = (
     token,
+    refreshToken,
     roles,
     is_verified = false,
     email = "",
     pet_boarding_status
   ) => {
     localStorage.setItem("token", token);
+    localStorage.setItem("refresh", refreshToken);
     localStorage.setItem("roles", JSON.stringify(roles));
     localStorage.setItem("is_verified", is_verified ? "true" : "false");
     localStorage.setItem("email", email);
@@ -64,12 +73,14 @@ export const AuthProvider = ({ children }) => {
 
   const login = (
     token,
+    refreshToken,
     roles,
     is_verified = false,
     email = "",
     pet_boarding_status
   ) => {
     localStorage.setItem("token", token);
+    localStorage.setItem("refresh", refreshToken);
     localStorage.setItem("roles", JSON.stringify(roles));
     localStorage.setItem("activeRole", roles[0]);
     localStorage.setItem("is_verified", is_verified ? "true" : "false");
@@ -101,8 +112,9 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("refresh");
     localStorage.removeItem("roles");
     localStorage.removeItem("activeRole");
     localStorage.removeItem("is_verified");
@@ -110,7 +122,10 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("pet_boarding");
     setUser(null);
     navigate("/");
-  };
+  }, [navigate]);
+
+  useEffect(() => setLogoutCallback(logout), [logout]);
+
   return (
     <AuthContext.Provider
       value={{

@@ -1,7 +1,10 @@
 import { debouncePromise } from "@/utils/debounce";
 import axios from "axios";
+import { AxiosInstance } from "axios";
 import * as SecureStore from "expo-secure-store";
-export const API_URL = "http://192.168.1.12:8000/"; //atay mani agad man sa ip address
+import { API_URL } from "@/constant/config";
+import { axiosInstance } from "./axiosInterceptor";
+
 const registerURL = new URL("users/register/", API_URL).toString();
 const checkEmailURL = new URL("users/check-email", API_URL).toString();
 const walkerRequirementsURL = new URL(
@@ -37,7 +40,17 @@ export const registerUserAPI = async ({
   role,
 }: RegisterUser) => {
   try {
-    const response = await axios.post(registerURL, {
+    // const response = await axios.post(registerURL, {
+    //   first_name,
+    //   last_name,
+    //   phone_no,
+    //   email,
+    //   password,
+    //   confirm_password,
+    //   role,
+    // });
+
+    const response = await axiosInstance.post(registerURL, {
       first_name,
       last_name,
       phone_no,
@@ -46,6 +59,7 @@ export const registerUserAPI = async ({
       confirm_password,
       role,
     });
+
     return response.data;
   } catch (error: any) {
     throw error.response?.data || { details: "Something went wrong" };
@@ -83,9 +97,11 @@ export const checkEmailAvailability = async (
 
 export const login = async ({ email, password }: userCredentials) => {
   try {
-    const response = await axios.post(loginURL, { email, password });
+    // const response = await axios.post(loginURL, { email, password });
+    const response = await axiosInstance.post(loginURL, { email, password });
     if (response.data.access) {
       await SecureStore.setItemAsync("token", response.data.access);
+      await SecureStore.setItemAsync("refresh", response.data.refresh);
       if (response.data.role) {
         await SecureStore.setItemAsync(
           "roles",
@@ -101,6 +117,7 @@ export const login = async ({ email, password }: userCredentials) => {
 
 export const logout = async () => {
   await SecureStore.deleteItemAsync("token");
+  await SecureStore.deleteItemAsync("refresh");
   await SecureStore.deleteItemAsync("role");
 };
 
@@ -119,7 +136,8 @@ export const resendCodeAPI = async (email: string) => {
 
 export const verifyEmailAPI = async (data: any) => {
   try {
-    const response = await axios.post(verifyEmailURL, data);
+    // const response = await axios.post(verifyEmailURL, data);
+    const response = await axiosInstance.post(verifyEmailURL, data);
     return response.data;
   } catch (error: any) {
     throw error.response?.data || { details: "Something went wrong" };

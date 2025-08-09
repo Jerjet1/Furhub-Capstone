@@ -1,11 +1,16 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
+import { debounce } from "lodash";
 import { Layout } from "../components/Layout/Layout";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { LottieSpinner } from "../components/LottieSpinner";
 import { ModalService } from "../components/Modals/ModalService";
-import { registerAuth, requirementsUpload } from "../api/authAPI";
+import {
+  registerAuth,
+  requirementsUpload,
+  checkEmailAvailable,
+} from "../api/authAPI";
 import { Link } from "react-router-dom";
 import { ROLES } from "../App";
 import { useAuth } from "../context/AuthProvider";
@@ -14,6 +19,7 @@ import { InputName } from "../components/Inputs/InputName";
 import { InputPhone } from "../components/Inputs/InputPhone";
 import { InputEmail } from "../components/Inputs/InputEmail";
 import { InputPassword } from "../components/Inputs/InputPassword";
+import { Toast } from "../components/Toast";
 
 const validationSchema = yup.object().shape({
   first_name: yup.string().required("field required"),
@@ -40,6 +46,7 @@ const validationSchema = yup.object().shape({
 });
 
 export const Registration = () => {
+  const [emailError, setEmailError] = useState("");
   const [barangayClearance, setBarangayClearance] = useState(null);
   const [validID, setValidID] = useState(null);
   const [selfieWithID, setSelfieWithID] = useState(null);
@@ -47,21 +54,54 @@ export const Registration = () => {
   const [showServiceModal, setShowServiceModal] = useState(false);
   const [offeredServices, setOfferedServices] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
   const { registerUser } = useAuth();
+
+  const debounceCheckEmail = useCallback(
+    debounce(async (emailToCheck) => {
+      try {
+        const isTaken = await checkEmailAvailable(emailToCheck);
+        if (isTaken) {
+          setEmailError("Email is already in use");
+        } else {
+          setEmailError("");
+        }
+      } catch (error) {
+        console.log("unexpected Error occured");
+      }
+    }, 1000),
+    []
+  );
 
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
   } = useForm({ resolver: yupResolver(validationSchema) });
+
+  const email = control
+    ? useWatch({
+        control,
+        name: "email",
+      })
+    : "";
+
+  useEffect(() => {
+    if (email) {
+      debounceCheckEmail(email);
+    } else {
+      setEmailError("");
+    }
+  }, [email, debounceCheckEmail]);
 
   const registrationForm = async (data) => {
     const formData = new FormData();
     setSubmissionAttempt(true);
     if (!barangayClearance || !validID || !selfieWithID) {
-      console.log("please upload image");
       return;
     }
+
     const {
       first_name,
       last_name,
@@ -70,6 +110,7 @@ export const Registration = () => {
       password,
       confirm_password,
     } = data;
+
     console.log("user details:", {
       first_name,
       last_name,
@@ -78,6 +119,7 @@ export const Registration = () => {
       password,
       confirm_password,
     });
+
     setLoading(true);
     try {
       const result = await registerAuth(
@@ -89,13 +131,17 @@ export const Registration = () => {
         confirm_password,
         ROLES.BOARDING
       );
-      const user_id = result.user_id;
+
+      const user_id = result.id;
       const token = result.access;
+      const refreshToken = result.refresh;
       const roles = result.roles || [];
       const is_verified = result.is_verified === true;
       const pet_boarding_status = result.pet_boarding;
+
       registerUser(
         token,
+        refreshToken,
         roles,
         is_verified,
         result.email || email,
@@ -124,6 +170,22 @@ export const Registration = () => {
       await requirementsUpload(selfieFormData);
     } catch (error) {
       console.log("error", error);
+      let message = "Login failed. Please try again.";
+
+      if (typeof error === "string") {
+        message = error;
+      } else if (typeof error.details === "string") {
+        message = error.details;
+      } else if (typeof error.detail === "string") {
+        message = error.detail;
+      } else if (typeof error.message === "string") {
+        message = error.message;
+      } else if (Array.isArray(error)) {
+        message = error.join("\n");
+      } else if (typeof error === "object") {
+        message = Object.values(error).flat().join("\n");
+      }
+      setMessage(message);
     } finally {
       setLoading(false);
     }
@@ -151,6 +213,9 @@ export const Registration = () => {
           />
         )}
 
+        {/* display message */}
+        <Toast error={message} setError={setMessage} />
+
         {/* Loading screen */}
         {loading && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 flex-col">
@@ -158,6 +223,7 @@ export const Registration = () => {
             <p className="text-xl font-Fugaz">Loading...</p>
           </div>
         )}
+
         <div className="flex-1 w-full h-full">
           {/* Registration form */}
           <form onSubmit={handleSubmit(registrationForm)}>
@@ -237,9 +303,9 @@ export const Registration = () => {
                     register={register}
                     errors={errors.email}
                   />
-                  {errors.email && (
+                  {(errors.email || emailError) && (
                     <p className="text-red-500 text-sm">
-                      {errors.email.message}
+                      {errors.email?.message || emailError}
                     </p>
                   )}
                 </div>

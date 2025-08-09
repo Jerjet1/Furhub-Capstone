@@ -19,9 +19,13 @@ import { useForgotPassword } from "../context/ForgotPasswordProvider";
 import { useAuth } from "../context/AuthProvider";
 import { ResendButtom } from "../components/Buttons/ResendButtom";
 import { ImageLayout } from "../components/Layout/ImageLayout";
+import { LottieSpinner } from "../components/LottieSpinner";
+import { Toast } from "../components/Toast";
 
 // page 1
 export const ForgotPassword = () => {
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
   const { set_email } = useForgotPassword();
   const navigate = useNavigate();
 
@@ -36,6 +40,7 @@ export const ForgotPassword = () => {
   } = useForm({ resolver: yupResolver(validateEmail) });
 
   const emailForm = async (data) => {
+    setLoading(true);
     try {
       const { email } = data;
       const result = await forgotPasswordAPI({ email });
@@ -59,11 +64,25 @@ export const ForgotPassword = () => {
       } else if (typeof error === "object") {
         message = Object.values(error).flat().join("\n");
       }
+      setMessage(message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <Layout>
+      {/* display message */}
+      <Toast error={message} setError={setMessage} />
+
+      {/* Loading screen */}
+      {loading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 flex-col">
+          <LottieSpinner size={120} />
+          <p className="text-xl font-Fugaz">Loading...</p>
+        </div>
+      )}
+
       <div className="w-[30rem] h-full flex flex-col items-start justify-start py-5 px-5">
         <div className="flex-1 w-full h-full space-y-4">
           <button
@@ -105,6 +124,8 @@ export const VerifyCode = () => {
   const { user } = useAuth();
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -116,6 +137,8 @@ export const VerifyCode = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError("");
     if (!code || code.length !== 6) {
       setError("enter 6 digit verification code");
       return;
@@ -144,6 +167,9 @@ export const VerifyCode = () => {
       } else if (typeof error === "object") {
         message = Object.values(error).flat().join("\n");
       }
+      setMessage(message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -153,6 +179,17 @@ export const VerifyCode = () => {
 
   return (
     <Layout>
+      {/* display message */}
+      <Toast error={message} setError={setMessage} />
+
+      {/* Loading screen */}
+      {loading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 flex-col">
+          <LottieSpinner size={120} />
+          <p className="text-xl font-Fugaz">Loading...</p>
+        </div>
+      )}
+
       <div className="w-[30rem] h-full flex flex-col items-start justify-start py-5 px-5">
         <div className="flex-1 w-full h-full space-y-4">
           <button
@@ -183,8 +220,11 @@ export const VerifyCode = () => {
 // page 3
 export const ResetPassword = () => {
   const { email, remove_Email } = useForgotPassword();
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
   const { user } = useAuth();
   const navigate = useNavigate();
+
   const validatePassword = yup.object().shape({
     password: yup
       .string()
@@ -215,6 +255,7 @@ export const ResetPassword = () => {
   } = useForm({ resolver: yupResolver(validatePassword) });
 
   const passwordForm = async (data) => {
+    setLoading(true);
     try {
       const { password, confirmPassword } = data;
       const result = await resetPasswordAPI(email, password, confirmPassword);
@@ -238,11 +279,24 @@ export const ResetPassword = () => {
       } else if (typeof error === "object") {
         message = Object.values(error).flat().join("\n");
       }
+      setMessage(message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <Layout>
+      {/* display message */}
+      <Toast error={message} setError={setMessage} />
+
+      {/* Loading screen */}
+      {loading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 flex-col">
+          <LottieSpinner size={120} />
+          <p className="text-xl font-Fugaz">Loading...</p>
+        </div>
+      )}
       <div className="w-[30rem] h-full flex flex-col items-start justify-start py-5 px-5">
         <div className="flex-1 w-full h-full space-y-4">
           <h1 className="text-[25px] font-open-sans">Set a Password</h1>

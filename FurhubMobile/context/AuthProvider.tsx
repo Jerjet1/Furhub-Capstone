@@ -2,6 +2,7 @@ import { logout as LogoutAPI } from "@/services/api";
 import { router } from "expo-router";
 import { useState, createContext, useContext, useEffect } from "react";
 import * as SecureStore from "expo-secure-store";
+import { ref } from "yup";
 
 export const ROLES = {
   OWNER: "Owner",
@@ -16,20 +17,23 @@ type AuthContextType = {
     is_verified: boolean;
     email: string;
     status: string;
+    refresh: string | null;
   } | null;
   login: (
     token: string,
     roles: string[],
     is_verified: boolean,
     email: string,
-    status: string
+    status: string,
+    refresh: string
   ) => void;
   registerUser: (
     token: string,
     roles: string[],
     is_verified: boolean,
     email: string,
-    status: string
+    status: string,
+    refresh: string
   ) => void;
   setActiveRole: (role: string) => void;
   logout: () => void;
@@ -53,6 +57,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       const is_verified =
         (await SecureStore.getItemAsync("is_verified")) === "true";
       const status = (await SecureStore.getItemAsync("pet_walker")) || "";
+      const refresh = await SecureStore.getItemAsync("refresh");
       if (token && roles) {
         setUser({
           token,
@@ -61,6 +66,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           is_verified,
           email: email || "",
           status,
+          refresh,
         });
         setIsInitialized(true);
       } else {
@@ -75,7 +81,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     roles: string[],
     is_verified: boolean = false,
     email: string = "",
-    status: string = ""
+    status: string = "",
+    refresh: string
   ) => {
     await SecureStore.setItemAsync("token", token);
     await SecureStore.setItemAsync("roles", JSON.stringify(roles));
@@ -83,7 +90,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     await SecureStore.setItemAsync("is_verified", String(is_verified));
     await SecureStore.setItemAsync("email", email);
     await SecureStore.setItemAsync("pet_walker", status);
-    setUser({ token, roles, activeRole: roles[0], is_verified, email, status });
+    await SecureStore.setItemAsync("refresh", refresh);
+    setUser({
+      token,
+      roles,
+      activeRole: roles[0],
+      is_verified,
+      email,
+      status,
+      refresh,
+    });
   };
 
   const login = async (
@@ -91,7 +107,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     roles: string[],
     is_verified: boolean = false,
     email: string = "",
-    status: string = ""
+    status: string = "",
+    refresh: string
   ) => {
     await SecureStore.setItemAsync("token", token);
     await SecureStore.setItemAsync("roles", JSON.stringify(roles));
@@ -99,7 +116,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     await SecureStore.setItemAsync("is_verified", String(is_verified));
     await SecureStore.setItemAsync("email", email);
     await SecureStore.setItemAsync("pet_walker", status);
-    setUser({ token, roles, activeRole: roles[0], is_verified, email, status });
+    await SecureStore.setItemAsync("refresh", refresh);
+    setUser({
+      token,
+      roles,
+      activeRole: roles[0],
+      is_verified,
+      email,
+      status,
+      refresh,
+    });
   };
 
   const setActiveRole = async (role: string) => {
@@ -122,6 +148,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     await SecureStore.deleteItemAsync("email");
     await SecureStore.deleteItemAsync("is_verified");
     await SecureStore.deleteItemAsync("pet_walker");
+    await SecureStore.deleteItemAsync("refresh");
     await LogoutAPI();
     setUser(null);
     router.replace("/auth/LoginPage");

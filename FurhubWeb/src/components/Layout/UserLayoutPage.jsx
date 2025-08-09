@@ -64,7 +64,7 @@ export const UserLayoutPage = ({ children }) => {
         ) : (
           <AdminNavbar section={navbarSelection} />
         )}
-        <main className="flex-1 p-2 overflow-auto">{children}</main>
+        <main className="flex-1 p-5 overflow-auto">{children}</main>
       </div>
     </div>
   );

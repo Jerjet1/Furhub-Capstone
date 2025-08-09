@@ -11,6 +11,7 @@ import { useAuth } from "../context/AuthProvider";
 import { InputEmail } from "../components/Inputs/InputEmail";
 import { InputPassword } from "../components/Inputs/InputPassword";
 import { ImageLayout } from "../components/Layout/ImageLayout";
+import { Toast } from "../components/Toast";
 
 const validationSchema = yup.object().shape({
   email: yup.string().email("invalid email").required("Email is required"),
@@ -19,7 +20,7 @@ const validationSchema = yup.object().shape({
 export const Login = () => {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
-  const [showMessage, setShowMessage] = useState(false);
+  const [message, setMessage] = useState("");
 
   const {
     register,
@@ -29,16 +30,18 @@ export const Login = () => {
 
   const loginForm = async (data) => {
     const { email, password } = data;
-    console.log("Login with:", { email, password });
+    // console.log("Login with:", { email, password });
     setLoading(true);
     try {
       const result = await loginAuth(email, password);
       const token = result.access;
+      const refreshToken = result.refresh;
       const roles = result.roles || [];
       const is_verified = result.is_verified === true;
       const pet_boarding_status = result.pet_boarding;
       login(
         token,
+        refreshToken,
         roles,
         is_verified,
         result.email || email,
@@ -61,6 +64,7 @@ export const Login = () => {
       } else if (typeof error === "object") {
         message = Object.values(error).flat().join("\n");
       }
+      setMessage(message);
     } finally {
       setLoading(false);
     }
@@ -73,6 +77,9 @@ export const Login = () => {
           <h1 className="text-[50px] font-open-sans">Login</h1>
           <p className="text-[20px] font-open-sans">Welcome to Furhub</p>
         </div>
+
+        {/* display message */}
+        <Toast error={message} setError={setMessage} />
 
         {/* Loading screen */}
         {loading && (

@@ -1,7 +1,8 @@
 from django.urls import path
 from FurhubApi.views.authViews import (RegisterView, LoginView, VerifyEmailView, 
                     ResendCodeView,CheckEmailExist, UploadImageView, ForgotPasswordView, VerifyCodeView, ResetPasswordView)
-from FurhubApi.views.userView import ServiceView, PendingProviders
+
+from FurhubApi.views.userView import ServiceView, AllUserView, PendingPetBoarding, PendingPetWalker
 from rest_framework_simplejwt.views import (TokenObtainPairView, TokenRefreshView)
 
 urlpatterns = [
@@ -22,7 +23,8 @@ urlpatterns = [
     path('users/verify-code/', VerifyCodeView.as_view(), name='verify-code'),
     path('users/reset-password/', ResetPasswordView.as_view(), name='reset-password'),
 
-    # path('admin/pending_pet_walker/', PendingPetWalker.as_view(), name='pet_walker'),
-    # path('admin/pending_pet_boarding/', PendingPetBoarding.as_view(), name='pet_boarding'),
-    path('admin/pending_providers/', PendingProviders.as_view(), name='pending_providers')
+    path('administrator/pending_pet_walker/', PendingPetWalker.as_view(), name='pet_walker'),
+    path('administrator/pending_pet_boarding/', PendingPetBoarding.as_view(), name='pet_boarding'),
+    # path('administrator/pending_providers/', PendingProviders.as_view(), name='pending_providers'),
+    path('administrator/all_users/', AllUserView.as_view(), name='all_users')
 ]

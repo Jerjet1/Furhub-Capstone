@@ -99,10 +99,11 @@ export default function RequirementsUpload() {
         result.roles,
         is_verified,
         result.email,
-        result.pet_walker
+        result.pet_walker,
+        result.refresh
       );
       // requirements upload
-      const user_id = result.user_id;
+      const user_id = result.id;
 
       // Barangay Clearance
       const barangayFormData = new FormData();

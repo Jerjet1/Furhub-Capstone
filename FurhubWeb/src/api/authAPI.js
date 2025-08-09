@@ -1,31 +1,42 @@
 import axios from "axios";
-
-export const API_URL = "http://192.168.1.12:8000/"; //bogo mani ip address
+import { API_URL } from "../config/config";
+import axiosInstance from "./axiosInterceptor";
+//bogo mani ip address
 const loginURL = new URL("users/login/", API_URL).toString();
 const registerURL = new URL("users/register/", API_URL).toString();
 const boardingRequirementsURL = new URL(
   "users/image_upload/",
   API_URL
 ).toString();
+const checkEmailURL = new URL("users/check-email", API_URL).toString();
 const resendCodeURL = new URL("users/resend-code/", API_URL).toString();
 const verifyEmailURL = new URL("users/verify/", API_URL).toString();
 
 export const loginAuth = async (email, password) => {
   try {
-    const response = await axios.post(loginURL, { email, password });
-    if (response.data.access) {
+    // const response = await axios.post(loginURL, { email, password });
+    const response = await axiosInstance.post(loginURL, { email, password });
+
+    if (response.data.refresh && response.data.access) {
       localStorage.setItem("token", response.data.access);
+      localStorage.setItem("refresh", response.data.refresh);
       if (response.data.role) {
         localStorage.setItem("roles", JSON.stringify(response.data.role));
       }
     }
-    console.log("is_verified: ", response.data.is_verified);
-    console.log("pet_boarding: ", response.data.pet_boarding);
-    console.log("email:", response.data.email);
-    console.log("pet_walker:", response.data.pet_walker);
-    console.log("role:", response.data.roles);
+    // console.log("is_verified: ", response.data.is_verified);
+    // console.log("pet_boarding: ", response.data.pet_boarding);
+    // console.log("email:", response.data.email);
+    // console.log("pet_walker:", response.data.pet_walker);
+    // console.log("role:", response.data.roles);
+
+    // console.log(localStorage.getItem("token"));
+    // console.log(localStorage.getItem("refresh"));
+
     return response.data;
   } catch (error) {
+    localStorage.removeItem("token");
+    localStorage.removeItem("refresh");
     throw error.response?.data || { details: "Something went wrong" };
   }
 };
@@ -40,7 +51,17 @@ export const registerAuth = async (
   role
 ) => {
   try {
-    const response = await axios.post(registerURL, {
+    // const response = await axios.post(registerURL, {
+    //   first_name,
+    //   last_name,
+    //   phone_no,
+    //   email,
+    //   password,
+    //   confirm_password,
+    //   role,
+    // });
+
+    const response = await axiosInstance.post(registerURL, {
       first_name,
       last_name,
       phone_no,
@@ -49,6 +70,11 @@ export const registerAuth = async (
       confirm_password,
       role,
     });
+
+    if (response.data.refresh && response.data.access) {
+      localStorage.setItem("token", response.data.access);
+      localStorage.setItem("refresh", response.data.refresh);
+    }
     return response.data;
   } catch (error) {
     throw error.response?.data || { details: "Something went wrong" };
@@ -62,6 +88,7 @@ export const requirementsUpload = async (formData) => {
         "Content-Type": "multipart/form-data",
       },
     });
+
     return response.data;
   } catch (error) {
     throw error.response.data;
@@ -70,7 +97,14 @@ export const requirementsUpload = async (formData) => {
 
 export const verifyEmail = async (payload) => {
   try {
-    const response = await axios.post(verifyEmailURL, payload);
+    // const response = await axios.post(verifyEmailURL, payload);
+
+    const response = await axiosInstance.post(verifyEmailURL, payload);
+
+    if (response.data.refresh && response.data.access) {
+      localStorage.setItem("token", response.data.access);
+      localStorage.setItem("refresh", response.data.refresh);
+    }
     return response.data;
   } catch (error) {
     throw error.response?.data || { details: "Something went wrong" };
@@ -80,8 +114,23 @@ export const verifyEmail = async (payload) => {
 export const resendOTP = async (email) => {
   try {
     const response = await axios.post(resendCodeURL, email);
+
     return response.data;
   } catch (error) {
+    throw error.response?.data || { details: "Something went wrong" };
+  }
+};
+
+export const checkEmailAvailable = async (email) => {
+  try {
+    await axios.get(checkEmailURL, { params: { email: email } });
+
+    return false;
+  } catch (error) {
+    if (error.response?.status === 400 && error.response.data?.exist) {
+      // If 400 and response is "exist: true", then email is in use
+      return true;
+    }
     throw error.response?.data || { details: "Something went wrong" };
   }
 };

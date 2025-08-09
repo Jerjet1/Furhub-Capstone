@@ -1,46 +1,62 @@
-import { axios } from "axios";
-import { API_URL } from "./authAPI";
+import axios from "axios";
+import axiosInstance from "./axiosInterceptor";
+import { API_URL } from "../config/config";
 
-const PENDING_PROVIDERS = new URL(
-  "admin/pending_providers/",
+const PET_WALKER_PENDING_URL = new URL(
+  "administrator/pending_pet_walker/",
   API_URL
 ).toString();
-// const PET_WALKER_PENDING_URL = new URL(
-//   "admin/pending_pet_walker/",
-//   API_URL
-// ).toString();
-// const PET_OWNER_PENDING_URL = new URL(
-//   "admin/pending_pet_walker/",
-//   API_URL
-// ).toString();
+const PET_BOARDING_PENDING_URL = new URL(
+  "administrator/pending_pet_boarding/",
+  API_URL
+).toString();
 
-export const getPendingProviders = async () => {
+export const fetchPetWalkerUsers = async (page) => {
+  const token = localStorage.getItem("token");
   try {
-    const response = await axios.get(PENDING_PROVIDERS);
-    const combine_data = [
-      ...response.data.pet_walkers,
-      ...response.data.pet_boardings,
-    ];
-    return combine_data;
+    // const response = await axios.get(`${PET_WALKER_PENDING_URL}?page=${page}`, {
+    //   headers: {
+    //     Authorization: `Bearer ${token}`,
+    //   },
+    // });
+
+    const response = await axiosInstance.get(
+      `${PET_WALKER_PENDING_URL}?page=${page}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
   } catch (error) {
     throw error.response?.data || { details: "Something went wrong" };
   }
 };
 
-// export const getPendingPetWalkers = async () => {
-//   try {
-//     const response = await axios.get(PET_WALKER_PENDING_URL);
-//     return response.data;
-//   } catch (error) {
-//     throw error.response?.data || { details: "Something went wrong" };
-//   }
-// };
+export const fetchPetBoardingUsers = async (page) => {
+  const token = localStorage.getItem("token");
+  try {
+    // const response = await axios.get(
+    //   `${PET_BOARDING_PENDING_URL}?page=${page}`,
+    //   {
+    //     headers: {
+    //       Authorization: `Bearer ${token}`,
+    //     },
+    //   }
+    // );
 
-// export const getPendingBoarding = async () => {
-//   try {
-//     const response = await axios.get(PET_OWNER_PENDING_URL);
-//     return response.data;
-//   } catch (error) {
-//     throw error.response?.data || { details: "Something went wrong" };
-//   }
-// };
+    const response = await axiosInstance.get(
+      `${PET_BOARDING_PENDING_URL}?page=${page}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { details: "Something went wrong" };
+  }
+};

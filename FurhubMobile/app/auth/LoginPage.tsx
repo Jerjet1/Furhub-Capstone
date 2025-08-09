@@ -45,8 +45,18 @@ export default function LoginPage() {
       const roles = result.roles || []; // Adjust based on your backend response
       const is_verified = result.is_verified !== false;
       const walkerStatus = result.pet_walker;
+      const refresh = result.refresh;
 
-      setUserAuth(token, roles, is_verified, result.email, walkerStatus || ""); // Update AuthContext
+      setUserAuth(
+        token,
+        roles,
+        is_verified,
+        result.email,
+        walkerStatus || "",
+        refresh
+      ); // Update AuthContext
+
+      console.log("results:", result);
 
       // check if user is verified
       if (!is_verified) {

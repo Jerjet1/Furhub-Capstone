@@ -19,27 +19,27 @@ export const AdminNavbar = ({ section }) => {
           {section === "reports" ? (
             <>
               <Link to="" className="py-3 px-5 hover:bg-gray-600/30  block ">
-                <h2>Report Summary</h2>
+                <h2 className="text-md">Report Summary</h2>
               </Link>
               <Link to="" className="py-3 px-5 hover:bg-gray-600/30  block ">
-                <h2>User Logs</h2>
+                <h2 className="text-md">User Logs</h2>
               </Link>
               <Link to="" className="py-3 px-5 hover:bg-gray-600/30  block ">
-                <h2>Revenue</h2>
+                <h2 className="text-md">Revenue</h2>
               </Link>
             </>
           ) : (
             <>
               <Link to="" className="block py-3 px-5 hover:bg-gray-600/30 ">
-                <h2>Manage Location</h2>
+                <h2 className="text-md">Manage Location</h2>
               </Link>
               <Link to="" className="block py-3 px-5 hover:bg-gray-600/30 ">
-                <h2>View Subscriptions</h2>
+                <h2 className="text-md">View Subscriptions</h2>
               </Link>
               <Link
                 to="/Admin/ManageUsers"
                 className="block py-3 px-5 hover:bg-gray-600/30 ">
-                <h2>Manage Users</h2>
+                <h2 className="text-md">Manage Users</h2>
               </Link>
             </>
           )}
@@ -47,7 +47,7 @@ export const AdminNavbar = ({ section }) => {
         <button
           type="button"
           onClick={handleLogout} // Use the handler function
-          className="block px-5 py-3 hover:border-e-1 hover:bg-gray-600/30 cursor-pointer text-start">
+          className="block px-5 py-3 hover:border-e-1 hover:bg-gray-600/30 cursor-pointer text-start text-md">
           Logout
         </button>
       </nav>

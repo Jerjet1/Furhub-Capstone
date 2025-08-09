@@ -35,7 +35,15 @@ export default function VerificationPage() {
       const result = await verifyEmailAPI(payload);
       const token = result.access;
       const roles = result.roles || [];
-      registerUser(token, roles, true, email, result.pet_walker?.status || "");
+      const refresh = result.refresh;
+      registerUser(
+        token,
+        roles,
+        true,
+        email,
+        result.pet_walker?.status || "",
+        refresh
+      );
 
       console.log("Verified!", result);
       setToast({ message: "Email verified successfully!", type: "success" });
