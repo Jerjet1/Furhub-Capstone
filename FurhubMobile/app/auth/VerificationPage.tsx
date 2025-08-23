@@ -9,7 +9,8 @@ import React, { useState } from "react";
 import ResendButton from "@/components/Buttons/ResendButton";
 import InputOTP from "@/components/Inputs/InputOTP";
 import { ActivityIndicator } from "react-native";
-import { useAuth } from "@/context/AuthProvider";
+// import { useAuth } from "@/context/AuthProvider";
+import { useAuth } from "@/context/useAuth";
 import { ResendCode } from "@/utils/ResendCode";
 
 export default function VerificationPage() {

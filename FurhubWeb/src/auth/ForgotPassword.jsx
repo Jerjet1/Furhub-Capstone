@@ -16,7 +16,7 @@ import { InputPassword } from "../components/Inputs/InputPassword";
 import { Button } from "../components/Buttons/Button";
 import { resendCode } from "../utils/resendCode";
 import { useForgotPassword } from "../context/ForgotPasswordProvider";
-import { useAuth } from "../context/AuthProvider";
+import { useAuth } from "../context/useAuth";
 import { ResendButtom } from "../components/Buttons/ResendButtom";
 import { ImageLayout } from "../components/Layout/ImageLayout";
 import { LottieSpinner } from "../components/LottieSpinner";

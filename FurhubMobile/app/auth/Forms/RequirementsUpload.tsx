@@ -6,9 +6,11 @@ import Layout from "@/components/Layouts/Layout";
 import { router, useLocalSearchParams } from "expo-router";
 import CustomToast from "@/components/CustomToast";
 import { ActivityIndicator } from "react-native";
-import { registerUserAPI, requirementsUpload } from "@/services/api";
+import { registerUserAPI } from "@/services/api";
+import { requirementsUpload } from "@/services/imageUpload";
 import { useRegistration } from "@/context/RegistrationProvider";
-import { useAuth } from "@/context/AuthProvider";
+// import { useAuth } from "@/context/AuthProvider";
+import { useAuth } from "@/context/useAuth";
 import React, { useState, useEffect } from "react";
 
 export default function RequirementsUpload() {

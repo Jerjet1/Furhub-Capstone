@@ -1,8 +1,10 @@
 from django.urls import path
 from FurhubApi.views.authViews import (RegisterView, LoginView, VerifyEmailView, 
-                    ResendCodeView,CheckEmailExist, UploadImageView, ForgotPasswordView, VerifyCodeView, ResetPasswordView)
+                    ResendCodeView,CheckEmailExist, ForgotPasswordView, VerifyCodeView, ResetPasswordView,
+                    ChangePasswordView)
 
 from FurhubApi.views.userView import ServiceView, AllUserView, PendingPetBoarding, PendingPetWalker
+from FurhubApi.views.imageUploadView import UploadImageView, ProfileUploadView
 from rest_framework_simplejwt.views import (TokenObtainPairView, TokenRefreshView)
 
 urlpatterns = [
@@ -17,11 +19,16 @@ urlpatterns = [
     path('users/resend-code/', ResendCodeView.as_view(), name='resend_email'),
     path('users/image_upload/', UploadImageView.as_view(), name='image_upload'),
 
+    # Profile Picture Users
+    path('users/profile_upload/', ProfileUploadView.as_view(), name='profile_upload'),
+    path('users/profile/', ProfileUploadView.as_view(), name='profile_picture'),
+
     path('users/service_list/', ServiceView.as_view(), name='service_list'),
     
     path('users/forgot-password/', ForgotPasswordView.as_view(), name='forgot-password'),
     path('users/verify-code/', VerifyCodeView.as_view(), name='verify-code'),
     path('users/reset-password/', ResetPasswordView.as_view(), name='reset-password'),
+    path('users/change-password', ChangePasswordView.as_view(), name='change-password'),
 
     path('administrator/pending_pet_walker/', PendingPetWalker.as_view(), name='pet_walker'),
     path('administrator/pending_pet_boarding/', PendingPetBoarding.as_view(), name='pet_boarding'),

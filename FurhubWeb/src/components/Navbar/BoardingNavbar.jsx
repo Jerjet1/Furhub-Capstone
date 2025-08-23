@@ -1,6 +1,7 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthProvider";
+// import { useAuth } from "../../context/AuthProvider";
+import { useAuth } from "../../context/useAuth";
 import { FiCalendar } from "react-icons/fi";
 export const BoardingNavbar = () => {
   const { logout } = useAuth();

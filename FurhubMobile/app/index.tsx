@@ -2,7 +2,8 @@ import { Text, View, ActivityIndicator } from "react-native";
 import "@/global.css";
 import { Redirect, router } from "expo-router";
 import { useEffect, useState } from "react";
-import { useAuth } from "../context/AuthProvider";
+// import { useAuth } from "../context/AuthProvider";
+import { useAuth } from "@/context/useAuth";
 export default function Index() {
   const { user, isInitialized } = useAuth();
 

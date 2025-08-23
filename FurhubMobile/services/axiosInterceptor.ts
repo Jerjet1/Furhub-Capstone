@@ -11,17 +11,26 @@ export const setLogoutCallback = (callback: any) => {
   logoutFunction = callback;
 };
 
+// put only Auth endpoints
+const SKIP_REFRESH_ENDPOINTS = ["users/login/", "token/refresh"];
+
 // intercepts error response to refresh token access
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
+    //Skip token refresh if error occured
     if (
-      error.response?.status === 401 &&
-      !originalRequest._retry &&
-      !originalRequest.url.includes("token/refresh")
+      SKIP_REFRESH_ENDPOINTS.some((endpoints) =>
+        originalRequest.url.includes(endpoints)
+      )
     ) {
+      return Promise.reject(error);
+    }
+
+    // intercept 401 response if token expires and sends new token and refresh
+    if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       try {
         const newAccessToken = await refreshToken();

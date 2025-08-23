@@ -16,7 +16,8 @@ import { checkEmailAvailability, registerUserAPI } from "@/services/api";
 import CustomToast from "@/components/CustomToast";
 import ProgressIndicator from "@/components/ProgressIndicator";
 import { ActivityIndicator } from "react-native";
-import { useAuth } from "@/context/AuthProvider";
+// import { useAuth } from "@/context/AuthProvider";
+import { useAuth } from "@/context/useAuth";
 import { useRegistration } from "@/context/RegistrationProvider";
 import React, { useState, useEffect } from "react";
 import InputName from "@/components/Inputs/InputName";
@@ -29,7 +30,7 @@ const formValidation = Yup.object().shape({
   last_name: Yup.string().required("Fill this field"),
   phone_no: Yup.string()
     .required("Fill this field")
-    .matches(/^[0-9]{11}$/, "Phone number must be 11 digit"),
+    .matches(/^09[0-9]{9}$/, "Phone number must start with 09 and be 11 digit"),
   email: Yup.string().email("invalid email").required("Email is required"),
   password: Yup.string()
     .required("Password is required")

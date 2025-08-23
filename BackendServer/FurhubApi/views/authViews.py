@@ -2,16 +2,17 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth import authenticate
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
-from FurhubApi.models import User_logs, User_roles, Users, PetOwner, PetBoarding, PetWalker
+from FurhubApi.models import User_logs, User_roles, Users, PetBoarding, PetWalker
 from django.db import transaction
-from rest_framework.parsers import MultiPartParser, FormParser
+# from rest_framework.parsers import MultiPartParser, FormParser
 # import socket
 from django.utils import timezone
 from FurhubApi.utils import send_verification_email, get_client_ip
 from FurhubApi.serializers import (RegisterSerializer, LoginSerializer, EmailVerificationSerializer, 
-                                   UploadImageSerializer, ForgotPasswordSerializer, VerifyCodeSerializer, ResetPasswordSerializer)
+                                   ForgotPasswordSerializer, VerifyCodeSerializer, ResetPasswordSerializer, 
+                                   ChangePasswordSerializer)
 
 class LoginView(APIView):
     permission_classes = [AllowAny]
@@ -53,6 +54,7 @@ class LoginView(APIView):
                         send_verification_email(user)
                     
                     return Response({
+                        "id": user.id,
                         "access": str(refresh.access_token),
                         "refresh": str(refresh),
                         "roles": roles,
@@ -65,6 +67,7 @@ class LoginView(APIView):
                 
                 # print("LoginView is_verified:", user.is_verified)
                 return Response({
+                    "id": user.id,
                     "access": str(refresh.access_token),
                     "refresh": str(refresh),
                     "roles": roles,
@@ -162,6 +165,7 @@ class VerifyEmailView(APIView):
                 petboarding_status = petboarding.status
 
             return Response({
+                "id": user.id,
                 "message": "Email verified successfully.",
                 "access": str(refresh.access_token),
                 "refresh": str(refresh),
@@ -186,19 +190,19 @@ class ResendCodeView(APIView):
         except Users.DoesNotExist:
             return Response({"error": "Email not found."}, status=status.HTTP_400_BAD_REQUEST)
         
-class UploadImageView(APIView):
-    parser_classes = [MultiPartParser, FormParser]
-    permission_classes = [AllowAny]
+# class UploadImageView(APIView):
+#     parser_classes = [MultiPartParser, FormParser]
+#     permission_classes = [AllowAny]
 
-    def post(self, request):
-        serializer = UploadImageSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({
-                "message": "Image Upload successfully",
-            }, status=status.HTTP_201_CREATED)
-        return Response(
-            serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#     def post(self, request):
+#         serializer = UploadImageSerializer(data=request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response({
+#                 "message": "Image Upload successfully",
+#             }, status=status.HTTP_201_CREATED)
+#         return Response(
+#             serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class ForgotPasswordView(APIView):
     permission_classes = [AllowAny]
@@ -229,6 +233,29 @@ class ResetPasswordView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response({"message": "Password change successfuly"}, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class ChangePasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    # update password field function 
+    def put(self, request):
+        user = request.user
+
+        # passing the data to check if its valid
+        serializer = ChangePasswordSerializer(data=request.data)
+
+        if serializer.is_valid():
+            old_password = serializer.validate['old_password']
+            # checking if inputted old password match
+            if not user.check_password(old_password):
+                return Response({"old_password": "Old password is incorrect"}, status=status.HTTP_400_BAD_REQUEST)
+            
+            # storing new password in database
+            user.set_password(serializer.validate['new_password'])
+            user.save()
+            return Response({"detail": "Password updated successfully"}, status=status.HTTP_200_OK)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         

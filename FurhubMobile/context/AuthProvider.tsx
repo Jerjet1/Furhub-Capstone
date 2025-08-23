@@ -1,46 +1,11 @@
 import { logout as LogoutAPI } from "@/services/api";
 import { router } from "expo-router";
-import { useState, createContext, useContext, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import * as SecureStore from "expo-secure-store";
-import { ref } from "yup";
-
-export const ROLES = {
-  OWNER: "Owner",
-  WALKER: "Walker",
-};
-
-type AuthContextType = {
-  user: {
-    token: string;
-    roles: string[];
-    activeRole: string;
-    is_verified: boolean;
-    email: string;
-    status: string;
-    refresh: string | null;
-  } | null;
-  login: (
-    token: string,
-    roles: string[],
-    is_verified: boolean,
-    email: string,
-    status: string,
-    refresh: string
-  ) => void;
-  registerUser: (
-    token: string,
-    roles: string[],
-    is_verified: boolean,
-    email: string,
-    status: string,
-    refresh: string
-  ) => void;
-  setActiveRole: (role: string) => void;
-  logout: () => void;
-  isInitialized: boolean;
-};
-
-const AuthContext = createContext<AuthContextType | null>(null);
+import { axiosInstance, setLogoutCallback } from "@/services/axiosInterceptor";
+import { ROLES } from "@/constant/roles";
+import { USER_ENDPOINTS as End, USER_ENDPOINTS } from "@/services/endpoints";
+import { AuthContext, AuthContextType } from "./AuthContex";
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -58,6 +23,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         (await SecureStore.getItemAsync("is_verified")) === "true";
       const status = (await SecureStore.getItemAsync("pet_walker")) || "";
       const refresh = await SecureStore.getItemAsync("refresh");
+
+      console.log(refresh);
+      console.log(token);
+
       if (token && roles) {
         setUser({
           token,
@@ -102,6 +71,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     });
   };
 
+  const fetchUserProfile = async () => {
+    if (!user) return;
+
+    try {
+      const token = await SecureStore.getItemAsync("token");
+      const response = await axiosInstance.get(USER_ENDPOINTS.PROFILE_PICTURE, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setUser((prev) =>
+        prev ? { ...prev, profileImage: response.data.image } : prev
+      );
+
+      return response.data.image;
+    } catch (error: any) {
+      throw error.response?.data || { details: "Something went wrong" };
+    }
+  };
+
+  useEffect(() => {
+    fetchUserProfile();
+  }, []);
+
   const login = async (
     token: string,
     roles: string[],
@@ -141,7 +135,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     await SecureStore.deleteItemAsync("token");
     await SecureStore.deleteItemAsync("roles");
     await SecureStore.deleteItemAsync("activeRole");
@@ -152,7 +146,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     await LogoutAPI();
     setUser(null);
     router.replace("/auth/LoginPage");
-  };
+  }, []);
+
+  useEffect(() => setLogoutCallback(logout), [logout]);
 
   return (
     <AuthContext.Provider
@@ -163,16 +159,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         setActiveRole,
         isInitialized,
         registerUser,
+        fetchUserProfile,
       }}>
       {children}
     </AuthContext.Provider>
   );
-};
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
 };

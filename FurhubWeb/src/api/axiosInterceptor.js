@@ -11,17 +11,25 @@ export const setLogoutCallback = (callback) => {
   logoutFunction = callback;
 };
 
+// list of endpoints to avoid error display
+const SKIP_REFRESH_ENDPOINTS = ["users/login/", "token/refresh"];
+
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    // If error is 401 (unauthorized) and it's not a refresh request
+    //skips the token refresh
     if (
-      error.response?.status === 401 &&
-      !originalRequest._retry &&
-      !originalRequest.url.includes("token/refresh")
+      SKIP_REFRESH_ENDPOINTS.some((endpoints) =>
+        originalRequest.url.includes(endpoints)
+      )
     ) {
+      return Promise.reject(error);
+    }
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      // If error is 401 (unauthorized) and it's not a refresh request
       originalRequest._retry = true;
 
       try {

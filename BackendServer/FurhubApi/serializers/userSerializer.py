@@ -1,11 +1,29 @@
 from rest_framework import serializers
-from FurhubApi.models import Users, PetWalker, PetBoarding, UploadedImage, Service
-from .authSerializer import UploadImageSerializer
+from FurhubApi.models import Users, PetWalker, PetBoarding, UploadedImage, Service, PetOwner
+from .ImageUploadSerializer import UploadImageSerializer
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = Users
         fields = ['id', 'first_name', 'last_name', 'email', 'phone_no']
+
+class PetOwnerUpdateProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PetOwner
+        fields = '__all__'
+
+class PetBoardingUpdateProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PetBoarding
+        field = '__all__'
+
+class PetWalkerUpdateProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PetWalker
+        field = '__all__'
+
+class AdminUpdateProfileSerializer(serializers.ModelSerializer):
+    pass
 
 class PetWalkerSerializer(serializers.ModelSerializer):
     user = UserSerializer()
@@ -40,13 +58,3 @@ class ServiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Service
         fields = [ 'service_id','service_name']
-
-# class BulkUploadImageSerializer(serializers.Serializer):
-#     images = UploadImageSerializer(many=True)
-
-#     def create(self, validated_data):
-#         images_data = validated_data.pop('images')
-#         uploaded_images = []
-#         for image_data in images_data:
-#             uploaded_images.append(UploadedImage.objects.create(**image_data))
-#         return uploaded_images

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useAuth } from "../context/AuthProvider";
+import { useAuth } from "../context/useAuth";
 import { useNavigate, useLocation } from "react-router-dom";
 import { InputOTP } from "../components/Inputs/InputOTP";
 import { FiChevronLeft } from "react-icons/fi";

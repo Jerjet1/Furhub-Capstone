@@ -13,7 +13,7 @@ import {
 } from "../api/authAPI";
 import { Link } from "react-router-dom";
 import { ROLES } from "../App";
-import { useAuth } from "../context/AuthProvider";
+import { useAuth } from "../context/useAuth";
 import { ImageLayout } from "../components/Layout/ImageLayout";
 import { InputName } from "../components/Inputs/InputName";
 import { InputPhone } from "../components/Inputs/InputPhone";

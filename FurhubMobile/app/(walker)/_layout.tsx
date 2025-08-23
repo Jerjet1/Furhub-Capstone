@@ -4,6 +4,14 @@ import CustomTabBarButton from "@/components/Buttons/CustomTabBarButton";
 import React from "react";
 
 export default function WalkerTabs() {
+  const createScreenOptions = (title: any, iconName: any) => ({
+    title,
+    tabBarIcon: ({ color }: { color: any }) => (
+      <FontAwesome name={iconName} size={20} color={color} />
+    ),
+    tabBarButton: (props: any) => <CustomTabBarButton {...props} />,
+  });
+
   return (
     <Tabs
       screenOptions={{
@@ -20,15 +28,10 @@ export default function WalkerTabs() {
           paddingBottom: 5,
         },
       }}>
+      <Tabs.Screen name="Home" options={createScreenOptions("Home", "home")} />
       <Tabs.Screen
-        name="Home"
-        options={{
-          title: "Home",
-          tabBarIcon: ({ color }) => (
-            <FontAwesome name="home" size={20} color={color} />
-          ),
-          tabBarButton: (props) => <CustomTabBarButton {...props} />,
-        }}
+        name="Booking"
+        options={createScreenOptions("Booking", "calendar")}
       />
     </Tabs>
   );

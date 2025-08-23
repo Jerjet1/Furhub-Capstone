@@ -78,11 +78,6 @@ class EmailVerificationSerializer(serializers.Serializer):
         user.code_expiry = None
         user.save()
         return user
-    
-class UploadImageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = UploadedImage
-        fields = ['user', 'image', 'category', 'label', 'uploaded_at']
 
 class ForgotPasswordSerializer(serializers.Serializer):
     email = serializers.EmailField()
@@ -133,3 +128,12 @@ class ResetPasswordSerializer(serializers.Serializer):
         user.verification_code = None
         user.code_expiry = None
         user.save()
+
+class ChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(write_only=True)
+    new_password = serializers.CharField(write_only=True)
+    confirm_password = serializers.CharField(write_only=True)
+
+    def validate(self, data):
+        if data['new_password'] != data['confirm_password']:
+            raise serializers.ValidationError({"password": 'Password do not match'})

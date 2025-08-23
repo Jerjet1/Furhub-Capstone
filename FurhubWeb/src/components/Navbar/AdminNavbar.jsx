@@ -1,6 +1,7 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthProvider";
+// import { useAuth } from "../../context/AuthProvider";
+import { useAuth } from "../../context/useAuth";
 export const AdminNavbar = ({ section }) => {
   const { logout } = useAuth();
   const navigate = useNavigate();

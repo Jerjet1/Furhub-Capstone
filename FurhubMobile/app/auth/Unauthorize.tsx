@@ -1,5 +1,7 @@
 import { View, Text, TouchableOpacity } from "react-native";
-import { useAuth } from "@/context/AuthProvider";
+// import { useAuth } from "@/context/AuthProvider";
+import { useAuth } from "@/context/useAuth";
+
 import React from "react";
 
 export default function Unauthorize() {

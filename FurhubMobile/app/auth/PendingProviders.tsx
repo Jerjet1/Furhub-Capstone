@@ -1,6 +1,8 @@
 import { View, Text, TouchableOpacity } from "react-native";
 import { router } from "expo-router";
-import { useAuth } from "@/context/AuthProvider";
+// import { useAuth } from "@/context/AuthProvider";
+import { useAuth } from "@/context/useAuth";
+
 import React from "react";
 
 export default function PendingProviders() {

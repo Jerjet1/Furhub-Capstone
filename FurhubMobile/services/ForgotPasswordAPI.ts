@@ -1,16 +1,15 @@
 import axios from "axios";
-import { API_URL } from "../constant/config";
+import { USER_ENDPOINTS } from "./endpoints";
 
-const forgotPasswordURL = new URL("users/forgot-password/", API_URL).toString();
-const verifyCodeURL = new URL("users/verify-code/", API_URL).toString();
-const ResetPasswordURL = new URL("users/reset-password/", API_URL).toString();
 type sendEmailCode = {
   email: string;
 };
 
 export const ForgotPasswordAPI = async ({ email }: sendEmailCode) => {
   try {
-    const response = await axios.post(forgotPasswordURL, { email });
+    const response = await axios.post(USER_ENDPOINTS.FORGOT_PASSWORD, {
+      email,
+    });
     return response.data;
   } catch (error: any) {
     throw error.response?.data || { details: "Something went wrong" };
@@ -24,7 +23,10 @@ type VerifyCodeProps = {
 
 export const VerifyCode = async ({ email, code }: VerifyCodeProps) => {
   try {
-    const response = await axios.post(verifyCodeURL, { email, code });
+    const response = await axios.post(USER_ENDPOINTS.VERIFY_CODE, {
+      email,
+      code,
+    });
     return response.data;
   } catch (error: any) {
     throw error.response?.data || { details: "Something went wrong" };
@@ -43,7 +45,7 @@ export const ResetPassword = async ({
   confirm_password,
 }: ResetPasswordProps) => {
   try {
-    const response = await axios.post(ResetPasswordURL, {
+    const response = await axios.post(USER_ENDPOINTS.RESET_PASSWORD, {
       email,
       new_password,
       confirm_password,

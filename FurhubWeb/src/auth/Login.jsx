@@ -7,7 +7,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { LottieSpinner } from "../components/LottieSpinner";
 import { loginAuth } from "../api/authAPI";
-import { useAuth } from "../context/AuthProvider";
+import { useAuth } from "../context/useAuth";
 import { InputEmail } from "../components/Inputs/InputEmail";
 import { InputPassword } from "../components/Inputs/InputPassword";
 import { ImageLayout } from "../components/Layout/ImageLayout";
@@ -17,6 +17,7 @@ const validationSchema = yup.object().shape({
   email: yup.string().email("invalid email").required("Email is required"),
   password: yup.string().required("password is required"),
 });
+
 export const Login = () => {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();

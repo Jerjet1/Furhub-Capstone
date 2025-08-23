@@ -8,7 +8,9 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.pagination import PageNumberPagination
 from FurhubApi.permission import IsAdminRole
 # import socket
-from FurhubApi.serializers import ServiceSerializer, PetBoardingSerializer, PetWalkerSerializer, UserSerializer
+from FurhubApi.serializers import (ServiceSerializer, PetBoardingSerializer, PetWalkerSerializer, 
+                                   UserSerializer, PetWalkerUpdateProfileSerializer, PetOwnerUpdateProfileSerializer, 
+                                   PetBoardingUpdateProfileSerializer)
 # Create your views here.
 
 # class PendingProviders(APIView):
@@ -30,6 +32,73 @@ from FurhubApi.serializers import ServiceSerializer, PetBoardingSerializer, PetW
 #         }
 
 #         return Response(data, status=status.HTTP_200_OK)
+
+class BaseUserUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request):
+        user = request.user
+        
+        serializer = UserSerializer(user, data=request.data, partial = True)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class PetWalkerUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+    def patch(self, request):
+        try:
+            walker = request.user.petwalker
+        except PetWalker.DoesNotExist:
+            return Response({"detail": "Walker Profile not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = PetWalkerUpdateProfileSerializer(walker, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class PetOwnerUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request):
+        try:
+            owner = request.user.petowner
+        except PetOwner.DoesNotExist:
+            return Response({"detail": "Pet Owner not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = PetOwnerUpdateProfileSerializer(owner, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class PetBoardingUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request):
+        try:
+            boarding = request.user.petboarding
+        except PetBoarding.DoesNotExist:
+            return Response({"detail": "Pet Boarding not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = PetBoardingUpdateProfileSerializer(boarding, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class AdminUpdateView(APIView):
+    permission_classes = [IsAdminRole, IsAuthenticated]
+
+    def patch(self, request, pk):
+        pass
 
 class PendingPetBoarding(APIView):
     permission_classes = [IsAuthenticated, IsAdminRole]
