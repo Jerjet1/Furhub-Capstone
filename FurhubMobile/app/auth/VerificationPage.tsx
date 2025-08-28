@@ -9,9 +9,9 @@ import React, { useState } from "react";
 import ResendButton from "@/components/Buttons/ResendButton";
 import InputOTP from "@/components/Inputs/InputOTP";
 import { ActivityIndicator } from "react-native";
-// import { useAuth } from "@/context/AuthProvider";
 import { useAuth } from "@/context/useAuth";
 import { ResendCode } from "@/utils/ResendCode";
+import { parseError } from "@/utils/parseError";
 
 export default function VerificationPage() {
   const [loading, setLoading] = useState(false);
@@ -59,21 +59,11 @@ export default function VerificationPage() {
       }
     } catch (error: any) {
       // catch error
-      let message = "Verification failed";
-      if (typeof error === "string") {
-        message = error;
-      } else if (typeof error.details === "string") {
-        message = error.details;
-      } else if (typeof error.detail === "string") {
-        message = error.detail;
-      } else if (typeof error.message === "string") {
-        message = error.message;
-      } else if (Array.isArray(error)) {
-        message = error.join("\n");
-      } else if (typeof error === "object") {
-        message = Object.values(error).flat().join("\n");
-      }
-      setToast({ message, type: "error" });
+      console.log("Verification error");
+      setToast({
+        message: parseError(error),
+        type: "error",
+      });
     } finally {
       setLoading(false);
     }

@@ -13,26 +13,6 @@ from FurhubApi.serializers import (ServiceSerializer, PetBoardingSerializer, Pet
                                    PetBoardingUpdateProfileSerializer)
 # Create your views here.
 
-# class PendingProviders(APIView):
-#     permission_classes = [IsAuthenticated, IsAdminRole]
-
-#     paginator = PageNumberPagination()
-#     paginator.page_size = 9
-
-#     def get(self, request):
-#         pet_walker_queryset = PetWalker.objects.filter(status='pending')
-#         pet_walker_serializer = PetWalkerSerializer(pet_walker_queryset, many=True)
-
-#         pet_boarding_queryset = PetBoarding.objects.filter(status='pending')
-#         pet_boarding_serializer = PetBoardingSerializer(pet_boarding_queryset, many=True)
-
-#         data = {
-#             "pet_walkers": pet_walker_serializer.data,
-#             "pet_boardings": pet_boarding_serializer.data,
-#         }
-
-#         return Response(data, status=status.HTTP_200_OK)
-
 class BaseUserUpdateView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -46,6 +26,13 @@ class BaseUserUpdateView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def get(self, request):
+        user = request.user
+        serializer = UserSerializer(user)
+        return Response(
+            serializer.data, status=status.HTTP_200_OK
+        )
 
 class PetWalkerUpdateView(APIView):
     permission_classes = [IsAuthenticated]
@@ -77,6 +64,14 @@ class PetOwnerUpdateView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def get(self, request):
+        user = request.user
+        serializer = PetOwnerUpdateProfileSerializer(user)
+
+        return Response(
+            serializer.data, status=status.HTTP_200_OK
+        )
     
 class PetBoardingUpdateView(APIView):
     permission_classes = [IsAuthenticated]
@@ -148,15 +143,3 @@ class AllUserView(APIView):
         # return Response(serializer.data)
 
         return self.paginator.get_paginated_response(serializer.data)
-
-
-# class BulkUploadImageView(APIView):
-#     parser_classes = [MultiPartParser, FormParser]
-#     permission_classes = [AllowAny]
-
-#     def post(self, request):
-#         serializer = BulkUploadImageSerializer(data=request.data)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response({"message": "Images uploaded successfully."}, status=status.HTTP_201_CREATED)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

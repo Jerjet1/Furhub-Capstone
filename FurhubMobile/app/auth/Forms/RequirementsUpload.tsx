@@ -9,9 +9,9 @@ import { ActivityIndicator } from "react-native";
 import { registerUserAPI } from "@/services/api";
 import { requirementsUpload } from "@/services/imageUpload";
 import { useRegistration } from "@/context/RegistrationProvider";
-// import { useAuth } from "@/context/AuthProvider";
 import { useAuth } from "@/context/useAuth";
 import React, { useState, useEffect } from "react";
+import { parseError } from "@/utils/parseError";
 
 export default function RequirementsUpload() {
   const [loading, setLoading] = useState(false);
@@ -165,23 +165,8 @@ export default function RequirementsUpload() {
       });
     } catch (error: any) {
       console.log("error", error);
-      let message = "Unexpected error occured";
-
-      if (typeof error === "string") {
-        message = error;
-      } else if (typeof error.details === "string") {
-        message = error.details;
-      } else if (typeof error.detail === "string") {
-        message = error.detail;
-      } else if (typeof error.message === "string") {
-        message = error.message;
-      } else if (Array.isArray(error)) {
-        message = error.join("\n");
-      } else if (typeof error === "object") {
-        message = Object.values(error).flat().join("\n");
-      }
       setToast({
-        message: message,
+        message: parseError(error),
         type: "error",
       });
     } finally {

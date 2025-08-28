@@ -5,10 +5,8 @@ import { ActivityIndicator, StatusBar, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { RegistrationProvider } from "@/context/RegistrationProvider";
-import {
-  ForgotPasswordProvider,
-  useForgotPassword,
-} from "@/context/ForgotPasswordProvider";
+import { ForgotPasswordProvider } from "@/context/ForgotPasswordProvider";
+import { ProfileProvider } from "@/context/profile/profileProvider";
 
 function RootLayoutNav() {
   const { user, isInitialized } = useAuth();
@@ -61,7 +59,9 @@ export default function RootLayout() {
         <AuthProvider>
           <RegistrationProvider>
             <ForgotPasswordProvider>
-              <RootLayoutNav />
+              <ProfileProvider>
+                <RootLayoutNav />
+              </ProfileProvider>
             </ForgotPasswordProvider>
           </RegistrationProvider>
         </AuthProvider>

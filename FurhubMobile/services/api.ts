@@ -128,15 +128,11 @@ export const changePasswordAPI = async ({
 }: ChangePasswordProps) => {
   try {
     const token = await SecureStore.getItemAsync("token");
-    const response = await axiosInstance.put(
-      USER_ENDPOINTS.CHANGE_PASSWORD,
-      { old_password, new_password, confirm_password },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    const response = await axiosInstance.put(USER_ENDPOINTS.CHANGE_PASSWORD, {
+      old_password,
+      new_password,
+      confirm_password,
+    });
     return response.data;
   } catch (error: any) {
     throw error.response?.data || { details: "Something went wrong" };

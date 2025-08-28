@@ -7,11 +7,11 @@ import { login } from "@/services/api";
 import Layout from "@/components/Layouts/Layout";
 import * as Yup from "yup";
 import React, { useState } from "react";
-// import { useAuth } from "@/context/AuthProvider";
 import { useAuth } from "@/context/useAuth";
 import CustomToast from "@/components/CustomToast";
 import InputEmail from "@/components/Inputs/InputEmail";
 import InputPassword from "@/components/Inputs/InputPassword";
+import { parseError } from "@/utils/parseError";
 
 export default function LoginPage() {
   const [toast, setToast] = useState<{
@@ -87,30 +87,15 @@ export default function LoginPage() {
       }
     } catch (error: any) {
       console.log("Login error:", error);
-      let message = "Login failed. Please try again.";
-
-      if (typeof error === "string") {
-        message = error;
-      } else if (typeof error.details === "string") {
-        message = error.details;
-      } else if (typeof error.detail === "string") {
-        message = error.detail;
-      } else if (typeof error.message === "string") {
-        message = error.message;
-      } else if (Array.isArray(error)) {
-        message = error.join("\n");
-      } else if (typeof error === "object") {
-        message = Object.values(error).flat().join("\n");
-      }
-
       setToast({
-        message: message,
+        message: parseError(error),
         type: "error",
       });
     } finally {
       setLoading(false);
     }
   };
+
   return (
     <Layout>
       <ScrollView

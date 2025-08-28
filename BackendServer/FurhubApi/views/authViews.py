@@ -190,20 +190,6 @@ class ResendCodeView(APIView):
         except Users.DoesNotExist:
             return Response({"error": "Email not found."}, status=status.HTTP_400_BAD_REQUEST)
         
-# class UploadImageView(APIView):
-#     parser_classes = [MultiPartParser, FormParser]
-#     permission_classes = [AllowAny]
-
-#     def post(self, request):
-#         serializer = UploadImageSerializer(data=request.data)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response({
-#                 "message": "Image Upload successfully",
-#             }, status=status.HTTP_201_CREATED)
-#         return Response(
-#             serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
 class ForgotPasswordView(APIView):
     permission_classes = [AllowAny]
 

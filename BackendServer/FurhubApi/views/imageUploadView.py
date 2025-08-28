@@ -45,3 +45,14 @@ class ProfileUploadView(APIView):
         
         serializer = UploadImageSerializer(image, context={"request": request})
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+# class BulkUploadImageView(APIView):
+#     parser_classes = [MultiPartParser, FormParser]
+#     permission_classes = [AllowAny]
+
+#     def post(self, request):
+#         serializer = BulkUploadImageSerializer(data=request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response({"message": "Images uploaded successfully."}, status=status.HTTP_201_CREATED)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

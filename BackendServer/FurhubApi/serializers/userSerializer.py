@@ -10,17 +10,17 @@ class UserSerializer(serializers.ModelSerializer):
 class PetOwnerUpdateProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = PetOwner
-        fields = '__all__'
+        fields = ['emergency_no', 'bio']
 
 class PetBoardingUpdateProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = PetBoarding
-        field = '__all__'
+        fields = '__all__'
 
 class PetWalkerUpdateProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = PetWalker
-        field = '__all__'
+        fields = '__all__'
 
 class AdminUpdateProfileSerializer(serializers.ModelSerializer):
     pass

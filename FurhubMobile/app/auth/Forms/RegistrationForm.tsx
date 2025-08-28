@@ -16,7 +16,6 @@ import { checkEmailAvailability, registerUserAPI } from "@/services/api";
 import CustomToast from "@/components/CustomToast";
 import ProgressIndicator from "@/components/ProgressIndicator";
 import { ActivityIndicator } from "react-native";
-// import { useAuth } from "@/context/AuthProvider";
 import { useAuth } from "@/context/useAuth";
 import { useRegistration } from "@/context/RegistrationProvider";
 import React, { useState, useEffect } from "react";
@@ -24,6 +23,7 @@ import InputName from "@/components/Inputs/InputName";
 import InputEmail from "@/components/Inputs/InputEmail";
 import InputPassword from "@/components/Inputs/InputPassword";
 import InputPhone from "@/components/Inputs/InputPhone";
+import { parseError } from "@/utils/parseError";
 
 const formValidation = Yup.object().shape({
   first_name: Yup.string().required("Fill this field"),
@@ -135,23 +135,8 @@ export default function RegistrationForm() {
       }
     } catch (error: any) {
       console.log("error", error);
-      let message = "Unexpected error occured";
-
-      if (typeof error === "string") {
-        message = error;
-      } else if (typeof error.details === "string") {
-        message = error.details;
-      } else if (typeof error.detail === "string") {
-        message = error.detail;
-      } else if (typeof error.message === "string") {
-        message = error.message;
-      } else if (Array.isArray(error)) {
-        message = error.join("\n");
-      } else if (typeof error === "object") {
-        message = Object.values(error).flat().join("\n");
-      }
       setToast({
-        message: message,
+        message: parseError(error),
         type: "error",
       });
     } finally {

@@ -9,7 +9,7 @@ export type AuthContextType = {
     email: string;
     status: string;
     refresh: string | null;
-    profileImage?: string | null;
+    // profileImage?: string | null;
   } | null;
   login: (
     token: string,
@@ -28,7 +28,7 @@ export type AuthContextType = {
     refresh: string
   ) => void;
   setActiveRole: (role: string) => void;
-  fetchUserProfile: () => Promise<string | null>;
+  // fetchUserProfile: () => Promise<string | null>;
   logout: () => void;
   isInitialized: boolean;
 };

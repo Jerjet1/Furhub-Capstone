@@ -8,12 +8,11 @@ export const uploadImageAPI = async (FormData: any) => {
   try {
     const token = await SecureStore.getItemAsync("token");
     const response = await axiosInstance.post(
-      USER_ENDPOINTS.IMAGE_UPLOAD,
+      USER_ENDPOINTS.PROFILE_PICTURE,
       FormData,
       {
         headers: {
           "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${token}`,
         },
       }
     );
@@ -27,12 +26,8 @@ export const uploadImageAPI = async (FormData: any) => {
 export const fetchProfileAPI = async () => {
   try {
     const token = await SecureStore.getItemAsync("token");
-    const response = await axiosInstance.get(USER_ENDPOINTS.PROFILE_PICTURE, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    return response.data;
+    const response = await axiosInstance.get(USER_ENDPOINTS.PROFILE_PICTURE);
+    return response.data.image;
   } catch (error: any) {
     throw error.response?.data || { details: "Something went wrong" };
   }

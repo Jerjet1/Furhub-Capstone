@@ -12,6 +12,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import { ActivityIndicator } from "react-native";
 import { router } from "expo-router";
 import CustomToast from "@/components/CustomToast";
+import { parseError } from "@/utils/parseError";
 
 export default function ForgotPasswordPage() {
   const [loading, setLoading] = useState(false);
@@ -43,23 +44,8 @@ export default function ForgotPasswordPage() {
       });
     } catch (error: any) {
       console.log("error", error);
-      let message = "Unexpected error occured";
-
-      if (typeof error === "string") {
-        message = error;
-      } else if (typeof error.details === "string") {
-        message = error.details;
-      } else if (typeof error.detail === "string") {
-        message = error.detail;
-      } else if (typeof error.message === "string") {
-        message = error.message;
-      } else if (Array.isArray(error)) {
-        message = error.join("\n");
-      } else if (typeof error === "object") {
-        message = Object.values(error).flat().join("\n");
-      }
       setToast({
-        message: message,
+        message: parseError(error),
         type: "error",
       });
     } finally {

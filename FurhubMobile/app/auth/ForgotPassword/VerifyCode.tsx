@@ -10,6 +10,7 @@ import { ResendCode } from "@/utils/ResendCode";
 import { VerifyCode as verify_code } from "@/services/ForgotPasswordAPI";
 import CustomToast from "@/components/CustomToast";
 import { ActivityIndicator } from "react-native";
+import { parseError } from "@/utils/parseError";
 
 export default function VerifyCode() {
   const [value, setValue] = useState("");
@@ -39,21 +40,8 @@ export default function VerifyCode() {
       });
     } catch (error: any) {
       // error
-      let message = "Verification failed";
-      if (typeof error === "string") {
-        message = error;
-      } else if (typeof error.details === "string") {
-        message = error.details;
-      } else if (typeof error.detail === "string") {
-        message = error.detail;
-      } else if (typeof error.message === "string") {
-        message = error.message;
-      } else if (Array.isArray(error)) {
-        message = error.join("\n");
-      } else if (typeof error === "object") {
-        message = Object.values(error).flat().join("\n");
-      }
-      setToast({ message, type: "error" });
+      console.log("error: ", error);
+      setToast({ message: parseError(error), type: "error" });
     } finally {
       setLoading(false);
     }

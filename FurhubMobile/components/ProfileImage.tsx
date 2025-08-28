@@ -110,7 +110,7 @@ export default function ProfileImage({
             resizeMode="cover"
           />
         ) : (
-          <View className="rounded-full bg-white/80 w-40 h-40 items-center justify-center">
+          <View className="rounded-full bg-white/80 w-44 h-44 items-center justify-center">
             <Ionicons name="user" size={100} color="gray" />
           </View>
         )}

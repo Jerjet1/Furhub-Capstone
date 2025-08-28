@@ -11,7 +11,6 @@ export default function _layout() {
       <Stack.Screen name="SettingScreen" options={{ headerShown: false }} />
       <Stack.Screen name="AccountProfile" options={{ headerShown: false }} />
       <Stack.Screen name="PetProfile" options={{ headerShown: false }} />
-      <Stack.Screen name="ChangePassword" options={{ headerShown: false }} />
     </Stack>
   );
 }

@@ -2,9 +2,9 @@ import { logout as LogoutAPI } from "@/services/api";
 import { router } from "expo-router";
 import { useState, useEffect, useCallback } from "react";
 import * as SecureStore from "expo-secure-store";
-import { axiosInstance, setLogoutCallback } from "@/services/axiosInterceptor";
+import { setLogoutCallback } from "@/services/axiosInterceptor";
 import { ROLES } from "@/constant/roles";
-import { USER_ENDPOINTS as End, USER_ENDPOINTS } from "@/services/endpoints";
+import { fetchProfileAPI } from "@/services/imageUpload";
 import { AuthContext, AuthContextType } from "./AuthContex";
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
@@ -71,30 +71,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     });
   };
 
-  const fetchUserProfile = async () => {
-    if (!user) return;
+  // const fetchUserProfile = async () => {
+  //   if (!user) return;
 
-    try {
-      const token = await SecureStore.getItemAsync("token");
-      const response = await axiosInstance.get(USER_ENDPOINTS.PROFILE_PICTURE, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+  //   try {
+  //     const response = await fetchProfileAPI();
 
-      setUser((prev) =>
-        prev ? { ...prev, profileImage: response.data.image } : prev
-      );
+  //     setUser((prev) => (prev ? { ...prev, profileImage: response } : prev));
 
-      return response.data.image;
-    } catch (error: any) {
-      throw error.response?.data || { details: "Something went wrong" };
-    }
-  };
+  //     return response;
+  //   } catch (error: any) {
+  //     throw error.response?.data || { details: "Something went wrong" };
+  //   }
+  // };
 
-  useEffect(() => {
-    fetchUserProfile();
-  }, []);
+  // useEffect(() => {
+  //   fetchUserProfile();
+  // }, []);
 
   const login = async (
     token: string,
@@ -159,7 +152,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         setActiveRole,
         isInitialized,
         registerUser,
-        fetchUserProfile,
+        // fetchUserProfile,
       }}>
       {children}
     </AuthContext.Provider>

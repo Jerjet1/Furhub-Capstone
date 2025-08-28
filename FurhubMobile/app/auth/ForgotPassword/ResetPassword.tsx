@@ -9,6 +9,7 @@ import { useForgotPassword } from "@/context/ForgotPasswordProvider";
 import { ResetPassword as reset_password } from "@/services/ForgotPasswordAPI";
 import { router, useLocalSearchParams } from "expo-router";
 import { ActivityIndicator } from "react-native";
+import { parseError } from "@/utils/parseError";
 import React, { useState } from "react";
 
 export default function ResetPassword() {
@@ -62,21 +63,8 @@ export default function ResetPassword() {
       router.replace("/auth/LoginPage");
     } catch (error: any) {
       // error message
-      let message = "Verification failed";
-      if (typeof error === "string") {
-        message = error;
-      } else if (typeof error.details === "string") {
-        message = error.details;
-      } else if (typeof error.detail === "string") {
-        message = error.detail;
-      } else if (typeof error.message === "string") {
-        message = error.message;
-      } else if (Array.isArray(error)) {
-        message = error.join("\n");
-      } else if (typeof error === "object") {
-        message = Object.values(error).flat().join("\n");
-      }
-      setToast({ message, type: "error" });
+      console.log("error:", error);
+      setToast({ message: parseError(error), type: "error" });
     } finally {
       setLoading(false);
     }
