@@ -12,25 +12,55 @@ export interface UserDetails {
 }
 
 export interface PetOwnerDetails {
-  emergency: string;
+  emergency_no: string;
   bio: string;
 }
 
-export const userDetailsAPI = async (): Promise<UserDetails> => {
-  try {
-    // const token = await SecureStore.getItemAsync("token");
-    const response = await axiosInstance.get(USER_ENDPOINTS.USER_DETAILS);
-    return response.data;
-  } catch (error: any) {
-    throw error.response?.data || { details: "Something went wrong" };
-  }
+export const userDetailsAPI = {
+  getDetails: async (): Promise<UserDetails> => {
+    try {
+      // const token = await SecureStore.getItemAsync("token");
+      const response = await axiosInstance.get(USER_ENDPOINTS.USER_DETAILS);
+      return response.data;
+    } catch (error: any) {
+      throw error.response?.data || { details: "Something went wrong" };
+    }
+  },
+  updateUser: async (data: Partial<UserDetails>): Promise<UserDetails> => {
+    try {
+      const response = await axiosInstance.patch(
+        USER_ENDPOINTS.USER_DETAILS,
+        data
+      );
+      return response.data;
+    } catch (error: any) {
+      throw error.response?.data || { details: "Something went wrong" };
+    }
+  },
 };
 
-export const petOwnerAPI = async (): Promise<PetOwnerDetails> => {
-  try {
-    const response = await axiosInstance.get(USER_ENDPOINTS.PET_OWNER_DETAILS);
-    return response.data;
-  } catch (error: any) {
-    throw error.response?.data || { details: "Something went wrong" };
-  }
+export const petOwnerAPI = {
+  getPetOwner: async (): Promise<PetOwnerDetails> => {
+    try {
+      const response = await axiosInstance.get(
+        USER_ENDPOINTS.PET_OWNER_DETAILS
+      );
+      return response.data;
+    } catch (error: any) {
+      throw error.response?.data || { details: "Something went wrong" };
+    }
+  },
+  updatePetOwner: async (
+    data: Partial<PetOwnerDetails>
+  ): Promise<PetOwnerDetails> => {
+    try {
+      const response = await axiosInstance.patch(
+        USER_ENDPOINTS.PET_OWNER_DETAILS,
+        data
+      );
+      return response.data;
+    } catch (error: any) {
+      throw error.response?.data || { details: "Something went wrong" };
+    }
+  },
 };

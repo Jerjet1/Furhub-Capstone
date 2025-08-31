@@ -127,7 +127,6 @@ export const changePasswordAPI = async ({
   confirm_password,
 }: ChangePasswordProps) => {
   try {
-    const token = await SecureStore.getItemAsync("token");
     const response = await axiosInstance.put(USER_ENDPOINTS.CHANGE_PASSWORD, {
       old_password,
       new_password,

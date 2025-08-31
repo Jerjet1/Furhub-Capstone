@@ -7,7 +7,6 @@ import {
 } from "react-native";
 import Ionicons from "@expo/vector-icons/FontAwesome";
 import { router } from "expo-router";
-import React, { useState, useEffect } from "react";
 import ProfileImage from "@/components/ProfileImage";
 import CustomToast from "@/components/CustomToast";
 import EditModalField from "@/components/Modals/EditModalField";
@@ -21,14 +20,13 @@ import SubmitButton from "@/components/Buttons/SubmitButton";
 import { useProfile } from "@/context/profile/useProfile";
 import InputPhone from "@/components/Inputs/InputPhone";
 import InputPassword from "@/components/Inputs/InputPassword";
-// import { updateProfileAPI, changePasswordAPI } from "@/services/profileApi"; // Assume these API functions exist
-import { userDetailsAPI, petOwnerAPI } from "@/services/userAPI";
+import { userDetailsAPI } from "@/services/userAPI";
 import { changePasswordAPI } from "@/services/api";
+import React, { useState, useEffect } from "react";
 
-// Validation schemas
-const validationSchemas = {
+const validationSchema = {
   name: Yup.object().shape({
-    first_name: Yup.string().required("First name is required"),
+    first_name: Yup.string().required("First name os required"),
     last_name: Yup.string().required("Last name is required"),
   }),
   phone: Yup.object().shape({
@@ -55,35 +53,18 @@ const validationSchemas = {
       .required("Confirm password is required")
       .oneOf([Yup.ref("new_password")], "Passwords do not match"),
   }),
-  emergency: Yup.object().shape({
-    emergency_no: Yup.string()
-      .required("Phone number is required")
-      .matches(
-        /^09[0-9]{9}$/,
-        "Phone number must start with 09 and be 11 digits"
-      ),
-  }),
 };
 
-// Modal types
 const MODAL_TYPES = {
   NONE: "NONE",
   NAME: "NAME",
   PHONE: "PHONE",
   PASSWORD: "PASSWORD",
-  EMERGENCY: "EMERGENCY",
-  BIO: "BIO",
 };
 
 export default function AccountProfile() {
-  const {
-    userDetails,
-    profilePicture,
-    petOwnerDetails,
-    loading,
-    error,
-    refreshProfile,
-  } = useProfile();
+  const { userDetails, profilePicture, loading, error, refreshProfile } =
+    useProfile();
 
   const [isLoading, setIsLoading] = useState(false);
   const [activeModal, setActiveModal] = useState(MODAL_TYPES.NONE);
@@ -96,7 +77,6 @@ export default function AccountProfile() {
     type?: "success" | "error";
   } | null>(null);
 
-  // Define form field types
   type FormFields = {
     first_name?: string;
     last_name?: string;
@@ -104,11 +84,8 @@ export default function AccountProfile() {
     old_password?: string;
     new_password?: string;
     confirm_password?: string;
-    emergency_no?: string;
-    bio?: string;
   };
 
-  // Main form setup
   const {
     control,
     handleSubmit,
@@ -118,29 +95,24 @@ export default function AccountProfile() {
   } = useForm<FormFields>({
     resolver: yupResolver(
       activeModal === MODAL_TYPES.NAME
-        ? validationSchemas.name
+        ? validationSchema.name
         : activeModal === MODAL_TYPES.PHONE
-        ? validationSchemas.phone
+        ? validationSchema.phone
         : activeModal === MODAL_TYPES.PASSWORD
-        ? validationSchemas.password
-        : activeModal === MODAL_TYPES.EMERGENCY
-        ? validationSchemas.emergency
+        ? validationSchema.password
         : Yup.object()
     ),
     mode: "onChange",
   });
 
-  const phoneNum = watch("phone_no");
+  const phone_no = watch("phone_no");
   const [first_name, last_name] = watch(["first_name", "last_name"]);
   const [old_password, new_password, confirm_password] = watch([
     "old_password",
     "new_password",
     "confirm_password",
   ]);
-  const emergency_no = watch("emergency_no");
-  const bio = watch("bio");
 
-  // Reset form when modal changes or userDetails updates
   useEffect(() => {
     if (activeModal === MODAL_TYPES.NAME) {
       reset({
@@ -157,14 +129,6 @@ export default function AccountProfile() {
         new_password: "",
         confirm_password: "",
       });
-    } else if (activeModal === MODAL_TYPES.EMERGENCY) {
-      reset({
-        emergency_no: petOwnerDetails?.emergency_no || "",
-      });
-    } else if (activeModal === MODAL_TYPES.BIO) {
-      reset({
-        bio: petOwnerDetails?.bio || "",
-      });
     }
   }, [activeModal, userDetails, reset]);
 
@@ -173,12 +137,12 @@ export default function AccountProfile() {
     reset();
   };
 
-  // Handles logic for image Upload
   const handleImageUpload = async (uri: string) => {
     setIsLoading(true);
     try {
       const profileImageData = new FormData();
-      const fileExtension = uri.split(".").pop()?.toLowerCase() || "jpg";
+      const fileExtension =
+        uri.split(".").pop()?.toLowerCase() || "jpg" || "png" || "jpeg";
 
       profileImageData.append("category", "profile_picture");
       profileImageData.append("label", "Profile Picture");
@@ -187,10 +151,8 @@ export default function AccountProfile() {
         name: `profile_${Date.now()}.${fileExtension}`,
         type: `image/${fileExtension === "png" ? "png" : "jpeg"}`,
       } as any);
-
       await uploadImageAPI(profileImageData);
       await refreshProfile();
-
       setToast({ message: "Image uploaded successfully!", type: "success" });
     } catch (error: any) {
       setModalToast({ message: parseError(error), type: "error" });
@@ -199,19 +161,17 @@ export default function AccountProfile() {
     }
   };
 
-  // Handles logic for updates
   const handleNameUpdate = async (data: any) => {
     setIsLoading(true);
     try {
       const payload: any = {};
-
       if (data.first_name) payload.first_name = data.first_name;
       if (data.last_name) payload.last_name = data.last_name;
 
       await userDetailsAPI.updateUser(payload);
-
       await refreshProfile();
-      setToast({ message: "Name updated successfully!", type: "success" });
+
+      setToast({ message: "Name update successfully!", type: "success" });
       closeModal();
     } catch (error: any) {
       setModalToast({ message: parseError(error), type: "error" });
@@ -223,30 +183,11 @@ export default function AccountProfile() {
   const handlePhoneUpdate = async (data: any) => {
     setIsLoading(true);
     try {
-      // await updateProfileAPI({ phone_no: data.phone_no });
       await userDetailsAPI.updateUser({ phone_no: data.phone_no });
       await refreshProfile();
-      setToast({
-        message: "Phone number updated successfully!",
-        type: "success",
-      });
-      closeModal();
-    } catch (error: any) {
-      setModalToast({ message: parseError(error), type: "error" });
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
-  const handleEmergencyPhoneUpdate = async (data: any) => {
-    setIsLoading(true);
-    try {
-      await petOwnerAPI.updatePetOwner({
-        emergency_no: data.emergency_no,
-      });
-      await refreshProfile();
       setToast({
-        message: "Phone number updated successfully!",
+        message: "Phone number updated successsfully!",
         type: "success",
       });
       closeModal();
@@ -261,32 +202,11 @@ export default function AccountProfile() {
     setIsLoading(true);
     try {
       const result = await changePasswordAPI(data);
+
       setToast({ message: result.details, type: "success" });
       closeModal();
     } catch (error: any) {
-      const msg = parseError(error);
-      console.log("Password error:", msg);
-      setModalToast({
-        message: parseError(error),
-        type: "error",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleBioUpdate = async (data: any) => {
-    setIsLoading(true);
-    try {
-      await petOwnerAPI.updatePetOwner({ bio: data.bio });
-      await refreshProfile();
-      setToast({ message: "Bio update successfully!", type: "success" });
-      closeModal();
-    } catch (error: any) {
-      setModalToast({
-        message: parseError(error),
-        type: "error",
-      });
+      setModalToast({ message: parseError(error), type: "error" });
     } finally {
       setIsLoading(false);
     }
@@ -352,7 +272,7 @@ export default function AccountProfile() {
               <SubmitButton
                 onPress={handleSubmit(handlePhoneUpdate)}
                 title="Save Changes"
-                disable={phoneNum === userDetails?.phone_no || !phoneNum}
+                disable={phone_no === userDetails?.phone_no || !phone_no}
               />
             </View>
           </View>
@@ -407,69 +327,6 @@ export default function AccountProfile() {
             </View>
           </View>
         );
-
-      case MODAL_TYPES.EMERGENCY:
-        return (
-          <View className="gap-5 px-2">
-            <View className="min-h-[80px]">
-              <Text className="text-lg font-medium">Emergency phone no.</Text>
-              <InputPhone
-                control={control}
-                name="emergency_no"
-                placeholder="+09"
-              />
-              <View className="min-h-[24px]">
-                {errors.emergency_no && (
-                  <Text className="text-red-600">
-                    {errors.emergency_no.message}
-                  </Text>
-                )}
-              </View>
-            </View>
-            <View className="flex items-center justify-center w-full mt-3">
-              <SubmitButton
-                onPress={handleSubmit(handleEmergencyPhoneUpdate)}
-                title="Save Changes"
-                disable={
-                  emergency_no === petOwnerDetails?.emergency_no ||
-                  !emergency_no
-                }
-              />
-            </View>
-          </View>
-        );
-
-      case MODAL_TYPES.BIO:
-        return (
-          <View className="gap-5 px-2">
-            <View className="min-h-[80px]">
-              <Controller
-                name="bio"
-                control={control}
-                rules={{ required: false }}
-                render={({ field: { value, onChange } }) => (
-                  <TextInput
-                    className="w-full h-44 border border-gray-400 rounded-lg p-5"
-                    multiline
-                    maxLength={200}
-                    textAlignVertical="top"
-                    value={value}
-                    onChangeText={onChange}
-                    placeholder="Write Something about yourself"
-                  />
-                )}
-              />
-            </View>
-            <View className="flex items-center justify-center w-full mt-3">
-              <SubmitButton
-                onPress={handleSubmit(handleBioUpdate)}
-                title="Save Changes"
-                disable={bio === petOwnerDetails?.bio || !bio}
-              />
-            </View>
-          </View>
-        );
-
       default:
         return null;
     }
@@ -483,10 +340,6 @@ export default function AccountProfile() {
         return "Edit Phone No";
       case MODAL_TYPES.PASSWORD:
         return "Change Password";
-      case MODAL_TYPES.EMERGENCY:
-        return "Emergency No.";
-      case MODAL_TYPES.BIO:
-        return "Edit Bio";
       default:
         return "";
     }
@@ -521,7 +374,7 @@ export default function AccountProfile() {
       <View className="flex-row items-center justify-between px-4 py-4">
         <TouchableOpacity
           className="w-10 h-10 items-center justify-center"
-          onPress={() => router.replace("/(owner)/Settings/SettingScreen")}>
+          onPress={() => router.replace("/(walker)/Settings/SettingScreen")}>
           <Ionicons name="arrow-left" size={24} color="black" />
         </TouchableOpacity>
         <Text className="text-[25px] font-semibold text-center flex-1">
@@ -530,7 +383,7 @@ export default function AccountProfile() {
         <View className="w-10 h-10" />
       </View>
 
-      {/* Profile Picture, Name and Bio */}
+      {/* Profile Picture, Name */}
       <View className="items-center justify-center mt-4">
         <ProfileImage
           initialImage={profilePicture || ""}
@@ -546,13 +399,6 @@ export default function AccountProfile() {
             className="ml-2"
             onPress={() => setActiveModal(MODAL_TYPES.NAME)}>
             <Ionicons name="pencil" size={19} color="#E05D5B" />
-          </TouchableOpacity>
-        </View>
-        <View className="flex items-center justify-center w-80 h-20 rounded-lg border border-gray-300 mt-2">
-          <TouchableOpacity onPress={() => setActiveModal(MODAL_TYPES.BIO)}>
-            <Text className="text-gray-400">
-              {petOwnerDetails?.bio || "Write something about yourself ^^"}
-            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -586,21 +432,6 @@ export default function AccountProfile() {
           <TouchableOpacity
             className="ml-3"
             onPress={() => setActiveModal(MODAL_TYPES.PHONE)}>
-            <Ionicons name="pencil" size={19} color="#E05D5B" />
-          </TouchableOpacity>
-        </View>
-
-        {/* Emergency Contact */}
-        <View className="flex-row items-center mb-4 border-b border-gray-300 pb-3">
-          <Text className="text-[17px] font-semibold text-gray-400 w-28">
-            Emergency No:
-          </Text>
-          <Text className="text-[17px] flex-1">
-            {petOwnerDetails?.emergency_no || "+09"}
-          </Text>
-          <TouchableOpacity
-            className="ml-3"
-            onPress={() => setActiveModal(MODAL_TYPES.EMERGENCY)}>
             <Ionicons name="pencil" size={19} color="#E05D5B" />
           </TouchableOpacity>
         </View>

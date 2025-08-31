@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from FurhubApi.models import Users, Roles, User_roles, PetOwner, PetWalker,Admin, PetBoarding, UploadedImage
+from FurhubApi.models import Users, Roles, User_roles, PetOwner, PetWalker,Admin, PetBoarding, ProviderService
 from django.utils import timezone
 from FurhubApi.utils import send_verification_email
 
@@ -134,6 +134,7 @@ class ChangePasswordSerializer(serializers.Serializer):
     new_password = serializers.CharField(write_only=True)
     confirm_password = serializers.CharField(write_only=True)
 
-    def validate(self, data):
+    def validate_(self, data):
         if data['new_password'] != data['confirm_password']:
-            raise serializers.ValidationError({"password": 'Password do not match'})
+            raise serializers.ValidationError("Passwords do not match.")
+        return data

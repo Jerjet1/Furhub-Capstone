@@ -41,7 +41,7 @@ class ProfileUploadView(APIView):
         ).order_by("-uploaded_at").first()
 
         if not image:
-            return Response({"details": "No Profile image Found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"details": "No Profile image Found"}, status=status.HTTP_200_OK)
         
         serializer = UploadImageSerializer(image, context={"request": request})
         return Response(serializer.data, status=status.HTTP_200_OK)

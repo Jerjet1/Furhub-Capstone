@@ -33,6 +33,10 @@ export default function WalkerTabs() {
         name="Booking"
         options={createScreenOptions("Booking", "calendar")}
       />
+      <Tabs.Screen
+        name="Settings"
+        options={createScreenOptions("Settings", "gear")}
+      />
     </Tabs>
   );
 }

@@ -77,7 +77,7 @@ class LoginView(APIView):
                     "pet_boarding": petboarding_status,
                 }, status=status.HTTP_200_OK)
             
-            return Response({"details": "Invalid credentials."}, status=status.HTTP_401_UNAUTHORIZED)       
+            return Response({"details": "Invalid credentials."}, status=status.HTTP_401_UNAUTHORIZED)      
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class RegisterView(APIView):
@@ -233,15 +233,16 @@ class ChangePasswordView(APIView):
         serializer = ChangePasswordSerializer(data=request.data)
 
         if serializer.is_valid():
-            old_password = serializer.validate['old_password']
+            old_password = serializer.validated_data['old_password']
+            new_password = serializer.validated_data.get('new_password')
             # checking if inputted old password match
             if not user.check_password(old_password):
-                return Response({"old_password": "Old password is incorrect"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"details": "Old password is incorrect"}, status=status.HTTP_400_BAD_REQUEST)
             
             # storing new password in database
-            user.set_password(serializer.validate['new_password'])
+            user.set_password(new_password)
             user.save()
-            return Response({"detail": "Password updated successfully"}, status=status.HTTP_200_OK)
+            return Response({"details": "Password updated successfully"}, status=status.HTTP_200_OK)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         

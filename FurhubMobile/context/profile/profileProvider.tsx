@@ -7,6 +7,7 @@ import {
 } from "@/services/userAPI";
 import { fetchProfileAPI } from "@/services/imageUpload";
 import { ProfileContext } from "./profileContext";
+import { useAuth } from "../useAuth";
 
 export const ProfileProvider = ({
   children,
@@ -19,21 +20,27 @@ export const ProfileProvider = ({
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
 
   const loadProfile = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const [details, picture, ownerDetails] = await Promise.all([
-        userDetailsAPI(),
+      const [details, picture] = await Promise.all([
+        userDetailsAPI.getDetails(),
         fetchProfileAPI(),
-        petOwnerAPI(),
       ]);
 
       setUserDetails(details);
       setProfilePicture(picture);
-      setPetOwnerDetails(ownerDetails);
+
+      if (user?.activeRole?.toLowerCase() === "owner") {
+        const ownerDetails = await petOwnerAPI.getPetOwner();
+        setPetOwnerDetails(ownerDetails);
+      } else if (user?.activeRole?.toLowerCase() === "walker") {
+        setPetOwnerDetails(null);
+      }
     } catch (err: any) {
       setError(err?.details || "Failed to load profile");
     } finally {
@@ -42,8 +49,14 @@ export const ProfileProvider = ({
   };
 
   useEffect(() => {
+    if (!user) {
+      setUserDetails(null);
+      setProfilePicture(null);
+      setPetOwnerDetails(null);
+      return;
+    }
     loadProfile();
-  }, []);
+  }, [user]);
 
   return (
     <ProfileContext.Provider
@@ -54,6 +67,11 @@ export const ProfileProvider = ({
         loading,
         error,
         refreshProfile: loadProfile,
+        clearProfile: async () => {
+          setUserDetails(null);
+          setProfilePicture(null);
+          setPetOwnerDetails(null);
+        },
       }}>
       {children}
     </ProfileContext.Provider>

@@ -8,6 +8,7 @@ export interface ProfileContextType {
   loading: boolean;
   error: string | null;
   refreshProfile: () => Promise<void>;
+  clearProfile: () => Promise<void>;
 }
 
 export const ProfileContext = createContext<ProfileContextType | undefined>(

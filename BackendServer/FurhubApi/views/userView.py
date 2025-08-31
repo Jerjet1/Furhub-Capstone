@@ -48,6 +48,16 @@ class PetWalkerUpdateView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def get(self, request):
+        try:
+            walker = request.user.petwalker
+        except PetWalker.DoesNotExist:
+            return Response({"details": "Pet Walker not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = PetWalkerUpdateProfileSerializer(walker)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class PetOwnerUpdateView(APIView):
     permission_classes = [IsAuthenticated]
@@ -66,12 +76,14 @@ class PetOwnerUpdateView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def get(self, request):
-        user = request.user
-        serializer = PetOwnerUpdateProfileSerializer(user)
+        try:
+            owner = request.user.petowner
+        except PetOwner.DoesNotExist:
+            return Response({"details": "Pet Owner not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = PetOwnerUpdateProfileSerializer(owner)
 
-        return Response(
-            serializer.data, status=status.HTTP_200_OK
-        )
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
 class PetBoardingUpdateView(APIView):
     permission_classes = [IsAuthenticated]

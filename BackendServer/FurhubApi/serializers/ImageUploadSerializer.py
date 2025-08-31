@@ -7,7 +7,10 @@ class UploadImageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UploadedImage
-        fields = ['image', 'category', 'label', 'uploaded_at']
+        fields = ['user','image', 'category', 'label', 'uploaded_at']
+        extra_kwargs = {
+            "user": {"required": False}  # 🔑 don’t force it
+        }
 
 # class BulkUploadImageSerializer(serializers.Serializer):
 #     images = UploadImageSerializer(many=True)

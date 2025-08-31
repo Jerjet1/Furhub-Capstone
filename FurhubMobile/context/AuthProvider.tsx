@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from "react";
 import * as SecureStore from "expo-secure-store";
 import { setLogoutCallback } from "@/services/axiosInterceptor";
 import { ROLES } from "@/constant/roles";
-import { fetchProfileAPI } from "@/services/imageUpload";
 import { AuthContext, AuthContextType } from "./AuthContex";
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
@@ -70,24 +69,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       refresh,
     });
   };
-
-  // const fetchUserProfile = async () => {
-  //   if (!user) return;
-
-  //   try {
-  //     const response = await fetchProfileAPI();
-
-  //     setUser((prev) => (prev ? { ...prev, profileImage: response } : prev));
-
-  //     return response;
-  //   } catch (error: any) {
-  //     throw error.response?.data || { details: "Something went wrong" };
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   fetchUserProfile();
-  // }, []);
 
   const login = async (
     token: string,
