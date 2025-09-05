@@ -1,7 +1,7 @@
 import React from "react";
 import { FiBell } from "react-icons/fi";
-import { AdminNavbar } from "./AdminNavbar";
-import { BoardingNavbar } from "./BoardingNavbar";
+import { AdminNavbar } from "../Navbar/AdminNavbar";
+import { BoardingNavbar } from "../Navbar/BoardingNavbar";
 import { Link, useLocation } from "react-router-dom";
 export const UserLayoutPage = ({ children }) => {
   const location = useLocation();
@@ -64,7 +64,7 @@ export const UserLayoutPage = ({ children }) => {
         ) : (
           <AdminNavbar section={navbarSelection} />
         )}
-        <main className="flex-1 p-2 overflow-auto">{children}</main>
+        <main className="flex-1 p-5 overflow-auto">{children}</main>
       </div>
     </div>
   );

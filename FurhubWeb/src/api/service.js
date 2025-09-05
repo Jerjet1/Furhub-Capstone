@@ -1,6 +1,6 @@
 import axios from "axios";
+import { API_URL } from "../config/config";
 
-const API_URL = "http://192.168.1.24:8000/"; //bogo mani ip address
 const serviceURL = new URL("users/service_list/", API_URL).toString();
 export const service_list = async () => {
   try {

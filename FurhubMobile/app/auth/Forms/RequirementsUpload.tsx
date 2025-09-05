@@ -1,37 +1,34 @@
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  Pressable,
-} from "react-native";
+import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { FontAwesome } from "@expo/vector-icons";
 import ProgressIndicator from "@/components/ProgressIndicator";
 import Layout from "@/components/Layouts/Layout";
 import { router, useLocalSearchParams } from "expo-router";
 import CustomToast from "@/components/CustomToast";
-import { registerUser, requirementsUpload } from "@/services/api";
+import { ActivityIndicator } from "react-native";
+import { registerUserAPI } from "@/services/api";
+import { requirementsUpload } from "@/services/imageUpload";
 import { useRegistration } from "@/context/RegistrationProvider";
+import { useAuth } from "@/context/useAuth";
 import React, { useState, useEffect } from "react";
+import { parseError } from "@/utils/parseError";
 
 export default function RequirementsUpload() {
+  const [loading, setLoading] = useState(false);
   const { role } = useLocalSearchParams<{ role: "Owner" | "Walker" }>();
   const [barangayClearance, setBarangayClearance] = useState<any>(null);
   const [validID, setValidID] = useState<any>(null);
   const [selfieWithID, setSelfieWithID] = useState<any>(null);
   const { uploadedImages, setUploadedImages, formData, setFormData } =
     useRegistration();
+  const { registerUser } = useAuth();
+
   const [toast, setToast] = useState<{
     message: string;
     type?: "success" | "error";
   } | null>(null);
   const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
-  // const images = [
-  //   uploadedImages.barangayClearance,
-  //   uploadedImages.validID,
-  //   uploadedImages.selfieWithID,
-  // ];
+
   useEffect(() => {
     setBarangayClearance(uploadedImages.barangayClearance);
     setValidID(uploadedImages.validID);
@@ -86,14 +83,29 @@ export default function RequirementsUpload() {
       });
       return;
     }
-
-    // const apiRole = role === "Walker" ? "pet_walker" : "pet_owner";
+    setLoading(true);
     // sending data into API
     try {
       // Account Details
-      const result = await registerUser({ ...data, role });
+      const result = await registerUserAPI({ ...data, role });
+      const is_verified = result.is_verified === true;
+      console.log(
+        result.access,
+        result.roles,
+        is_verified,
+        result.email,
+        result.pet_walker
+      );
+      registerUser(
+        result.access,
+        result.roles,
+        is_verified,
+        result.email,
+        result.pet_walker,
+        result.refresh
+      );
       // requirements upload
-      const user_id = result.user_id;
+      const user_id = result.id;
 
       // Barangay Clearance
       const barangayFormData = new FormData();
@@ -153,25 +165,12 @@ export default function RequirementsUpload() {
       });
     } catch (error: any) {
       console.log("error", error);
-      let message = "Unexpected error occured";
-
-      if (typeof error === "string") {
-        message = error;
-      } else if (typeof error.details === "string") {
-        message = error.details;
-      } else if (typeof error.detail === "string") {
-        message = error.detail;
-      } else if (typeof error.message === "string") {
-        message = error.message;
-      } else if (Array.isArray(error)) {
-        message = error.join("\n");
-      } else if (typeof error === "object") {
-        message = Object.values(error).flat().join("\n");
-      }
       setToast({
-        message: message,
+        message: parseError(error),
         type: "error",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -238,6 +237,7 @@ export default function RequirementsUpload() {
         contentContainerStyle={{ flexGrow: 1, paddingBottom: 150 }}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}>
+        {/* display message */}
         {toast && (
           <CustomToast
             message={toast.message}
@@ -247,6 +247,12 @@ export default function RequirementsUpload() {
           />
         )}
 
+        {/* loading State */}
+        {loading && (
+          <View className="absolute top-0 left-0 right-0 bottom-0 z-50 justify-center items-center bg-black/20">
+            <ActivityIndicator size={50} color="black" />
+          </View>
+        )}
         {/* Header */}
         <View className="h-[12rem] mt-1 w-full justify-start items-start gap-10">
           <TouchableOpacity

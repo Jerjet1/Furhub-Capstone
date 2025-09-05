@@ -23,7 +23,7 @@ class CustomUserManager(BaseUserManager):
         return self.create_user(email, password, **extra_fields)
     
 class Users(AbstractBaseUser):
-    user_id = models.AutoField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
     phone_no = models.CharField(max_length=15)
@@ -48,10 +48,6 @@ class Users(AbstractBaseUser):
         self.save()
         return code
 
-    @property
-    def id(self):
-        return self.user_id
-
     def __str__(self):
         return f'{self.email}\n{self.first_name}\n{self.last_name}'
     
@@ -65,8 +61,8 @@ class Roles(models.Model):
         db_table = 'roles'
 
 class User_roles(models.Model):
-    user = models.ForeignKey(Users, on_delete=models.CASCADE)
-    role = models.ForeignKey(Roles, on_delete=models.CASCADE)
+    user = models.ForeignKey(Users, on_delete=models.CASCADE, related_name="roles")
+    role = models.ForeignKey(Roles, on_delete=models.CASCADE, related_name="users")
     class Meta:
         constraints = [
             models.UniqueConstraint(
@@ -78,7 +74,7 @@ class User_roles(models.Model):
 
 class User_logs(models.Model):
     log_id = models.AutoField(primary_key=True)
-    user = models.ForeignKey(Users, on_delete=models.CASCADE)
+    user = models.ForeignKey(Users, on_delete=models.CASCADE, related_name="logs")
     action = models.CharField(max_length=100)
     ip_address = models.GenericIPAddressField()
     date_field = models.DateTimeField(auto_now_add=True)
@@ -92,16 +88,16 @@ class Province(models.Model):
         db_table = 'province'
 class City(models.Model):
     city_id = models.AutoField(primary_key=True)
-    province = models.ForeignKey(Province, on_delete=models.CASCADE)
+    province = models.ForeignKey(Province, on_delete=models.CASCADE, related_name="cities")
     city_name = models.CharField(max_length=100)
     class Meta:
         db_table = 'city'
 
 class Location(models.Model):
     location_id = models.AutoField(primary_key=True)
-    city = models.ForeignKey(City, on_delete=models.CASCADE)
+    city = models.ForeignKey(City, on_delete=models.CASCADE, related_name="locations")
     barangay = models.CharField(max_length=255, blank=True, null=False)
-    user = models.ForeignKey(Users, on_delete=models.CASCADE)
+    user = models.ForeignKey(Users, on_delete=models.CASCADE, related_name="locations")
     street = models.CharField(max_length=255)
     coordinates = gis_models.PointField(geography=True, blank=True, null=True)
     class Meta:
@@ -123,7 +119,7 @@ class PetWalker(models.Model):
 
     user = models.OneToOneField(Users, on_delete=models.CASCADE, primary_key=True)
     availability = models.CharField(max_length=255, null=True, blank=True)
-    status = status = models.CharField(max_length=20,default="pending")
+    status = models.CharField(max_length=20,default="pending", choices=STATUS_CHOICE)
 
     class Meta:
         db_table = 'pet_walker'
@@ -137,7 +133,7 @@ class PetBoarding(models.Model):
     user = models.OneToOneField(Users, on_delete=models.CASCADE, primary_key=True)
     hotel_name = models.CharField(max_length=255, null=True, blank=True)
     availability = models.CharField(max_length=255, null=True, blank=True)
-    status = status = models.CharField(max_length=20,default="pending")
+    status = models.CharField(max_length=20,default="pending", choices=STATUS_CHOICE)
 
     class Meta:
         db_table = 'pet_boarding'
@@ -189,3 +185,52 @@ class ProviderService(models.Model):
     class Meta:
         unique_together = ['service', 'provider', 'provider_type']
         db_table = 'provider_service'
+class Booking(models.Model):
+    STATUS_CHOICE = [("pending", "Pending"),
+                     ("approved", "Approved"),
+                     ("ongoing", "Ongoing"),
+                     ("rejected", "Rejected")]
+    
+    booking_id = models.AutoField(primary_key=True)
+    owner = models.ForeignKey(PetOwner, on_delete=models.CASCADE, related_name="bookings")
+    provider = models.ForeignKey(ProviderService, on_delete=models.CASCADE, related_name="bookings")
+    status = models.CharField(max_length=15, choices=STATUS_CHOICE, default="pending")
+    start_at = models.DateTimeField()
+    end_at = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'booking'
+
+class Pet(models.Model):
+    pet_id = models.AutoField(primary_key=True)
+    owner = models.ForeignKey(PetOwner, on_delete=models.CASCADE, related_name="pets")
+    name = models.CharField(max_length=150)
+    breed = models.CharField(max_length=150)
+    age = models.IntegerField()
+    size = models.IntegerField()
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'pet'
+
+class Pet_Form(models.Model):
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name="pet_forms")
+    pet =  models.ForeignKey(Pet, on_delete=models.SET_NULL, related_name="forms",blank=True, null=True )
+    welfare_note = models.TextField(max_length=200, blank=True, null=True)
+
+    class Meta:
+        db_table = 'pet_form'
+
+class PetSchedule(models.Model):
+    SERVICE_CHOICE = [("feeding", "Feeding"),
+                      ("walking", "Walking")]
+    
+    pet_form = models.ForeignKey(Pet_Form, on_delete=models.CASCADE, related_name="schedules")
+    schedule_type = models.CharField(max_length=20,choices=SERVICE_CHOICE)
+    time = models.TimeField()  
+
+    class Meta:
+        db_table = 'pet_schedule'
+
+
