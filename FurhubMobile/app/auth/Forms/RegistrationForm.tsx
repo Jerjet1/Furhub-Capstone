@@ -149,7 +149,7 @@ export default function RegistrationForm() {
       <ScrollView
         contentContainerStyle={{
           flexGrow: 1,
-          paddingBottom: 300, // Extra space for keyboard
+          paddingBottom: 50, // Extra space for keyboard
         }}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}>
@@ -194,11 +194,13 @@ export default function RegistrationForm() {
                 name="first_name"
                 placeholder="First Name"
               />
-              {errors.first_name && (
-                <Text className="text-red-600 mt-1">
-                  {errors.first_name.message}
-                </Text>
-              )}
+              <View className="min-h-[24px]">
+                {errors.first_name && (
+                  <Text className="text-red-600 mt-1">
+                    {errors.first_name.message}
+                  </Text>
+                )}
+              </View>
             </View>
             <View className="flex-1">
               <Text className="text-xl text-black font-poppins">Last Name</Text>
@@ -207,11 +209,13 @@ export default function RegistrationForm() {
                 name="last_name"
                 placeholder="Last Name"
               />
-              {errors.last_name && (
-                <Text className="text-red-600 mt-1">
-                  {errors.last_name.message}
-                </Text>
-              )}
+              <View className="min-h-[24px]">
+                {errors.last_name && (
+                  <Text className="text-red-600 mt-1">
+                    {errors.last_name.message}
+                  </Text>
+                )}
+              </View>
             </View>
           </View>
 
@@ -220,9 +224,13 @@ export default function RegistrationForm() {
             Phone No.
           </Text>
           <InputPhone control={control} name="phone_no" placeholder="09" />
-          {errors.phone_no && (
-            <Text className="text-red-600 mt-1">{errors.phone_no.message}</Text>
-          )}
+          <View className="min-h-[24px]">
+            {errors.phone_no && (
+              <Text className="text-red-600 mt-1">
+                {errors.phone_no.message}
+              </Text>
+            )}
+          </View>
 
           {/* Email Input */}
           <Text className="text-xl text-black font-poppins mt-1">Email</Text>
@@ -244,12 +252,14 @@ export default function RegistrationForm() {
               />
             )}
           />
-          {emailError && (
-            <Text className="text-red-600 mt-1">{emailError}</Text>
-          )}
-          {errors.email && (
-            <Text className="text-red-600 mt-1">{errors.email.message}</Text>
-          )}
+          <View className="min-h-[24px]">
+            {emailError && (
+              <Text className="text-red-600 mt-1">{emailError}</Text>
+            )}
+            {errors.email && (
+              <Text className="text-red-600 mt-1">{errors.email.message}</Text>
+            )}
+          </View>
 
           {/* Password Input */}
           <Text className="text-xl text-black font-poppins mt-1">Password</Text>
@@ -258,9 +268,13 @@ export default function RegistrationForm() {
             name="password"
             placeholder="Password"
           />
-          {errors.password && (
-            <Text className="text-red-600 mt-1">{errors.password.message}</Text>
-          )}
+          <View className="min-h-[24px]">
+            {errors.password && (
+              <Text className="text-red-600 mt-1">
+                {errors.password.message}
+              </Text>
+            )}
+          </View>
 
           {/* Confirmation Password Input */}
           <Text className="text-xl text-black font-poppins mt-1">
@@ -271,11 +285,13 @@ export default function RegistrationForm() {
             name="confirm_password"
             placeholder="Confirm Password"
           />
-          {errors.confirm_password && (
-            <Text className="text-red-600 mt-1">
-              {errors.confirm_password.message}
-            </Text>
-          )}
+          <View className="min-h-[24px]">
+            {errors.confirm_password && (
+              <Text className="text-red-600 mt-1">
+                {errors.confirm_password.message}
+              </Text>
+            )}
+          </View>
 
           {/* Register Button */}
           <TouchableOpacity

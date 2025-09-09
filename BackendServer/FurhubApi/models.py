@@ -2,7 +2,7 @@ from django.db import models
 import random
 from django.utils import timezone
 from datetime import timedelta
-from django.contrib.gis.db import models as gis_models
+# from django.contrib.gis.db import models as gis_models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 # Create your models here.
 
@@ -99,7 +99,9 @@ class Location(models.Model):
     barangay = models.CharField(max_length=255, blank=True, null=False)
     user = models.ForeignKey(Users, on_delete=models.CASCADE, related_name="locations")
     street = models.CharField(max_length=255)
-    coordinates = gis_models.PointField(geography=True, blank=True, null=True)
+    # coordinates = gis_models.PointField(geography=True, blank=True, null=True)
+    latitude = models.FloatField(blank=True, null=True)
+    longitude = models.FloatField(blank=True, null=True)
     class Meta:
         db_table = 'location'
 
@@ -185,6 +187,7 @@ class ProviderService(models.Model):
     class Meta:
         unique_together = ['service', 'provider', 'provider_type']
         db_table = 'provider_service'
+
 class Booking(models.Model):
     STATUS_CHOICE = [("pending", "Pending"),
                      ("approved", "Approved"),
@@ -232,5 +235,105 @@ class PetSchedule(models.Model):
 
     class Meta:
         db_table = 'pet_schedule'
+
+class Payment(models.Model):
+    PAYMENT_TYPE_CHOICES = [
+        ('downpayment', "Downpayment"),
+        ("balance", "Balance"),
+        ("full", "Full Payment"),
+    ]
+
+    PAYMENT_METHOD_CHOICES = [
+        ('paypal', 'PayPal')
+    ]
+
+    STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("completed", "Completed"),
+        ("failed", "Failed"),
+        ("refunded", "Refunded"),
+    ]
+
+    payment_id = models.AutoField(primary_key=True)
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name="payments")
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    payment_type = models.CharField(max_length=20, choices=PAYMENT_TYPE_CHOICES)
+    payment_method = models.CharField(max_length=50, choices=PAYMENT_METHOD_CHOICES)
+    date = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    order_id = models.CharField(max_length=255, null=True, blank=True)
+    capture_id = models.CharField(max_length=255, null=True, blank=True)
+    currency_code = models.CharField(max_length=10, null=True, blank=True)
+    transaction_fee = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    paypal_subscription_id = models.CharField(max_length=255, null=True, blank=True)
+
+    class Meta:
+        db_table = "payment"
+
+class TransactionLogs(models.Model):
+    transaction_id = models.AutoField(primary_key=True)
+    payment = models.ForeignKey(Payment, on_delete=models.CASCADE, related_name="transactions")
+    action =models.CharField(max_length=100)
+    external_id = models.CharField(max_length=255, null=True, blank=True)  # paypal id / batch id
+    meta = models.JSONField(null=True, blank=True)  # raw payload or structured metadata
+    timestamp = models.DateTimeField(auto_now_add=True)
+    remarks = models.TextField(blank=True, null=True)
+
+    class Meta:
+        db_table = "transaction_logs"
+
+class UserBalance(models.Model):
+    provider = models.OneToOneField(ProviderService, on_delete=models.CASCADE, related_name="balance")
+    available_balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    pending_balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    total_earning = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    last_updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'user_balance'
+
+class Payout(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('processing', 'Processing'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+        ('unclaimed', 'Unclaimed'),
+    ]
+
+    payout_id = models.AutoField(primary_key=True)
+    provider = models.ForeignKey(ProviderService, on_delete=models.CASCADE, related_name="payouts")
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name="payout")
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    paypal_batch_id = models.CharField(max_length=255, blank=True, null=True)
+    payout_item_id = models.CharField(max_length=255, blank=True, null=True)
+    failure_reason = models.TextField(blank=True, null=True) # status is failed/unclaimed
+    created_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        db_table = "payout"
+
+class Ledger(models.Model):
+    ENTRY_TYPE = [
+        ("sale", "Sale"),
+        ("payout", "Payout"),
+        ('refunded', "Refunded")
+    ]
+
+    ledger_id = models.AutoField(primary_key=True)
+    provider = models.ForeignKey(ProviderService, on_delete=models.CASCADE, related_name="ledger_entries")
+    entry_type = models.CharField(max_length=20, choices=ENTRY_TYPE)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, null=True, blank=True)
+    payment = models.ForeignKey(Payment, on_delete=models.SET_NULL, null=True, blank=True)
+    payout = models.ForeignKey(Payout, on_delete=models.SET_NULL, null=True, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    running_balance = models.DecimalField(max_digits=10, decimal_places=2) # CRITICAL FIELD
+
+    class Meta:
+        db_table = 'provider_ledger'
+
 
 
