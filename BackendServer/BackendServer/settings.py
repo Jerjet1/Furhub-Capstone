@@ -2,23 +2,28 @@ from pathlib import Path
 import os
 from datetime import timedelta
 import socket
-# from dotenv import load_dotenv
+from dotenv import load_dotenv
 
 hostname = socket.gethostname()
 local_ip = socket.gethostbyname(hostname)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-# load_dotenv(BASE_DIR/'.env')
+load_dotenv(os.path.join(BASE_DIR/'.env'))
 # os.environ['GDAL_LIBRARY_PATH'] = r'C:\OSGeo4W\bin\gdal310.dll'
 # GDAL_DDL = BASE_DIR / 'gdal' / 'gdal310.dll'
-if os.name == 'nt':  # Windows
-    OSGEO4W = r"C:\OSGeo4W"
-    os.environ['OSGEO4W_ROOT'] = OSGEO4W
-    os.environ['GDAL_DATA'] = os.path.join(OSGEO4W, 'share', 'gdal')
-    os.environ['PROJ_LIB'] = os.path.join(OSGEO4W, 'share', 'proj')
-    os.environ['PATH'] = os.path.join(OSGEO4W, 'bin') + ';' + os.environ['PATH']
-    GDAL_LIBRARY_PATH = os.path.join(OSGEO4W, 'bin', 'gdal310.dll')  # Match your version
+# if os.name == 'nt':  # Windows
+#     OSGEO4W = r"C:\OSGeo4W"
+#     os.environ['OSGEO4W_ROOT'] = OSGEO4W
+#     os.environ['GDAL_DATA'] = os.path.join(OSGEO4W, 'share', 'gdal')
+#     os.environ['PROJ_LIB'] = os.path.join(OSGEO4W, 'share', 'proj')
+#     os.environ['PATH'] = os.path.join(OSGEO4W, 'bin') + ';' + os.environ['PATH']
+#     GDAL_LIBRARY_PATH = os.path.join(OSGEO4W, 'bin', 'gdal310.dll')  # Match your version
+
+PAYPAL_CLIENT_ID = os.getenv("PAYPAL_CLIENT_ID")
+PAYPAL_CLIENT_SECRET = os.getenv('PAYPAL_CLIENT_SECRET')
+PAYPAL_BASE_URL = os.getenv('PAYPAL_BASE_URL', 'https://api-m.sandbox.paypal.com')
+PAYPAL_WEBHOOK_ID = os.getenv('PAYPAL_WEBHOOK_ID')
 
 
 
@@ -28,7 +33,7 @@ SECRET_KEY = 'django-insecure-=9um0w6h1lt=epz-f8uhiqhj_+4r0o#no&cczzte5a!+!a58ku
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -40,7 +45,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.gis',
     'FurhubApi',
     'rest_framework',
     'corsheaders',
@@ -60,7 +64,7 @@ MIDDLEWARE = [
 ]
 
 # CORS_ALLOWED_ORIGINS = ['http://localhost:5173', 'exp://192.168.1.3:8081']
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', local_ip] #change sa Ip address para makaconnect sa web & mobile
+# ALLOWED_HOSTS = ['localhost', '127.0.0.1', local_ip]
 CORS_ALLOWED_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8081",  # React Native Web/Expo Go via browser
@@ -130,14 +134,26 @@ WSGI_APPLICATION = 'BackendServer.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.contrib.gis.db.backends.postgis',
+#         'NAME': 'furhubv2',
+#         'USER': 'postgres',
+#         'PASSWORD': '1190716',
+#         'HOST': 'localhost',
+#         'PORT': '5432',
+#     }
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'furhubv2',
-        'USER': 'postgres',
-        'PASSWORD': '1190716',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'ENGINE':'django.db.backends.postgresql',
+        'NAME': os.getenv('DATABASE_NAME'),
+        'USER': os.getenv('DATABASE_USER'),
+        'PASSWORD': os.getenv('DATABASE_PASSWORD'),
+        'HOST': os.getenv('DATABASE_HOST'),
+        'PORT': os.getenv('DATABASE_PORT')
+
     }
 }
 
