@@ -12,13 +12,18 @@ import { FacilityProfile } from "./pages/PetBoardingPage/FacilityProfile";
 import { ManageUser } from "./pages/AdminPage/ManageUser";
 import { ProtectedRoute } from "./auth/ProtectedRoute";
 import { VerificationPage } from "./auth/VerificationPage";
-import { PendingProvider } from "./pages/PendingProvider";
+// import { PendingProvider } from "./pages/PendingProvider";
 import { ForgotPasswordProvider } from "./context/ForgotPasswordProvider";
 import {
   ForgotPassword,
   VerifyCode,
   ResetPassword,
 } from "./auth/ForgotPassword";
+import { BookingPage } from "./pages/PetBoardingPage/BookingPage";
+import { ReviewsPage } from "./pages/PetBoardingPage/ReviewsPage";
+import { ChatsPage } from "./pages/PetBoardingPage/ChatsPage";
+import { SubscriptionPage } from "./pages/PetBoardingPage/SubscriptionPage";
+import { ProfilePage } from "./pages/PetBoardingPage/ProfilePage";
 
 export const ROLES = {
   ADMIN: "Admin",
@@ -48,7 +53,7 @@ export default function App() {
                 </AuthRoute>
               }
             />
-            <Route path="/pending_providers" element={<PendingProvider />} />
+            {/* <Route path="/pending_providers" element={<PendingProvider />} /> */}
             <Route path="/unauthorized" element={<Unauthorize />} />
             <Route path="/verify" element={<VerificationPage />} />
 
@@ -90,6 +95,46 @@ export default function App() {
               element={
                 <ProtectedRoute allowedRoles={ROLES.BOARDING}>
                   <FacilityProfile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/Petboarding/Bookings"
+              element={
+                <ProtectedRoute allowedRoles={ROLES.BOARDING}>
+                  <BookingPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/Petboarding/Reviews&Ratings"
+              element={
+                <ProtectedRoute allowedRoles={ROLES.BOARDING}>
+                  <ReviewsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/Petboarding/Chats"
+              element={
+                <ProtectedRoute allowedRoles={ROLES.BOARDING}>
+                  <ChatsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/Petboarding/Subscription"
+              element={
+                <ProtectedRoute allowedRoles={ROLES.BOARDING}>
+                  <SubscriptionPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/Petboarding/ProfilePage"
+              element={
+                <ProtectedRoute allowedRoles={ROLES.BOARDING}>
+                  <ProfilePage />
                 </ProtectedRoute>
               }
             />

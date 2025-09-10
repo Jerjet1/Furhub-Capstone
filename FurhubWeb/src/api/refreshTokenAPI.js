@@ -1,5 +1,6 @@
 import axios from "axios";
 import { API_URL } from "../config/config";
+import { API_ENDPOINTS } from "./apiEndpoints";
 
 export const refreshAccessToken = async () => {
   try {
@@ -12,7 +13,7 @@ export const refreshAccessToken = async () => {
     console.log("Using refresh token:", refreshToken);
 
     const response = await axios.post(
-      `${API_URL}api/token/refresh/`,
+      API_ENDPOINTS.REFRESH_TOKEN,
       { refresh: refreshToken },
       {
         headers: {

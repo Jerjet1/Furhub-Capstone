@@ -14,6 +14,20 @@ export const setLogoutCallback = (callback) => {
 // list of endpoints to avoid error display
 const SKIP_REFRESH_ENDPOINTS = ["users/login/", "token/refresh"];
 
+let isRefresh = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach(({ resolve, reject }) => {
+    if (error) {
+      reject(error);
+    } else {
+      resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -30,10 +44,35 @@ axiosInstance.interceptors.response.use(
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       // If error is 401 (unauthorized) and it's not a refresh request
+
+      if (isRefresh) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({
+            resolve: (token) => {
+              if (token && originalRequest.headers) {
+                originalRequest.headers["Authorization"] = `Bearer ${token}`;
+              }
+              resolve(axiosInstance(originalRequest));
+            },
+            reject,
+          });
+        });
+      }
+
       originalRequest._retry = true;
+      isRefresh = true;
 
       try {
         const newAccessToken = await refreshAccessToken();
+
+        // new token in localStorage
+        localStorage.setItem("token", newAccessToken);
+
+        axiosInstance.defaults.headers.common[
+          "Authorization"
+        ] = `Bearer ${newAccessToken}`;
+
+        processQueue(null, newAccessToken);
 
         // Update the Authorization header
         originalRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
@@ -41,6 +80,7 @@ axiosInstance.interceptors.response.use(
         // Retry the original request with the new token
         return axiosInstance(originalRequest);
       } catch (refreshError) {
+        processQueue(refreshError, null);
         console.error("Token refresh failed:", refreshError);
         if (logoutFunction) {
           logoutFunction();
@@ -49,9 +89,10 @@ axiosInstance.interceptors.response.use(
         return Promise.reject(
           new Error("Session expired. Please login again.")
         );
+      } finally {
+        isRefresh = false;
       }
     }
-
     return Promise.reject(error);
   }
 );

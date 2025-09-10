@@ -20,6 +20,7 @@ import { InputPhone } from "../components/Inputs/InputPhone";
 import { InputEmail } from "../components/Inputs/InputEmail";
 import { InputPassword } from "../components/Inputs/InputPassword";
 import { Toast } from "../components/Toast";
+import { Button } from "../components/Buttons/Button";
 
 const validationSchema = yup.object().shape({
   first_name: yup.string().required("field required"),
@@ -97,10 +98,10 @@ export const Registration = () => {
 
   const registrationForm = async (data) => {
     const formData = new FormData();
-    setSubmissionAttempt(true);
-    if (!barangayClearance || !validID || !selfieWithID) {
-      return;
-    }
+    // setSubmissionAttempt(true);
+    // if (!barangayClearance || !validID || !selfieWithID) {
+    //   return;
+    // }
 
     const {
       first_name,
@@ -111,14 +112,14 @@ export const Registration = () => {
       confirm_password,
     } = data;
 
-    console.log("user details:", {
-      first_name,
-      last_name,
-      phone_no,
-      email,
-      password,
-      confirm_password,
-    });
+    // console.log("user details:", {
+    //   first_name,
+    //   last_name,
+    //   phone_no,
+    //   email,
+    //   password,
+    //   confirm_password,
+    // });
 
     setLoading(true);
     try {
@@ -148,26 +149,26 @@ export const Registration = () => {
         pet_boarding_status
       );
 
-      const barangayFormData = formData;
-      barangayFormData.append("user", user_id);
-      barangayFormData.append("category", "boarding_requirement");
-      barangayFormData.append("label", "barangay_clearance");
-      barangayFormData.append("image", barangayClearance);
-      await requirementsUpload(barangayFormData);
+      // const barangayFormData = formData;
+      // barangayFormData.append("user", user_id);
+      // barangayFormData.append("category", "boarding_requirement");
+      // barangayFormData.append("label", "barangay_clearance");
+      // barangayFormData.append("image", barangayClearance);
+      // await requirementsUpload(barangayFormData);
 
-      const validIDFormData = formData;
-      barangayFormData.append("user", user_id);
-      barangayFormData.append("category", "boarding_requirement");
-      barangayFormData.append("label", "valid_id");
-      barangayFormData.append("image", validID);
-      await requirementsUpload(validIDFormData);
+      // const validIDFormData = formData;
+      // barangayFormData.append("user", user_id);
+      // barangayFormData.append("category", "boarding_requirement");
+      // barangayFormData.append("label", "valid_id");
+      // barangayFormData.append("image", validID);
+      // await requirementsUpload(validIDFormData);
 
-      const selfieFormData = formData;
-      barangayFormData.append("user", user_id);
-      barangayFormData.append("category", "boarding_requirement");
-      barangayFormData.append("label", "selfie_with_id");
-      barangayFormData.append("image", selfieWithID);
-      await requirementsUpload(selfieFormData);
+      // const selfieFormData = formData;
+      // barangayFormData.append("user", user_id);
+      // barangayFormData.append("category", "boarding_requirement");
+      // barangayFormData.append("label", "selfie_with_id");
+      // barangayFormData.append("image", selfieWithID);
+      // await requirementsUpload(selfieFormData);
     } catch (error) {
       console.log("error", error);
       let message = "Login failed. Please try again.";
@@ -354,37 +355,12 @@ export const Registration = () => {
                 </div>
               </div>
             </div>
-            {/* Service Offered
-            <div className="border-t-1 border-b-1 py-2">
-              <h2 className="text-2xl mb-2 font-semibold">Service Offer</h2>
-              <button
-                type="button"
-                onClick={() => setShowServiceModal(true)}
-                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-700">
-                Add Service
-              </button>
-              <div className="w-full h-40 border mt-2 rounded-sm px-5">
-                {offeredServices.length > 0 && (
-                  <div className="mt-2">
-                    <h3 className="font-semibold">Services Added:</h3>
-                    <ul className="list-disc ml-5">
-                      {offeredServices.map((s, i) => (
-                        <li key={i}>
-                          {s.service} - PHP {s.rate} ({s.rate_type})
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            </div> */}
             {/* Requirements Upload container*/}
-            <div className="border-b-1 py-2">
+            {/* <div className="border-b-1 py-2">
               <h2 className="text-2xl mb-2 font-semibold">
                 Requirements Upload
               </h2>
               <div className="flex flex-wrap w-full justify-between gap-2">
-                {/* barangay clearance */}
                 <div className="flex flex-col w-52">
                   <label
                     htmlFor="barangayClearance"
@@ -411,7 +387,6 @@ export const Registration = () => {
                   )}
                 </div>
 
-                {/* Valid ID */}
                 <div className="flex flex-col w-52">
                   <label
                     htmlFor="validID"
@@ -437,7 +412,7 @@ export const Registration = () => {
                     </p>
                   )}
                 </div>
-                {/* selfie with id */}
+
                 <div className="flex flex-col w-52">
                   <label
                     htmlFor="selfieWithID"
@@ -464,12 +439,13 @@ export const Registration = () => {
                   )}
                 </div>
               </div>
-            </div>
-            <button
+            </div> */}
+            {/* <button
               type="submit"
               className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition duration-200 mt-2 text-lg">
               Sign Up
-            </button>
+            </button> */}
+            <Button label="Sign up" />
           </form>
         </div>
         <div className="flex flex-row justify-center mt-5 gap-1">
@@ -481,7 +457,7 @@ export const Registration = () => {
           </Link>
         </div>
       </div>
-      <ImageLayout src="/src/assets/catdog.jpg" />
+      <ImageLayout src="/src/assets/catdog.jpg" size="450px" />
     </Layout>
   );
 };

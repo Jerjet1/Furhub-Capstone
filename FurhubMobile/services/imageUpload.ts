@@ -1,14 +1,14 @@
 import axios from "axios";
 import { axiosInstance } from "./axiosInterceptor";
 import * as SecureStore from "expo-secure-store";
-import { USER_ENDPOINTS } from "./endpoints";
+import { API_ENDPOINTS } from "./endpoints";
 
 // Upload profile Pictures
 export const uploadImageAPI = async (FormData: any) => {
   try {
     const token = await SecureStore.getItemAsync("token");
     const response = await axiosInstance.post(
-      USER_ENDPOINTS.PROFILE_PICTURE,
+      API_ENDPOINTS.PROFILE_PICTURE,
       FormData,
       {
         headers: {
@@ -26,7 +26,7 @@ export const uploadImageAPI = async (FormData: any) => {
 export const fetchProfileAPI = async () => {
   try {
     const token = await SecureStore.getItemAsync("token");
-    const response = await axiosInstance.get(USER_ENDPOINTS.PROFILE_PICTURE);
+    const response = await axiosInstance.get(API_ENDPOINTS.PROFILE_PICTURE);
     return response.data.image;
   } catch (error: any) {
     throw error.response?.data || { details: "Something went wrong" };
@@ -37,7 +37,7 @@ export const fetchProfileAPI = async () => {
 export const requirementsUpload = async (FormData: any) => {
   try {
     const response = await axios.post(
-      USER_ENDPOINTS.REQUIREMENTS_UPLOAD,
+      API_ENDPOINTS.REQUIREMENTS_UPLOAD,
       FormData,
       {
         headers: {

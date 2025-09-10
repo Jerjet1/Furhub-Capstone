@@ -11,6 +11,7 @@ import { useAuth } from "../context/useAuth";
 import { InputEmail } from "../components/Inputs/InputEmail";
 import { InputPassword } from "../components/Inputs/InputPassword";
 import { ImageLayout } from "../components/Layout/ImageLayout";
+import { Button } from "../components/Buttons/Button";
 import { Toast } from "../components/Toast";
 
 const validationSchema = yup.object().shape({
@@ -73,7 +74,7 @@ export const Login = () => {
 
   return (
     <Layout>
-      <div className="w-[30rem] h-full flex flex-col items-center justify-center p-10">
+      <div className="w-[30rem] h-full flex flex-col items-center justify-center py-5 px-5">
         <div className="flex flex-col w-full h-fit justify-center items-start mb-[30px]">
           <h1 className="text-[50px] font-open-sans">Login</h1>
           <p className="text-[20px] font-open-sans">Welcome to Furhub</p>
@@ -135,11 +136,7 @@ export const Login = () => {
               <p className="mt-2">Forgot password?</p>
             </Link>
           </div>
-          <button
-            type="submit"
-            className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition duration-200 mt-2 text-lg">
-            Login
-          </button>
+          <Button label="Login" />
         </form>
         <div className="flex flex-row justify-center mt-5 gap-1">
           <p>Dont have an account?</p>

@@ -4,7 +4,7 @@ import * as SecureStore from "expo-secure-store";
 
 export const axiosInstance = axios.create();
 
-let logoutFunction: any = null;
+let logoutFunction: (() => void) | null = null;
 
 //callback function for logout
 export const setLogoutCallback = (callback: any) => {

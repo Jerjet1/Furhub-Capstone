@@ -1,6 +1,7 @@
 import axios from "axios";
 import axiosInstance from "./axiosInterceptor";
 import { API_URL } from "../config/config";
+import { API_ENDPOINTS } from "./apiEndpoints";
 
 const PET_WALKER_PENDING_URL = new URL(
   "administrator/pending_pet_walker/",
@@ -12,21 +13,9 @@ const PET_BOARDING_PENDING_URL = new URL(
 ).toString();
 
 export const fetchPetWalkerUsers = async (page) => {
-  const token = localStorage.getItem("token");
   try {
-    // const response = await axios.get(`${PET_WALKER_PENDING_URL}?page=${page}`, {
-    //   headers: {
-    //     Authorization: `Bearer ${token}`,
-    //   },
-    // });
-
     const response = await axiosInstance.get(
-      `${PET_WALKER_PENDING_URL}?page=${page}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
+      `${API_ENDPOINTS.PET_WALKER_PENDING}?page=${page}`
     );
     return response.data;
   } catch (error) {
@@ -35,26 +24,10 @@ export const fetchPetWalkerUsers = async (page) => {
 };
 
 export const fetchPetBoardingUsers = async (page) => {
-  const token = localStorage.getItem("token");
   try {
-    // const response = await axios.get(
-    //   `${PET_BOARDING_PENDING_URL}?page=${page}`,
-    //   {
-    //     headers: {
-    //       Authorization: `Bearer ${token}`,
-    //     },
-    //   }
-    // );
-
     const response = await axiosInstance.get(
-      `${PET_BOARDING_PENDING_URL}?page=${page}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
+      `${API_ENDPOINTS.PET_BOARDING_PENDING}?page=${page}`
     );
-
     return response.data;
   } catch (error) {
     throw error.response?.data || { details: "Something went wrong" };

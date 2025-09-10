@@ -1,5 +1,5 @@
 import axios from "axios";
-import { USER_ENDPOINTS } from "./endpoints";
+import { API_ENDPOINTS } from "./endpoints";
 
 type sendEmailCode = {
   email: string;
@@ -7,7 +7,7 @@ type sendEmailCode = {
 
 export const ForgotPasswordAPI = async ({ email }: sendEmailCode) => {
   try {
-    const response = await axios.post(USER_ENDPOINTS.FORGOT_PASSWORD, {
+    const response = await axios.post(API_ENDPOINTS.FORGOT_PASSWORD, {
       email,
     });
     return response.data;
@@ -23,7 +23,7 @@ type VerifyCodeProps = {
 
 export const VerifyCode = async ({ email, code }: VerifyCodeProps) => {
   try {
-    const response = await axios.post(USER_ENDPOINTS.VERIFY_CODE, {
+    const response = await axios.post(API_ENDPOINTS.VERIFY_CODE, {
       email,
       code,
     });
@@ -45,7 +45,7 @@ export const ResetPassword = async ({
   confirm_password,
 }: ResetPasswordProps) => {
   try {
-    const response = await axios.post(USER_ENDPOINTS.RESET_PASSWORD, {
+    const response = await axios.post(API_ENDPOINTS.RESET_PASSWORD, {
       email,
       new_password,
       confirm_password,

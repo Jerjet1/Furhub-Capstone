@@ -19,14 +19,14 @@ export const ProtectedRoute = ({ children, allowedRoles = [] }) => {
     return <Navigate to="/verify" replace />;
   }
 
-  if (user.pet_boarding_status === "pending") {
-    // console.log("protectedRoute: pending provider");
-    // console.log("pet_boarding:", user.pet_boarding_status);
-    return <Navigate to="/pending_providers" replace />;
-  } else if (user.pet_boarding_status === "rejected") {
-    console.log("wala pay pages");
-    return;
-  }
+  // if (user.pet_boarding_status === "pending") {
+  //   // console.log("protectedRoute: pending provider");
+  //   // console.log("pet_boarding:", user.pet_boarding_status);
+  //   return <Navigate to="/pending_providers" replace />;
+  // } else if (user.pet_boarding_status === "rejected") {
+  //   console.log("wala pay pages");
+  //   return;
+  // }
   if (
     allowedRoles.length > 0 &&
     !user.roles.some((role) => allowedRoles.includes(role))

@@ -25,6 +25,7 @@ import { Toast } from "../components/Toast";
 // page 1
 export const ForgotPassword = () => {
   const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
   const [message, setMessage] = useState("");
   const { set_email } = useForgotPassword();
   const navigate = useNavigate();
@@ -32,6 +33,12 @@ export const ForgotPassword = () => {
   const validateEmail = yup.object().shape({
     email: yup.string().email("invalid email").required("Email is required"),
   });
+
+  useEffect(() => {
+    if (user) {
+      navigate(-1);
+    }
+  }, [user]);
 
   const {
     register,
@@ -133,7 +140,7 @@ export const VerifyCode = () => {
     if (!email || user) {
       navigate(-1);
     }
-  });
+  }, [email, user]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -246,7 +253,7 @@ export const ResetPassword = () => {
     if (!email || user) {
       navigate(-1);
     }
-  });
+  }, [email, user]);
 
   const {
     register,

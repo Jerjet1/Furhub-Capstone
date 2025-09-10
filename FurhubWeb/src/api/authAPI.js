@@ -1,5 +1,6 @@
 import axios from "axios";
 import { API_URL } from "../config/config";
+import { API_ENDPOINTS } from "./apiEndpoints";
 import axiosInstance from "./axiosInterceptor";
 //bogo mani ip address
 const loginURL = new URL("users/login/", API_URL).toString();
@@ -15,15 +16,18 @@ const verifyEmailURL = new URL("users/verify/", API_URL).toString();
 export const loginAuth = async (email, password) => {
   try {
     // const response = await axios.post(loginURL, { email, password });
-    const response = await axiosInstance.post(loginURL, { email, password });
+    const response = await axiosInstance.post(API_ENDPOINTS.LOGIN, {
+      email,
+      password,
+    });
 
-    if (response.data.refresh && response.data.access) {
-      localStorage.setItem("token", response.data.access);
-      localStorage.setItem("refresh", response.data.refresh);
-      if (response.data.role) {
-        localStorage.setItem("roles", JSON.stringify(response.data.role));
-      }
-    }
+    // if (response.data.refresh && response.data.access) {
+    //   localStorage.setItem("token", response.data.access);
+    //   localStorage.setItem("refresh", response.data.refresh);
+    //   if (response.data.role) {
+    //     localStorage.setItem("roles", JSON.stringify(response.data.role));
+    //   }
+    // }
     // console.log("is_verified: ", response.data.is_verified);
     // console.log("pet_boarding: ", response.data.pet_boarding);
     // console.log("email:", response.data.email);
@@ -61,7 +65,7 @@ export const registerAuth = async (
     //   role,
     // });
 
-    const response = await axiosInstance.post(registerURL, {
+    const response = await axiosInstance.post(API_ENDPOINTS.REGISTER, {
       first_name,
       last_name,
       phone_no,
@@ -71,10 +75,10 @@ export const registerAuth = async (
       role,
     });
 
-    if (response.data.refresh && response.data.access) {
-      localStorage.setItem("token", response.data.access);
-      localStorage.setItem("refresh", response.data.refresh);
-    }
+    // if (response.data.refresh && response.data.access) {
+    //   localStorage.setItem("token", response.data.access);
+    //   localStorage.setItem("refresh", response.data.refresh);
+    // }
     return response.data;
   } catch (error) {
     throw error.response?.data || { details: "Something went wrong" };
@@ -83,11 +87,15 @@ export const registerAuth = async (
 
 export const requirementsUpload = async (formData) => {
   try {
-    const response = await axios.post(boardingRequirementsURL, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+    const response = await axios.post(
+      API_ENDPOINTS.REQUIREMENTS_UPLOAD,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
 
     return response.data;
   } catch (error) {
@@ -99,12 +107,15 @@ export const verifyEmail = async (payload) => {
   try {
     // const response = await axios.post(verifyEmailURL, payload);
 
-    const response = await axiosInstance.post(verifyEmailURL, payload);
+    const response = await axiosInstance.post(
+      API_ENDPOINTS.VERIFY_EMAIL,
+      payload
+    );
 
-    if (response.data.refresh && response.data.access) {
-      localStorage.setItem("token", response.data.access);
-      localStorage.setItem("refresh", response.data.refresh);
-    }
+    // if (response.data.refresh && response.data.access) {
+    //   localStorage.setItem("token", response.data.access);
+    //   localStorage.setItem("refresh", response.data.refresh);
+    // }
     return response.data;
   } catch (error) {
     throw error.response?.data || { details: "Something went wrong" };
@@ -113,7 +124,7 @@ export const verifyEmail = async (payload) => {
 
 export const resendOTP = async (email) => {
   try {
-    const response = await axios.post(resendCodeURL, email);
+    const response = await axios.post(API_ENDPOINTS.RESEND_CODE, email);
 
     return response.data;
   } catch (error) {
@@ -123,7 +134,7 @@ export const resendOTP = async (email) => {
 
 export const checkEmailAvailable = async (email) => {
   try {
-    await axios.get(checkEmailURL, { params: { email: email } });
+    await axios.get(API_ENDPOINTS.CHECK_MAIL, { params: { email: email } });
 
     return false;
   } catch (error) {

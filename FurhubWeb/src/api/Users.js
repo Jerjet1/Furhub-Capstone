@@ -1,24 +1,14 @@
 import axios from "axios";
 import axiosInstance from "./axiosInterceptor";
 import { API_URL } from "../config/config";
-
+import { API_ENDPOINTS } from "./apiEndpoints";
 const UsersURL = new URL("administrator/all_users/", API_URL).toString();
 
 export const fetchUsers = async (page) => {
-  const token = localStorage.getItem("token");
-
   try {
-    // const response = await axios.get(`${UsersURL}?page=${page}`, {
-    //   headers: {
-    //     Authorization: `Bearer ${token}`,
-    //   },
-    // });
-
-    const response = await axiosInstance.get(`${UsersURL}?page=${page}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await axiosInstance.get(
+      `${API_ENDPOINTS.USERS}?page=${page}`
+    );
 
     // console.log(localStorage.getItem("token"));
     // console.log(localStorage.getItem("refresh"));

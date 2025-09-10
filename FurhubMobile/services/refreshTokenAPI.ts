@@ -1,5 +1,5 @@
 import axios from "axios";
-import { USER_ENDPOINTS } from "./endpoints";
+import { API_ENDPOINTS } from "./endpoints";
 import * as SecureStore from "expo-secure-store";
 
 export const refreshToken = async () => {
@@ -15,7 +15,7 @@ export const refreshToken = async () => {
 
     //fetch new refresh token with access token
     const response = await axios.post(
-      USER_ENDPOINTS.REFRESH_TOKEN,
+      API_ENDPOINTS.REFRESH_TOKEN,
       {
         refresh: refreshToken,
       },

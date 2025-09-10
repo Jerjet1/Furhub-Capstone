@@ -1,14 +1,14 @@
 import axios from "axios";
 // import axiosInstance from "./axiosInterceptor";
 import { API_URL } from "../config/config";
-
+import { API_ENDPOINTS } from "./apiEndpoints";
 const forgotPasswordURL = new URL("users/forgot-password/", API_URL).toString();
 const verifyCodeURL = new URL("users/verify-code/", API_URL).toString();
 const resetPasswordURL = new URL("users/reset-password/", API_URL).toString();
 
 export const forgotPasswordAPI = async (email) => {
   try {
-    const response = await axios.post(forgotPasswordURL, email);
+    const response = await axios.post(API_ENDPOINTS.FORGOT_PASSWORD, email);
 
     return response.data;
   } catch (error) {
@@ -18,7 +18,10 @@ export const forgotPasswordAPI = async (email) => {
 
 export const verifyCodeAPI = async (email, code) => {
   try {
-    const response = await axios.post(verifyCodeURL, { email, code });
+    const response = await axios.post(API_ENDPOINTS.VERIFY_CODE, {
+      email,
+      code,
+    });
 
     return response.data;
   } catch (error) {
@@ -32,7 +35,7 @@ export const resetPasswordAPI = async (
   confirm_password
 ) => {
   try {
-    const response = await axios.post(resetPasswordURL, {
+    const response = await axios.post(API_ENDPOINTS.RESET_PASSWORD, {
       email,
       new_password,
       confirm_password,

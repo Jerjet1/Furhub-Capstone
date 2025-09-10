@@ -2,7 +2,7 @@ import { debouncePromise } from "@/utils/debounce";
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
 import { axiosInstance } from "./axiosInterceptor";
-import { USER_ENDPOINTS } from "./endpoints";
+import { API_ENDPOINTS } from "./endpoints";
 
 type RegisterUser = {
   first_name: string;
@@ -35,7 +35,7 @@ export const registerUserAPI = async ({
   role,
 }: RegisterUser) => {
   try {
-    const response = await axiosInstance.post(USER_ENDPOINTS.REGISTER, {
+    const response = await axiosInstance.post(API_ENDPOINTS.REGISTER, {
       first_name,
       last_name,
       phone_no,
@@ -55,7 +55,7 @@ export const checkEmailAvailability = async (
   email: string
 ): Promise<boolean> => {
   try {
-    await axios.get(USER_ENDPOINTS.CHECK_MAIL, { params: { email } });
+    await axios.get(API_ENDPOINTS.CHECK_MAIL, { params: { email } });
     // If 200, email does NOT exist (available)
     return false;
   } catch (error: any) {
@@ -69,7 +69,7 @@ export const checkEmailAvailability = async (
 
 export const login = async ({ email, password }: userCredentials) => {
   try {
-    const response = await axiosInstance.post(USER_ENDPOINTS.LOGIN, {
+    const response = await axiosInstance.post(API_ENDPOINTS.LOGIN, {
       email,
       password,
     });
@@ -102,7 +102,7 @@ export const getRole = async (): Promise<string | null> => {
 
 export const resendCodeAPI = async (email: string) => {
   try {
-    const response = await axios.post(USER_ENDPOINTS.RESEND_CODE, { email });
+    const response = await axios.post(API_ENDPOINTS.RESEND_CODE, { email });
     return response.data;
   } catch (error: any) {
     throw error.response?.data || { details: "Something went wrong" };
@@ -111,10 +111,7 @@ export const resendCodeAPI = async (email: string) => {
 
 export const verifyEmailAPI = async (data: any) => {
   try {
-    const response = await axiosInstance.post(
-      USER_ENDPOINTS.VERIFY_EMAIL,
-      data
-    );
+    const response = await axiosInstance.post(API_ENDPOINTS.VERIFY_EMAIL, data);
     return response.data;
   } catch (error: any) {
     throw error.response?.data || { details: "Something went wrong" };
@@ -127,7 +124,7 @@ export const changePasswordAPI = async ({
   confirm_password,
 }: ChangePasswordProps) => {
   try {
-    const response = await axiosInstance.put(USER_ENDPOINTS.CHANGE_PASSWORD, {
+    const response = await axiosInstance.put(API_ENDPOINTS.CHANGE_PASSWORD, {
       old_password,
       new_password,
       confirm_password,

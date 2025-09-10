@@ -23,16 +23,17 @@ export const AuthRoute = ({ children }) => {
     if (roles.includes("admin") || activeRole === "admin") {
       return <Navigate to="/Admin/Dashboard" replace />;
     } else if (roles.includes("boarding") || activeRole === "boarding") {
-      if (user.pet_boarding_status === "approved") {
-        // console.log("approved providers");
-        return <Navigate to="/Petboarding/Dashboard" replace />;
-      } else if (user.pet_boarding_status === "pending") {
-        // console.log("authRoute: pending providers");
-        // console.log("pet_boarding:", user.pet_boarding_status);
-        return <Navigate to="/pending_providers" replace />;
-      } else {
-        return <Navigate to="/Petboarding/Dashboard" replace />;
-      }
+      return <Navigate to="/Petboarding/Dashboard" replace />;
+      // if (user.pet_boarding_status === "approved") {
+      //   // console.log("approved providers");
+      //   return <Navigate to="/Petboarding/Dashboard" replace />;
+      // } else if (user.pet_boarding_status === "pending") {
+      //   // console.log("authRoute: pending providers");
+      //   // console.log("pet_boarding:", user.pet_boarding_status);
+      //   return <Navigate to="/pending_providers" replace />;
+      // } else {
+      //   return <Navigate to="/Petboarding/Dashboard" replace />;
+      // }
     } else {
       console.log("AuthRoute: unauthorized");
       console.log("pet_boarding:", user.pet_boarding_status);

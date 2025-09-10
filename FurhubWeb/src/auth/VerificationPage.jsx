@@ -61,16 +61,21 @@ export const VerificationPage = () => {
         pet_boarding_status
       );
 
-      if (roles.includes("Admin")) {
-        navigate("/Admin/Dashboard", { replace: true });
-      } else if (roles.includes("Boarding")) {
-        if (pet_boarding_status === "approved") {
-          navigate("/Petboarding/Dashboard", { replace: true });
-        } else if (pet_boarding_status === "pending") {
-          navigate("/pending_providers", { replace: true });
-        } else {
-          navigate("/unauthorized", { replace: true });
-        }
+      // if (roles.includes("Admin")) {
+      //   navigate("/Admin/Dashboard", { replace: true });
+      // } else if (roles.includes("Boarding")) {
+      //   if (pet_boarding_status === "approved") {
+      //     navigate("/Petboarding/Dashboard", { replace: true });
+      //   } else if (pet_boarding_status === "pending") {
+      //     navigate("/pending_providers", { replace: true });
+      //   } else {
+      //     navigate("/unauthorized", { replace: true });
+      //   }
+      // } else {
+      //   navigate("/unauthorized", { replace: true });
+      // }
+      if (roles.includes("Boarding")) {
+        navigate("/Petboarding/Dashboard", { replace: true });
       } else {
         navigate("/unauthorized", { replace: true });
       }
