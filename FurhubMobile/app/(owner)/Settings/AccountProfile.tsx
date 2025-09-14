@@ -1,0 +1,544 @@
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ActivityIndicator,
+  TextInput,
+} from "react-native";
+import Ionicons from "@expo/vector-icons/FontAwesome";
+import { router, useLocalSearchParams } from "expo-router";
+import React, { useCallback, useState, useEffect } from "react";
+import ProfileImage from "@/components/ProfileImage";
+import CustomToast from "@/components/CustomToast";
+import EditModalField from "@/components/Modals/EditModalField";
+import * as Yup from "yup";
+import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import InputName from "@/components/Inputs/InputName";
+import InputPhone from "@/components/Inputs/InputPhone";
+import InputPassword from "@/components/Inputs/InputPassword";
+import { uploadImageAPI } from "@/services/imageUpload";
+import { parseError } from "@/utils/parseError";
+import SubmitButton from "@/components/Buttons/SubmitButton";
+import { useProfile } from "@/context/profile/useProfile";
+import { userDetailsAPI, petOwnerAPI } from "@/services/userAPI";
+import { changePasswordAPI } from "@/services/api";
+import { useFocusEffect } from "@react-navigation/native";
+import { locationAPI } from "@/services/userAPI"; // import the new API
+
+// Validation schemas
+const validationSchemas = {
+  name: Yup.object().shape({
+    first_name: Yup.string().required("First name is required"),
+    last_name: Yup.string().required("Last name is required"),
+  }),
+  phone: Yup.object().shape({
+    phone_no: Yup.string()
+      .required("Phone number is required")
+      .matches(/^09[0-9]{9}$/, "Phone number must start with 09 and be 11 digits"),
+  }),
+  password: Yup.object().shape({
+    old_password: Yup.string().required("Current password is required"),
+    new_password: Yup.string()
+      .required("Password is required")
+      .min(8, "Password must be at least 8 characters")
+      .matches(/[A-Z]/, "Password must have at least one uppercase letter")
+      .matches(/[a-z]/, "Password must have at least one lowercase letter")
+      .matches(/[0-9]/, "Password must have at least one number")
+      .matches(/[!@#$%^&*]/, "Password must have at least one special character (!@#$%^&*)"),
+    confirm_password: Yup.string()
+      .required("Confirm password is required")
+      .oneOf([Yup.ref("new_password")], "Passwords do not match"),
+  }),
+  emergency: Yup.object().shape({
+    emergency_no: Yup.string()
+      .required("Phone number is required")
+      .matches(/^09[0-9]{9}$/, "Phone number must start with 09 and be 11 digits"),
+  }),
+};
+
+// Modal types
+const MODAL_TYPES = {
+  NONE: "NONE",
+  NAME: "NAME",
+  PHONE: "PHONE",
+  PASSWORD: "PASSWORD",
+  EMERGENCY: "EMERGENCY",
+  BIO: "BIO",
+};
+
+
+export default function AccountProfile() {
+  const { userDetails, profilePicture, petOwnerDetails, loading, error, refreshProfile } = useProfile();
+  const params = useLocalSearchParams();
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [activeModal, setActiveModal] = useState(MODAL_TYPES.NONE);
+  const [toast, setToast] = useState<{ message: string; type?: "success" | "error" } | null>(null);
+  const [modalToast, setModalToast] = useState<{ message: string; type?: "success" | "error" } | null>(null);
+  const [address, setAddress] = useState("");
+
+  // Update address when userDetails changes
+  useEffect(() => {
+    if (userDetails?.address) {
+      setAddress(userDetails.address);
+    }
+  }, [userDetails?.address]);
+
+  // Handle the returned address from LocationScreen
+ // Fetch latest location
+  const fetchLatestLocation = async () => {
+    try {
+      const data = await locationAPI.getLatestLocation();
+      if (data?.address) {
+        setAddress(data.address);
+      } else {
+        setAddress("");
+      }
+    } catch (err) {
+      console.log("Failed to fetch latest location:", err);
+    }
+  };
+
+  // Refresh profile & latest location on focus
+useFocusEffect(
+  useCallback(() => {
+    const fetchData = async () => {
+      await refreshProfile();           // refresh user & petOwner details
+      await fetchLatestLocation();      // get latest address from DB
+    };
+
+    fetchData();
+
+    // Update address if coming back from LocationScreen with updatedAddress
+if (params?.updatedAddress) {
+  const updatedAddress = Array.isArray(params.updatedAddress)
+    ? params.updatedAddress[0] // take first value if it's an array
+    : params.updatedAddress;
+  setAddress(updatedAddress);
+}
+
+  }, [params?.updatedAddress])
+);
+
+  // Form setup
+  type FormFields = {
+    first_name?: string;
+    last_name?: string;
+    phone_no?: string;
+    old_password?: string;
+    new_password?: string;
+    confirm_password?: string;
+    emergency_no?: string;
+    bio?: string;
+  };
+
+  const { control, handleSubmit, formState: { errors }, reset, watch } = useForm<FormFields>({
+    resolver: yupResolver(
+      activeModal === MODAL_TYPES.NAME
+        ? validationSchemas.name
+        : activeModal === MODAL_TYPES.PHONE
+        ? validationSchemas.phone
+        : activeModal === MODAL_TYPES.PASSWORD
+        ? validationSchemas.password
+        : activeModal === MODAL_TYPES.EMERGENCY
+        ? validationSchemas.emergency
+        : Yup.object()
+    ),
+    mode: "onChange",
+  });
+
+  const phoneNum = watch("phone_no");
+  const [first_name, last_name] = watch(["first_name", "last_name"]);
+  const [old_password, new_password, confirm_password] = watch(["old_password", "new_password", "confirm_password"]);
+  const emergency_no = watch("emergency_no");
+  const bio = watch("bio");
+
+  // Reset form when modal changes or userDetails updates
+  useEffect(() => {
+    if (activeModal === MODAL_TYPES.NAME) {
+      reset({ first_name: userDetails?.first_name || "", last_name: userDetails?.last_name || "" });
+    } else if (activeModal === MODAL_TYPES.PHONE) {
+      reset({ phone_no: userDetails?.phone_no || "" });
+    } else if (activeModal === MODAL_TYPES.PASSWORD) {
+      reset({ old_password: "", new_password: "", confirm_password: "" });
+    } else if (activeModal === MODAL_TYPES.EMERGENCY) {
+      reset({ emergency_no: petOwnerDetails?.emergency_no || "" });
+    } else if (activeModal === MODAL_TYPES.BIO) {
+      reset({ bio: petOwnerDetails?.bio || "" });
+    }
+  }, [activeModal, userDetails, petOwnerDetails, reset]);
+
+  const closeModal = () => {
+    setActiveModal(MODAL_TYPES.NONE);
+    reset();
+  };
+
+  // Image upload
+  const handleImageUpload = async (uri: string) => {
+    setIsLoading(true);
+    try {
+      const profileImageData = new FormData();
+      const fileExtension = uri.split(".").pop()?.toLowerCase() || "jpg";
+
+      profileImageData.append("category", "profile_picture");
+      profileImageData.append("label", "Profile Picture");
+      profileImageData.append("image", {
+        uri,
+        name: `profile_${Date.now()}.${fileExtension}`,
+        type: `image/${fileExtension === "png" ? "png" : "jpeg"}`,
+      } as any);
+
+      await uploadImageAPI(profileImageData);
+      await refreshProfile();
+
+      setToast({ message: "Image uploaded successfully!", type: "success" });
+    } catch (error: any) {
+      setModalToast({ message: parseError(error), type: "error" });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Update handlers
+  const handleNameUpdate = async (data: any) => {
+    setIsLoading(true);
+    try {
+      await userDetailsAPI.updateUser({ first_name: data.first_name, last_name: data.last_name });
+      await refreshProfile();
+      setToast({ message: "Name updated successfully!", type: "success" });
+      closeModal();
+    } catch (error: any) {
+      setModalToast({ message: parseError(error), type: "error" });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePhoneUpdate = async (data: any) => {
+    setIsLoading(true);
+    try {
+      await userDetailsAPI.updateUser({ phone_no: data.phone_no });
+      await refreshProfile();
+      setToast({ message: "Phone number updated successfully!", type: "success" });
+      closeModal();
+    } catch (error: any) {
+      setModalToast({ message: parseError(error), type: "error" });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleEmergencyPhoneUpdate = async (data: any) => {
+    setIsLoading(true);
+    try {
+      await petOwnerAPI.updatePetOwner({ emergency_no: data.emergency_no });
+      await refreshProfile();
+      setToast({ message: "Emergency number updated successfully!", type: "success" });
+      closeModal();
+    } catch (error: any) {
+      setModalToast({ message: parseError(error), type: "error" });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePasswordUpdate = async (data: any) => {
+    setIsLoading(true);
+    try {
+      const result = await changePasswordAPI(data);
+      setToast({ message: result.details, type: "success" });
+      closeModal();
+    } catch (error: any) {
+      setModalToast({ message: parseError(error), type: "error" });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleBioUpdate = async (data: any) => {
+    setIsLoading(true);
+    try {
+      await petOwnerAPI.updatePetOwner({ bio: data.bio });
+      await refreshProfile();
+      setToast({ message: "Bio updated successfully!", type: "success" });
+      closeModal();
+    } catch (error: any) {
+      setModalToast({ message: parseError(error), type: "error" });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const renderModalContent = () => {
+    switch (activeModal) {
+      case MODAL_TYPES.NAME:
+        return (
+          <View className="gap-5 px-2">
+            <View className="min-h-[80px]">
+              <Text className="text-lg font-medium">First Name</Text>
+              <InputName control={control} name="first_name" />
+              <View className="min-h-[24px]">
+                {errors.first_name && <Text className="text-red-600">{errors.first_name.message}</Text>}
+              </View>
+            </View>
+            <View className="min-h-[80px]">
+              <Text className="text-lg font-medium">Last Name</Text>
+              <InputName control={control} name="last_name" />
+              <View className="min-h-[24px]">
+                {errors.last_name && <Text className="text-red-600">{errors.last_name.message}</Text>}
+              </View>
+            </View>
+            <View className="flex items-center justify-center w-full mt-3">
+              <SubmitButton
+                onPress={handleSubmit(handleNameUpdate)}
+                title="Save Changes"
+                disable={(first_name === userDetails?.first_name && last_name === userDetails?.last_name) || !first_name || !last_name}
+              />
+            </View>
+          </View>
+        );
+
+      case MODAL_TYPES.PHONE:
+        return (
+          <View className="gap-5 px-2">
+            <View className="min-h-[80px]">
+              <Text className="text-lg font-medium">Phone No</Text>
+              <InputPhone control={control} name="phone_no" placeholder="+09" />
+              <View className="min-h-[24px]">
+                {errors.phone_no && <Text className="text-red-600">{errors.phone_no.message}</Text>}
+              </View>
+            </View>
+            <View className="flex items-center justify-center w-full mt-3">
+              <SubmitButton
+                onPress={handleSubmit(handlePhoneUpdate)}
+                title="Save Changes"
+                disable={phoneNum === userDetails?.phone_no || !phoneNum}
+              />
+            </View>
+          </View>
+        );
+
+      case MODAL_TYPES.PASSWORD:
+        return (
+          <View className="gap-5 px-2">
+            <View className="min-h-[80px]">
+              <Text className="text-lg font-medium">Old Password</Text>
+              <InputPassword control={control} name="old_password" />
+              <View className="min-h-[24px]">
+                {errors.old_password && <Text className="text-red-600">{errors.old_password.message}</Text>}
+              </View>
+            </View>
+            <View className="min-h-[80px]">
+              <Text className="text-lg font-medium">New Password</Text>
+              <InputPassword control={control} name="new_password" />
+              <View className="min-h-[24px]">
+                {errors.new_password && <Text className="text-red-600">{errors.new_password.message}</Text>}
+              </View>
+            </View>
+            <View className="min-h-[80px]">
+              <Text className="text-lg font-medium">Confirm Password</Text>
+              <InputPassword control={control} name="confirm_password" />
+              <View className="min-h-[24px]">
+                {errors.confirm_password && <Text className="text-red-600">{errors.confirm_password.message}</Text>}
+              </View>
+            </View>
+            <View className="flex items-center justify-center w-full mt-3">
+              <SubmitButton
+                onPress={handleSubmit(handlePasswordUpdate)}
+                title="Save Changes"
+                disable={!old_password || !new_password || new_password !== confirm_password}
+              />
+            </View>
+          </View>
+        );
+
+      case MODAL_TYPES.EMERGENCY:
+        return (
+          <View className="gap-5 px-2">
+            <View className="min-h-[80px]">
+              <Text className="text-lg font-medium">Emergency phone no.</Text>
+              <InputPhone control={control} name="emergency_no" placeholder="+09" />
+              <View className="min-h-[24px]">
+                {errors.emergency_no && <Text className="text-red-600">{errors.emergency_no.message}</Text>}
+              </View>
+            </View>
+            <View className="flex items-center justify-center w-full mt-3">
+              <SubmitButton
+                onPress={handleSubmit(handleEmergencyPhoneUpdate)}
+                title="Save Changes"
+                disable={emergency_no === petOwnerDetails?.emergency_no || !emergency_no}
+              />
+            </View>
+          </View>
+        );
+
+      case MODAL_TYPES.BIO:
+        return (
+          <View className="gap-5 px-2">
+            <View className="min-h-[80px]">
+              <Controller
+                name="bio"
+                control={control}
+                rules={{ required: false }}
+                render={({ field: { value, onChange } }) => (
+                  <TextInput
+                    className="w-full h-44 border border-gray-400 rounded-lg p-5"
+                    multiline
+                    maxLength={200}
+                    textAlignVertical="top"
+                    value={value}
+                    onChangeText={onChange}
+                    placeholder="Write Something about yourself"
+                  />
+                )}
+              />
+            </View>
+            <View className="flex items-center justify-center w-full mt-3">
+              <SubmitButton
+                onPress={handleSubmit(handleBioUpdate)}
+                title="Save Changes"
+                disable={bio === petOwnerDetails?.bio || !bio}
+              />
+            </View>
+          </View>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  const getModalLabel = () => {
+    switch (activeModal) {
+      case MODAL_TYPES.NAME:
+        return "Edit Name";
+      case MODAL_TYPES.PHONE:
+        return "Edit Phone No";
+      case MODAL_TYPES.PASSWORD:
+        return "Change Password";
+      case MODAL_TYPES.EMERGENCY:
+        return "Emergency No.";
+      case MODAL_TYPES.BIO:
+        return "Edit Bio";
+      default:
+        return "";
+    }
+  };
+
+  if (loading) return (
+    <View className="flex-1 justify-center items-center">
+      <ActivityIndicator size="large" color="#FF914D" />
+    </View>
+  );
+
+  if (error) return (
+    <View className="flex justify-center items-center">
+      <Text className="text-red-500 text-center mt-10">{error}</Text>
+    </View>
+  );
+
+  return (
+    <View className="flex-1 p-3 gap-3 bg-white">
+      {/* Toast */}
+      {toast && <CustomToast message={toast.message} type={toast.type} duration={3000} onHide={() => setToast(null)} />}
+
+      {/* Header */}
+      <View className="flex-row items-center justify-between px-4 py-4">
+        <TouchableOpacity className="w-10 h-10 items-center justify-center" onPress={() => router.push("/(owner)/Settings/SettingScreen")}>
+          <Ionicons name="arrow-left" size={24} color="black" />
+        </TouchableOpacity>
+        <Text className="text-[25px] font-semibold text-center flex-1">Profile</Text>
+        <View className="w-10 h-10" />
+      </View>
+
+      {/* Profile Picture, Name and Bio */}
+      <View className="items-center justify-center mt-4">
+        <ProfileImage initialImage={profilePicture || ""} onChange={() => {}} onUpload={handleImageUpload} isLoading={isLoading} />
+        <View className="flex-row items-center justify-center mt-3">
+          <Text className="text-[20px] font-semibold">{userDetails?.first_name} {userDetails?.last_name}</Text>
+          <TouchableOpacity className="ml-2" onPress={() => setActiveModal(MODAL_TYPES.NAME)}>
+            <Ionicons name="pencil" size={19} color="#E05D5B" />
+          </TouchableOpacity>
+        </View>
+        <View className="flex items-center justify-center w-80 h-20 rounded-lg border border-gray-300 mt-2">
+          <TouchableOpacity onPress={() => setActiveModal(MODAL_TYPES.BIO)}>
+            <Text className="text-gray-400">{petOwnerDetails?.bio || "Write something about yourself ^^"}</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* Modal for edit operations */}
+      <EditModalField visible={activeModal !== MODAL_TYPES.NONE} onClose={closeModal} label={getModalLabel()} toast={modalToast} clearToast={() => setModalToast(null)}>
+        {renderModalContent()}
+      </EditModalField>
+
+      {/* Info sections */}
+      <View className="flex-1 bg-white p-4 mt-3">
+        {/* Email */}
+        <View className="flex-row items-center justify-center mb-4 border-b border-gray-300 pb-3">
+          <Text className="text-[17px] font-semibold text-gray-400 w-28">Email:</Text>
+          <Text className="text-[17px] flex-1">{userDetails?.email}</Text>
+        </View>
+
+        {/* Phone number */}
+        <View className="flex-row items-center mb-4 border-b border-gray-300 pb-3">
+          <Text className="text-[17px] font-semibold text-gray-400 w-28">Phone No:</Text>
+          <Text className="text-[17px] flex-1">{userDetails?.phone_no || "Not set"}</Text>
+          <TouchableOpacity onPress={() => setActiveModal(MODAL_TYPES.PHONE)}>
+            <Ionicons name="pencil" size={19} color="#E05D5B" />
+          </TouchableOpacity>
+        </View>
+
+        {/* Emergency No */}
+        <View className="flex-row items-center mb-4 border-b border-gray-300 pb-3">
+          <Text className="text-[17px] font-semibold text-gray-400 w-28">Emergency No:</Text>
+          <Text className="text-[17px] flex-1">{petOwnerDetails?.emergency_no || "Not set"}</Text>
+          <TouchableOpacity onPress={() => setActiveModal(MODAL_TYPES.EMERGENCY)}>
+          <Ionicons name="pencil" size={19} color="#E05D5B" />
+          </TouchableOpacity>
+        </View>
+
+    <View className="flex-1 p-3 gap-3 bg-white">
+      {/* ... other profile sections */}
+
+      {/* Address */}
+      <View className="flex-row items-center mb-4 border-b border-gray-300 pb-3">
+        <Text className="text-[17px] font-semibold text-gray-400 w-28">Address:</Text>
+
+        {/* Address Display / View */}
+        <TouchableOpacity
+          className="flex-1"
+          onPress={() =>
+            router.push({
+              pathname: address ? "/Settings/LocationScreen" : "/Settings/LocationScreen",
+            })
+          }
+        >
+          <Text className="text-[17px] text-blue-600">
+            {address || "Setup Address"}
+          </Text>
+        </TouchableOpacity>
+
+        {/* Edit Button */}
+        <TouchableOpacity
+          onPress={() => router.push("/Settings/LocationScreen")}
+        >
+          <Ionicons name="pencil" size={19} color="#E05D5B" />
+        </TouchableOpacity>
+      </View>
+
+      {/* ...rest of profile */}
+    </View>
+        {/* Change Password */}
+        <View className="flex-row items-center mb-4 border-b border-gray-300 pb-3">
+          <Text className="text-[17px] font-semibold text-gray-400 w-28">Password:</Text>
+          <Text className="text-[17px] flex-1">********</Text>
+          <TouchableOpacity onPress={() => setActiveModal(MODAL_TYPES.PASSWORD)}>
+            <Ionicons name="pencil" size={19} color="#E05D5B" />
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
+  );
+}
