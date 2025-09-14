@@ -63,3 +63,4 @@ export const logout = () => {
 export const getRole = () => {
   localStorage.getItem("role");
 };
+

@@ -1,5 +1,10 @@
 from rest_framework import serializers
+<<<<<<< Updated upstream
 from .models import Users
+=======
+from .models import Users, Roles, User_roles, PetOwner, PetWalker,Admin, PetBoarding, UploadedImage, Service , Comment,Reaction,Post
+from django.utils import timezone
+>>>>>>> Stashed changes
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
@@ -25,4 +30,128 @@ class RegisterSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data.pop('confirm_password')
         user = Users.objects.create_user(**validated_data)
+<<<<<<< Updated upstream
         return user
+=======
+        #Assigned role
+        role = Roles.objects.get(role_name = role_name)
+
+        if role.role_name == 'Walker':
+            PetWalker.objects.create(user = user)
+        if role.role_name == 'Boarding':
+            PetBoarding.objects.create(user = user)
+        if role.role_name == 'Admin':
+            Admin.objects.create(user = user)
+        if role.role_name == 'Owner':
+            PetOwner.objects.create(user = user)
+
+        User_roles.objects.create(user = user, role = role)
+        return user
+    
+class EmailVerificationSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    code = serializers.CharField(max_length=6)
+
+    def validate(self, data):
+        email = data.get("email")
+        code = data.get("code")
+
+        try:
+            user = Users.objects.get(email=email)
+        except Users.DoesNotExist:
+            raise serializers.ValidationError("User does not exist.")
+
+        if user.is_verified:
+            raise serializers.ValidationError("Account already verified.")
+
+        if user.verification_code != code:
+            raise serializers.ValidationError("Invalid verification code.")
+
+        if timezone.now() > user.code_expiry:
+            raise serializers.ValidationError("Verification code has expired.")
+
+        return data
+
+    def save(self):
+        email = self.validated_data["email"]
+        user = Users.objects.get(email=email)
+        user.is_verified = True
+        user.verification_code = None  # clear used code
+        user.code_expiry = None
+        user.save()
+        return user
+    
+class UploadImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UploadedImage
+        fields = ['user', 'image', 'category', 'label', 'uploaded_at']
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Users
+        fields = ['user_id', 'first_name', 'last_name', 'email', 'phone_no']
+
+class PetWalkerSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+    uploaded_images = serializers.SerializerMethodField()
+    role_applied = serializers.SerializerMethodField()
+    class Meta:
+        model = PetWalker
+        fields = ['user', 'availability', 'status', 'uploaded_images', 'role_applied']
+
+    def get_uploaded_images(self, obj):
+        images = UploadedImage.objects.filter(user = obj.user, category='walker_requirements')
+        return UploadImageSerializer(images, many=True).data
+    
+    def get_role_applied(self, obj):
+        return "Pet Walker"
+    
+class PetBoardingSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+    uploaded_images = serializers.SerializerMethodField()
+    class Meta:
+        model = PetBoarding
+        fields = ['user', 'hotel_name', 'availability', 'status', 'uploaded_images', 'role_applied']
+    
+    def get_uploaded_images(self, obj):
+        images = UploadedImage.objects.filter(user = obj.user, category='boarding_requirements')
+        return UploadImageSerializer(images, many=True).data
+    
+    def get_role_applied(self, obj):
+        return "Pet Boarding"
+
+class ServiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Service
+        fields = [ 'service_id','service_name']
+
+# class BulkUploadImageSerializer(serializers.Serializer):
+#     images = UploadImageSerializer(many=True)
+
+#     def create(self, validated_data):
+#         images_data = validated_data.pop('images')
+#         uploaded_images = []
+#         for image_data in images_data:
+#             uploaded_images.append(UploadedImage.objects.create(**image_data))
+#         return uploaded_images
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField(use_url=True, required=False)
+    class Meta:
+        model = Comment
+        fields = '__all__'
+
+class ReactionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Reaction
+        fields = ['id', 'reaction_type', 'created_at']
+
+class PostSerializer(serializers.ModelSerializer):
+    comments = CommentSerializer(many=True, read_only=True)
+    reactions = ReactionSerializer(many=True, read_only=True)
+    image = serializers.ImageField(use_url=True, required=False)
+    class Meta:
+        model = Post
+        fields = '__all__'
+>>>>>>> Stashed changes

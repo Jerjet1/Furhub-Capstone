@@ -8,15 +8,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # load_dotenv(BASE_DIR/'.env')
 # os.environ['GDAL_LIBRARY_PATH'] = r'C:\OSGeo4W\bin\gdal310.dll'
 # GDAL_DDL = BASE_DIR / 'gdal' / 'gdal310.dll'
-if os.name == 'nt':  # Windows
-    OSGEO4W = r"C:\OSGeo4W"
-    os.environ['OSGEO4W_ROOT'] = OSGEO4W
-    os.environ['GDAL_DATA'] = os.path.join(OSGEO4W, 'share', 'gdal')
-    os.environ['PROJ_LIB'] = os.path.join(OSGEO4W, 'share', 'proj')
-    os.environ['PATH'] = os.path.join(OSGEO4W, 'bin') + ';' + os.environ['PATH']
-    GDAL_LIBRARY_PATH = os.path.join(OSGEO4W, 'bin', 'gdal310.dll')  # Match your version
-
-
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-=9um0w6h1lt=epz-f8uhiqhj_+4r0o#no&cczzte5a!+!a58ku'
@@ -36,7 +27,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.gis',
     'FurhubApi',
     'rest_framework',
     'corsheaders',
@@ -56,12 +46,21 @@ MIDDLEWARE = [
 ]
 
 # CORS_ALLOWED_ORIGINS = ['http://localhost:5173', 'exp://192.168.1.3:8081']
+<<<<<<< Updated upstream
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '192.168.1.3']
+=======
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '192.168.43.53', '10.0.0.39'] #change sa Ip address para makaconnect sa web & mobile
+>>>>>>> Stashed changes
 CORS_ALLOWED_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8081",  # React Native Web/Expo Go via browser
     "http://127.0.0.1:8081",  # In case you use this format
+<<<<<<< Updated upstream
     "http://192.168.1.3:8000",
+=======
+    "http://192.168.43.53:8081", # change sa inyong IP address para makaconnect sa web & mobile
+    "http://10.0.0.39:8081",
+>>>>>>> Stashed changes
     "http://localhost:5173",
 ]
 
@@ -103,10 +102,15 @@ WSGI_APPLICATION = 'BackendServer.wsgi.application'
 
 DATABASES = {
     'default': {
+<<<<<<< Updated upstream
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'furhub',
+=======
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'furhubv1',
+>>>>>>> Stashed changes
         'USER': 'postgres',
-        'PASSWORD': '1190716',
+        'PASSWORD': '12345',
         'HOST': 'localhost',
         'PORT': '5432',
     }
