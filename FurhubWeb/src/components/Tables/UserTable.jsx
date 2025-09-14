@@ -1,58 +1,61 @@
 import React from "react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export const UserTable = ({ headers, data = [], isLoading, isError }) => {
-  const getNestedValue = (obj, path) => {
-    return path.split(".").reduce((acc, part) => acc?.[part], obj);
-  };
+  const getNestedValue = (obj, path) =>
+    path.split(".").reduce((acc, part) => acc?.[part], obj);
 
   return (
-    <div className="overflow-auto">
-      <table className="min-w-full divide-y divide-gray-200 overflow-auto">
-        <thead className="bg-gray-50">
-          <tr>
+    <div className="rounded-md border">
+      <Table>
+        <TableHeader>
+          <TableRow>
             {headers.map((header, idx) => (
-              <th
-                key={idx}
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                {header.label}
-              </th>
+              <TableHead key={idx}>{header.label}</TableHead>
             ))}
-          </tr>
-        </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {isLoading ? (
-            <tr>
-              <td colSpan={headers.length} className="text-center py-4">
+            <TableRow>
+              <TableCell colSpan={headers.length} className="text-center">
                 Loading...
-              </td>
-            </tr>
+              </TableCell>
+            </TableRow>
           ) : isError || !Array.isArray(data) ? (
-            <tr>
-              <td
+            <TableRow>
+              <TableCell
                 colSpan={headers.length}
-                className="text-center py-4 text-red-500">
+                className="text-center text-red-500">
                 Error fetching data.
-              </td>
-            </tr>
+              </TableCell>
+            </TableRow>
           ) : data.length === 0 ? (
-            <tr>
-              <td colSpan={headers.length} className="text-center py-4">
+            <TableRow>
+              <TableCell colSpan={headers.length} className="text-center">
                 No data available.
-              </td>
-            </tr>
+              </TableCell>
+            </TableRow>
           ) : (
             data.map((item, idx) => (
-              <tr key={idx}>
+              <TableRow key={idx}>
                 {headers.map((header, hIdx) => (
-                  <td key={hIdx} className="px-6 py-4 whitespace-nowrap">
+                  <TableCell key={hIdx}>
                     {getNestedValue(item, header.key)}
-                  </td>
+                  </TableCell>
                 ))}
-              </tr>
+              </TableRow>
             ))
           )}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </div>
   );
 };

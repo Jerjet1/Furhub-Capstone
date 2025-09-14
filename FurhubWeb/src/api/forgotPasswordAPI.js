@@ -1,11 +1,6 @@
 import axios from "axios";
 // import axiosInstance from "./axiosInterceptor";
-import { API_URL } from "../config/config";
 import { API_ENDPOINTS } from "./apiEndpoints";
-const forgotPasswordURL = new URL("users/forgot-password/", API_URL).toString();
-const verifyCodeURL = new URL("users/verify-code/", API_URL).toString();
-const resetPasswordURL = new URL("users/reset-password/", API_URL).toString();
-
 export const forgotPasswordAPI = async (email) => {
   try {
     const response = await axios.post(API_ENDPOINTS.FORGOT_PASSWORD, email);

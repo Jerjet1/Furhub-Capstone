@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { UserLayoutPage } from "../../components/Layout/UserLayoutPage";
-import { ProviderTable } from "../../components/Tables/ProviderTable";
 import { UserTable } from "../../components/Tables/UserTable";
 import { PaginationButton } from "../../components/Buttons/PaginationButton";
 import { fetchUsers } from "../../api/Users";
@@ -9,6 +8,7 @@ import {
   fetchPetWalkerUsers,
   fetchPetBoardingUsers,
 } from "../../api/ProviderAPI";
+import { Button } from "@/components/ui/button";
 
 export const ManageUser = () => {
   const [page, setPage] = useState(1);
@@ -64,27 +64,33 @@ export const ManageUser = () => {
   return (
     <UserLayoutPage>
       <div className="flex flex-row gap-5 px-14">
-        <button
+        <Button
           onClick={() => setView("users")}
           className={`px-4 py-2 rounded ${
-            view === "users" ? "bg-blue-500 text-white" : "bg-gray-200"
+            view === "users"
+              ? "bg-blue-500 text-white hover:bg-blue-600"
+              : "border-[#E0E0E0] text-[#616161] bg-transparent hover:bg-[#F5F5F5]"
           } cursor-pointer`}>
           All Users
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={() => setView("walker")}
           className={`px-4 py-2 rounded ${
-            view === "walker" ? "bg-blue-500 text-white" : "bg-gray-200"
+            view === "walker"
+              ? "bg-blue-500 text-white hover:bg-blue-600"
+              : "border-[#E0E0E0] text-[#616161] bg-transparent hover:bg-[#F5F5F5]"
           } cursor-pointer`}>
           Pet Walker
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={() => setView("boarding")}
           className={`px-4 py-2 rounded ${
-            view === "boarding" ? "bg-blue-500 text-white" : "bg-gray-200"
+            view === "boarding"
+              ? "bg-blue-500 text-white hover:bg-blue-600"
+              : "border-[#E0E0E0] text-[#616161] bg-transparent hover:bg-[#F5F5F5]"
           } cursor-pointer`}>
           Pet Boarding
-        </button>
+        </Button>
       </div>
 
       <div className="flex flex-col gap-5">

@@ -24,8 +24,7 @@ export const API_ENDPOINTS = {
   USERS: new URL("administrator/all_users/", API_URL).toString(),
 
   REQUIREMENTS_UPLOAD: new URL("users/image_upload/", API_URL).toString(),
-  //   PROFILE_PICTURE: new URL("users/profile/", API_URL).toString(),
+  PROFILE_PICTURE: new URL("users/profile/", API_URL).toString(),
 
-  //   USERS_DETAILS: new URL("users/account-details/", API_URL).toString(),
-  //   PET_BOARDING_DETAILS:
+  USER_DETAILS: new URL("users/account-details/", API_URL).toString(),
 };

@@ -15,6 +15,7 @@ export const InputPassword = ({ id, name, placeholder, register, errors }) => {
           type={showPassword ? "text" : "password"}
           id={id}
           placeholder={placeholder}
+          maxLength={16}
           {...register(name)}
           className="w-full outline-none bg-transparent"
         />

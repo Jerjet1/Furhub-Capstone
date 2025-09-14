@@ -53,7 +53,7 @@ export default function VerificationPage() {
       if (roles.includes("Owner")) {
         router.replace("/(owner)/Home");
       } else if (roles.includes("Walker")) {
-        router.replace("/auth/PendingProviders");
+        router.replace("/(walker)/Home");
       } else {
         router.replace("/auth/LoginPage"); // fallback
       }

@@ -1,22 +1,27 @@
-import React from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/useAuth";
+import { useProfile } from "../../context/useProfile";
 import {
-  Bell,
-  Home,
-  Users,
   Calendar,
   UserStar,
-  User,
   Ticket,
   MessageCircle,
   IdCard,
   LogOut,
   FileText,
 } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { UserAvatar } from "../userAvatar";
+
 export const BoardingNavbar = () => {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
+  const { userDetails, profilePicture } = useProfile();
   const navigate = useNavigate();
   const handleLogout = async () => {
     try {
@@ -27,31 +32,56 @@ export const BoardingNavbar = () => {
     }
   };
 
+  const textColor =
+    user.pet_boarding_status === "approved" ? "text-[#26a37a]" : "text-red-400";
+
+  const borderColor = ["unverified", "pending", "reject"].includes(
+    user.pet_boarding_status
+  )
+    ? "border-red-400"
+    : "border-[#26a37a]";
+
   return (
     <div className="w-full h-full">
-      <nav className="h-full flex flex-col justify-between ">
+      <nav className="h-full flex flex-col justify-between">
         <div className="space-y-2 w-full">
-          <NavLink
-            to="/Petboarding/ProfilePage"
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2 rounded-lg ${
-                isActive
-                  ? "bg-blue-100 text-blue-600"
-                  : "text-gray-600 hover:bg-gray-100 hover:text-gray-800"
-              }`
-            }>
-            <UserAvatar />
-            {/* User Info (stacked vertically) */}
-            <div className="flex flex-col">
-              <span className="font-medium">John Doe</span>
-              <div className="space-x-2">
-                <span className="text-sm text-gray-500">Pet Boarding</span>
-                <span className="text-sm text-red-400 border border-red-400 px-2 rounded-lg">
-                  Pending
-                </span>
-              </div>
-            </div>
-          </NavLink>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link
+                  to="/Petboarding/ProfilePage"
+                  className="block w-full rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-800">
+                  <div className="flex items-center gap-3 px-3 py-1">
+                    <UserAvatar
+                      src={profilePicture}
+                      alt={`${userDetails?.first_name || ""} ${
+                        userDetails?.last_name || ""
+                      }`}
+                    />
+                    <div className="flex flex-col min-w-0">
+                      <span className="font-medium truncate">
+                        {userDetails?.first_name} {userDetails?.last_name}
+                      </span>
+                      <div className="space-x-2">
+                        <span className="text-sm text-gray-500">
+                          Pet Boarding
+                        </span>
+                        <span
+                          className={`text-[14px] ${textColor} border ${borderColor} px-1 rounded-lg`}>
+                          {user.pet_boarding_status}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="font-medium">
+                  {userDetails?.first_name} {userDetails?.last_name}
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           <NavLink
             to="/Petboarding/Bookings"
             className={({ isActive }) =>

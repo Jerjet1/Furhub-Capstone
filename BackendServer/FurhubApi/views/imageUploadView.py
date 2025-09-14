@@ -9,12 +9,12 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 
 class UploadImageView(APIView):
     parser_classes = [MultiPartParser, FormParser]
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         serializer = UploadImageSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(user=request.user)
             return Response({
                 "message": "Image Upload successfully",
             }, status=status.HTTP_201_CREATED)

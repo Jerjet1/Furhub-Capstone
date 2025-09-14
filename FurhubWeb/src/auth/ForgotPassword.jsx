@@ -21,12 +21,14 @@ import { ResendButtom } from "../components/Buttons/ResendButtom";
 import { ImageLayout } from "../components/Layout/ImageLayout";
 import { LottieSpinner } from "../components/LottieSpinner";
 import { Toast } from "../components/Toast";
+import { toast } from "sonner";
+import { parseError } from "@/utils/parseError";
 
 // page 1
 export const ForgotPassword = () => {
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
-  const [message, setMessage] = useState("");
+  // const [message, setMessage] = useState("");
   const { set_email } = useForgotPassword();
   const navigate = useNavigate();
 
@@ -55,23 +57,24 @@ export const ForgotPassword = () => {
       console.log("message: ", result);
       navigate("/verify-code", { replace: true });
     } catch (error) {
-      console.log("error", error);
-      let message = "Submit failed. Please try again.";
+      // console.log("error", error);
+      // let message = "Submit failed. Please try again.";
 
-      if (typeof error === "string") {
-        message = error;
-      } else if (typeof error.details === "string") {
-        message = error.details;
-      } else if (typeof error.detail === "string") {
-        message = error.detail;
-      } else if (typeof error.message === "string") {
-        message = error.message;
-      } else if (Array.isArray(error)) {
-        message = error.join("\n");
-      } else if (typeof error === "object") {
-        message = Object.values(error).flat().join("\n");
-      }
-      setMessage(message);
+      // if (typeof error === "string") {
+      //   message = error;
+      // } else if (typeof error.details === "string") {
+      //   message = error.details;
+      // } else if (typeof error.detail === "string") {
+      //   message = error.detail;
+      // } else if (typeof error.message === "string") {
+      //   message = error.message;
+      // } else if (Array.isArray(error)) {
+      //   message = error.join("\n");
+      // } else if (typeof error === "object") {
+      //   message = Object.values(error).flat().join("\n");
+      // }
+      // setMessage(message);
+      toast.error(parseError(error));
     } finally {
       setLoading(false);
     }
@@ -80,7 +83,7 @@ export const ForgotPassword = () => {
   return (
     <Layout>
       {/* display message */}
-      <Toast error={message} setError={setMessage} />
+      {/* <Toast error={message} setError={setMessage} /> */}
 
       {/* Loading screen */}
       {loading && (
@@ -131,7 +134,7 @@ export const VerifyCode = () => {
   const { user } = useAuth();
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
+  // const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
@@ -158,23 +161,24 @@ export const VerifyCode = () => {
 
       navigate("/reset-password", { replace: true });
     } catch (error) {
-      console.log("error", error);
-      let message = "Submit failed. Please try again.";
+      // console.log("error", error);
+      // let message = "Submit failed. Please try again.";
 
-      if (typeof error === "string") {
-        message = error;
-      } else if (typeof error.details === "string") {
-        message = error.details;
-      } else if (typeof error.detail === "string") {
-        message = error.detail;
-      } else if (typeof error.message === "string") {
-        message = error.message;
-      } else if (Array.isArray(error)) {
-        message = error.join("\n");
-      } else if (typeof error === "object") {
-        message = Object.values(error).flat().join("\n");
-      }
-      setMessage(message);
+      // if (typeof error === "string") {
+      //   message = error;
+      // } else if (typeof error.details === "string") {
+      //   message = error.details;
+      // } else if (typeof error.detail === "string") {
+      //   message = error.detail;
+      // } else if (typeof error.message === "string") {
+      //   message = error.message;
+      // } else if (Array.isArray(error)) {
+      //   message = error.join("\n");
+      // } else if (typeof error === "object") {
+      //   message = Object.values(error).flat().join("\n");
+      // }
+      // setMessage(message);
+      toast.error(parseError(error));
     } finally {
       setLoading(false);
     }
@@ -187,7 +191,7 @@ export const VerifyCode = () => {
   return (
     <Layout>
       {/* display message */}
-      <Toast error={message} setError={setMessage} />
+      {/* <Toast error={message} setError={setMessage} /> */}
 
       {/* Loading screen */}
       {loading && (
@@ -228,7 +232,7 @@ export const VerifyCode = () => {
 export const ResetPassword = () => {
   const { email, remove_Email } = useForgotPassword();
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
+  // const [message, setMessage] = useState("");
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -236,6 +240,8 @@ export const ResetPassword = () => {
     password: yup
       .string()
       .required("fill this field")
+      .min(8, "Password must be at least 8 characters")
+      .max(16, "Password must not exceed 16 characters")
       .matches(/[A-Z]/, "Password must have atleast one uppercase letter")
       .matches(/[a-z]/, "Password must have atleast one lowercase letter")
       .matches(/[0-9]/, "Password must have atleast one number")
@@ -270,23 +276,24 @@ export const ResetPassword = () => {
       navigate("/");
       console.log({ email: email, "message: ": result });
     } catch (error) {
-      console.log("error", error);
-      let message = "Submit failed. Please try again.";
+      // console.log("error", error);
+      // let message = "Submit failed. Please try again.";
 
-      if (typeof error === "string") {
-        message = error;
-      } else if (typeof error.details === "string") {
-        message = error.details;
-      } else if (typeof error.detail === "string") {
-        message = error.detail;
-      } else if (typeof error.message === "string") {
-        message = error.message;
-      } else if (Array.isArray(error)) {
-        message = error.join("\n");
-      } else if (typeof error === "object") {
-        message = Object.values(error).flat().join("\n");
-      }
-      setMessage(message);
+      // if (typeof error === "string") {
+      //   message = error;
+      // } else if (typeof error.details === "string") {
+      //   message = error.details;
+      // } else if (typeof error.detail === "string") {
+      //   message = error.detail;
+      // } else if (typeof error.message === "string") {
+      //   message = error.message;
+      // } else if (Array.isArray(error)) {
+      //   message = error.join("\n");
+      // } else if (typeof error === "object") {
+      //   message = Object.values(error).flat().join("\n");
+      // }
+      // setMessage(message);
+      toast.error(parseError(error));
     } finally {
       setLoading(false);
     }
@@ -295,7 +302,7 @@ export const ResetPassword = () => {
   return (
     <Layout>
       {/* display message */}
-      <Toast error={message} setError={setMessage} />
+      {/* <Toast error={message} setError={setMessage} /> */}
 
       {/* Loading screen */}
       {loading && (

@@ -1,12 +1,10 @@
 import axios from "axios";
 import { axiosInstance } from "./axiosInterceptor";
-import * as SecureStore from "expo-secure-store";
 import { API_ENDPOINTS } from "./endpoints";
 
 // Upload profile Pictures
 export const uploadImageAPI = async (FormData: any) => {
   try {
-    const token = await SecureStore.getItemAsync("token");
     const response = await axiosInstance.post(
       API_ENDPOINTS.PROFILE_PICTURE,
       FormData,
@@ -25,7 +23,6 @@ export const uploadImageAPI = async (FormData: any) => {
 // fetch profilePicture
 export const fetchProfileAPI = async () => {
   try {
-    const token = await SecureStore.getItemAsync("token");
     const response = await axiosInstance.get(API_ENDPOINTS.PROFILE_PICTURE);
     return response.data.image;
   } catch (error: any) {

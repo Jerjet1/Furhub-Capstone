@@ -13,6 +13,7 @@ import { InputPassword } from "../components/Inputs/InputPassword";
 import { ImageLayout } from "../components/Layout/ImageLayout";
 import { Button } from "../components/Buttons/Button";
 import { Toast } from "../components/Toast";
+import { toast } from "sonner";
 
 const validationSchema = yup.object().shape({
   email: yup.string().email("invalid email").required("Email is required"),
@@ -22,7 +23,7 @@ const validationSchema = yup.object().shape({
 export const Login = () => {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
-  const [message, setMessage] = useState("");
+  // const [message, setMessage] = useState("");
 
   const {
     register,
@@ -66,7 +67,8 @@ export const Login = () => {
       } else if (typeof error === "object") {
         message = Object.values(error).flat().join("\n");
       }
-      setMessage(message);
+      // setMessage(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -81,7 +83,7 @@ export const Login = () => {
         </div>
 
         {/* display message */}
-        <Toast error={message} setError={setMessage} />
+        {/* <Toast error={message} setError={setMessage} /> */}
 
         {/* Loading screen */}
         {loading && (

@@ -130,12 +130,13 @@ class PetBoarding(models.Model):
 
     STATUS_CHOICE = [("pending", "Pending") ,
                      ("approved", "Approved"), 
-                     ("rejected", "Rejected")]
+                     ("rejected", "Rejected"),
+                     ("unverified", "Unverified")]
     
     user = models.OneToOneField(Users, on_delete=models.CASCADE, primary_key=True)
     hotel_name = models.CharField(max_length=255, null=True, blank=True)
     availability = models.CharField(max_length=255, null=True, blank=True)
-    status = models.CharField(max_length=20,default="pending", choices=STATUS_CHOICE)
+    status = models.CharField(max_length=20,default="unverified", choices=STATUS_CHOICE)
 
     class Meta:
         db_table = 'pet_boarding'

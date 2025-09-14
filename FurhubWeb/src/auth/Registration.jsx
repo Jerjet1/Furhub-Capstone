@@ -5,12 +5,8 @@ import { useForm, useWatch } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { LottieSpinner } from "../components/LottieSpinner";
-import { ModalService } from "../components/Modals/ModalService";
-import {
-  registerAuth,
-  requirementsUpload,
-  checkEmailAvailable,
-} from "../api/authAPI";
+// import { ModalService } from "../components/Modals/ModalService";
+import { registerAuth, checkEmailAvailable } from "../api/authAPI";
 import { Link } from "react-router-dom";
 import { ROLES } from "../App";
 import { useAuth } from "../context/useAuth";
@@ -21,6 +17,8 @@ import { InputEmail } from "../components/Inputs/InputEmail";
 import { InputPassword } from "../components/Inputs/InputPassword";
 import { Toast } from "../components/Toast";
 import { Button } from "../components/Buttons/Button";
+import { parseError } from "@/utils/parseError";
+import { toast } from "sonner";
 
 const validationSchema = yup.object().shape({
   first_name: yup.string().required("field required"),
@@ -33,6 +31,8 @@ const validationSchema = yup.object().shape({
   password: yup
     .string()
     .required("fill this field")
+    .min(8, "Password must be at least 8 characters")
+    .max(16, "Password must not exceed 16 characters")
     .matches(/[A-Z]/, "Password must have atleast one uppercase letter")
     .matches(/[a-z]/, "Password must have atleast one lowercase letter")
     .matches(/[0-9]/, "Password must have atleast one number")
@@ -170,23 +170,24 @@ export const Registration = () => {
       // barangayFormData.append("image", selfieWithID);
       // await requirementsUpload(selfieFormData);
     } catch (error) {
-      console.log("error", error);
-      let message = "Login failed. Please try again.";
+      // console.log("error", error);
+      // let message = "Login failed. Please try again.";
 
-      if (typeof error === "string") {
-        message = error;
-      } else if (typeof error.details === "string") {
-        message = error.details;
-      } else if (typeof error.detail === "string") {
-        message = error.detail;
-      } else if (typeof error.message === "string") {
-        message = error.message;
-      } else if (Array.isArray(error)) {
-        message = error.join("\n");
-      } else if (typeof error === "object") {
-        message = Object.values(error).flat().join("\n");
-      }
-      setMessage(message);
+      // if (typeof error === "string") {
+      //   message = error;
+      // } else if (typeof error.details === "string") {
+      //   message = error.details;
+      // } else if (typeof error.detail === "string") {
+      //   message = error.detail;
+      // } else if (typeof error.message === "string") {
+      //   message = error.message;
+      // } else if (Array.isArray(error)) {
+      //   message = error.join("\n");
+      // } else if (typeof error === "object") {
+      //   message = Object.values(error).flat().join("\n");
+      // }
+      // setMessage(message);
+      toast.error(parseError(error));
     } finally {
       setLoading(false);
     }

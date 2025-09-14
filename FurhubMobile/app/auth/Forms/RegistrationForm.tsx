@@ -57,10 +57,11 @@ export default function RegistrationForm() {
   const { formData, setFormData, setUploadedImages } = useRegistration();
   const { registerUser } = useAuth();
 
-  const steps =
-    role === "Walker"
-      ? ["Choose Role", "Account details", "Upload Requirements"]
-      : ["Choose Role", "Fill Form"];
+  // const steps =
+  //   role === "Walker"
+  //     ? ["Choose Role", "Account details", "Upload Requirements"]
+  //     : ["Choose Role", "Fill Form"];
+  const steps = ["Choose Role", "Fill Form"];
 
   const {
     control,
@@ -91,48 +92,32 @@ export default function RegistrationForm() {
         return;
       }
 
-      if (role === "Walker") {
-        router.replace({
-          pathname: "/auth/Forms/RequirementsUpload",
-          params: { ...data, role }, // pass form data and role
-        });
-      } else {
-        const result = await registerUserAPI({ ...data, role });
-        const is_verified = result.is_verified === true;
-        console.log(result.email, result.roles, result.pet_walker);
+      const result = await registerUserAPI({ ...data, role });
+      const is_verified = result.is_verified === true;
 
-        // Save user data in context
-        registerUser(
-          result.access,
-          result.roles,
-          is_verified,
-          result.email,
-          result.pet_walker,
-          result.refresh
-        );
+      // Save user data in context
+      registerUser(
+        result.access,
+        result.roles,
+        is_verified,
+        result.email,
+        result.pet_walker,
+        result.refresh
+      );
+      setFormData({
+        first_name: "",
+        last_name: "",
+        email: "",
+        phone_no: "",
+        password: "",
+        confirm_password: "",
+      });
 
-        // ✅ Reset the form after successful registration
-        setUploadedImages({
-          barangayClearance: null,
-          validID: null,
-          selfieWithID: null,
-        });
-        setFormData({
-          first_name: "",
-          last_name: "",
-          email: "",
-          phone_no: "",
-          password: "",
-          confirm_password: "",
-        });
-        // ✅ Optionally clear stored context formData
-        console.log("Success", result);
-        router.replace({
-          pathname: "/auth/VerificationPage",
-          params: { email: result.email },
-        });
-        // return result;
-      }
+      router.replace({
+        pathname: "/auth/VerificationPage",
+        params: { email: result.email },
+      });
+      return result;
     } catch (error: any) {
       console.log("error", error);
       setToast({

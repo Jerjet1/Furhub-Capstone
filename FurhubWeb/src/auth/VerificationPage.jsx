@@ -9,9 +9,11 @@ import { ResendButtom } from "../components/Buttons/ResendButtom";
 import { resendCode } from "../utils/resendCode";
 import { LottieSpinner } from "../components/LottieSpinner";
 import { Toast } from "../components/Toast";
+import { toast } from "sonner";
+import { parseError } from "@/utils/parseError";
 
 export const VerificationPage = () => {
-  const [message, setMessage] = useState("");
+  // const [message, setMessage] = useState("");
   const [otp, setOTP] = useState("");
   const { user, logout, registerUser } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -51,7 +53,6 @@ export const VerificationPage = () => {
       const roles = result.roles || [];
       const is_verified = result.is_verified === true;
       const pet_boarding_status = result.pet_boarding;
-      console.log("results:", result);
       registerUser(
         token,
         refreshToken,
@@ -80,22 +81,23 @@ export const VerificationPage = () => {
         navigate("/unauthorized", { replace: true });
       }
     } catch (error) {
-      let message = "Verification failed";
-      console.error("something went wrong:", error);
-      if (typeof error === "string") {
-        message = error;
-      } else if (typeof error.details === "string") {
-        message = error.details;
-      } else if (typeof error.detail === "string") {
-        message = error.detail;
-      } else if (typeof error.message === "string") {
-        message = error.message;
-      } else if (Array.isArray(error)) {
-        message = error.join("\n");
-      } else if (typeof error === "object") {
-        message = Object.values(error).flat().join("\n");
-      }
-      setMessage(message);
+      // let message = "Verification failed";
+      // console.error("something went wrong:", error);
+      // if (typeof error === "string") {
+      //   message = error;
+      // } else if (typeof error.details === "string") {
+      //   message = error.details;
+      // } else if (typeof error.detail === "string") {
+      //   message = error.detail;
+      // } else if (typeof error.message === "string") {
+      //   message = error.message;
+      // } else if (Array.isArray(error)) {
+      //   message = error.join("\n");
+      // } else if (typeof error === "object") {
+      //   message = Object.values(error).flat().join("\n");
+      // }
+      // setMessage(message);
+      toast.error(parseError(error));
     } finally {
       setLoading(false);
     }
@@ -116,7 +118,7 @@ export const VerificationPage = () => {
       )}
 
       {/* display message */}
-      <Toast error={message} setError={setMessage} />
+      {/* <Toast error={message} setError={setMessage} /> */}
 
       {/* form container */}
       <div className="w-[25rem] h-full flex flex-col items-start justify-start py-5">

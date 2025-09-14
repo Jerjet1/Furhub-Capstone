@@ -1,21 +1,44 @@
 import React from "react";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationPrevious,
+  PaginationNext,
+} from "@/components/ui/pagination";
 
 export const PaginationButton = ({ page, setPage, data }) => {
   return (
-    <div className="space-x-5">
-      <button
-        onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-        disabled={!data.previous}
-        className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-500">
-        Previous
-      </button>
-      <span>Page {page}</span>
-      <button
-        onClick={() => setPage((prev) => prev + 1)}
-        disabled={!data.next}
-        className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-500">
-        Next
-      </button>
-    </div>
+    <Pagination className="justify-end">
+      <PaginationContent>
+        {/* Previous */}
+        <PaginationItem>
+          <PaginationPrevious
+            onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+            className={
+              !data?.previous
+                ? "cursor-not-allowed border border-[#E0E0E0]"
+                : ""
+            }
+          />
+        </PaginationItem>
+
+        {/* Current Page */}
+        <PaginationItem>
+          <PaginationLink isActive>{page}</PaginationLink>
+        </PaginationItem>
+
+        {/* Next */}
+        <PaginationItem>
+          <PaginationNext
+            onClick={() => setPage((prev) => prev + 1)}
+            className={
+              !data?.next ? "cursor-not-allowed border border-[#E0E0E0]" : ""
+            }
+          />
+        </PaginationItem>
+      </PaginationContent>
+    </Pagination>
   );
 };

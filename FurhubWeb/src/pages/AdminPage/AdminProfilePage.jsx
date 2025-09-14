@@ -56,7 +56,7 @@ const passwordSchema = yup.object().shape({
     .oneOf([yup.ref("new_password")], "Passwords do not match"),
 });
 
-export const ProfilePage = () => {
+export const AdminProfilePage = () => {
   const { userDetails, profilePicture, refreshProfile } = useProfile();
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
@@ -394,7 +394,7 @@ export const ProfilePage = () => {
                 <Input
                   id="phone"
                   type="tel"
-                  autoCapitalize="characters"
+                  autoCapitalize="off"
                   autoComplete="off"
                   maxLength={11}
                   pattern="[0-9]*"
@@ -442,6 +442,7 @@ export const ProfilePage = () => {
                   <Input
                     id="currentPassword"
                     maxLength={16}
+                    autoComplete="off"
                     {...registerPassword("old_password")}
                     type={showCurrentPassword ? "text" : "password"}
                     className="bg-[#FAFAFA] border-[#E0E0E0] focus:border-[#4285F4] text-[#212121] pr-10"
@@ -472,6 +473,7 @@ export const ProfilePage = () => {
                   <Input
                     id="newPassword"
                     maxLength={16}
+                    autoComplete="off"
                     {...registerPassword("new_password")}
                     type={showNewPassword ? "text" : "password"}
                     className="bg-[#FAFAFA] border-[#E0E0E0] focus:border-[#4285F4] text-[#212121] pr-10"
@@ -500,6 +502,7 @@ export const ProfilePage = () => {
                   <Input
                     id="confirmPassword"
                     maxLength={16}
+                    autoComplete="off"
                     {...registerPassword("confirm_password")}
                     type={showConfirmPassword ? "text" : "password"}
                     className={`bg-[#FAFAFA] ${

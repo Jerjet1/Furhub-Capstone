@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useCallback } from "react";
+
 import { useNavigate } from "react-router-dom";
 import { setLogoutCallback } from "../api/axiosInterceptor"; // Import the setter
 import { ROLES } from "../App";
 import { AuthContext } from "./AuthContext";
-
+import axios from "axios";
+const axiosInstance = axios.create();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isInitialized, setIsInitialized] = useState(false);
@@ -25,7 +27,6 @@ export const AuthProvider = ({ children }) => {
           const is_verified = localStorage.getItem("is_verified") === "true";
           const email = localStorage.getItem("email");
           const pet_boarding_status = localStorage.getItem("pet_boarding");
-
           setUser({
             token,
             roles: parsedRole,
@@ -96,7 +97,7 @@ export const AuthProvider = ({ children }) => {
       setUser({ ...user, activeRole: role });
 
       if (role === ROLES.ADMIN) {
-        navigate("/Admin/Dashboard");
+        navigate("/Admin/ManageLocation");
       } else if (role === ROLES.BOARDING) {
         navigate("/Petboarding/Dashboard");
       } else {
@@ -106,6 +107,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = useCallback(async () => {
+    // 1. Clear localStorage COMPLETELY
     localStorage.removeItem("token");
     localStorage.removeItem("refresh");
     localStorage.removeItem("roles");
@@ -113,7 +115,15 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("is_verified");
     localStorage.removeItem("email");
     localStorage.removeItem("pet_boarding");
+
+    // 2. Clear any application state
     setUser(null);
+
+    // 3. *** CRITICAL: Remove the Authorization header from Axios defaults ***
+    // This prevents any subsequent requests from accidentally using a cached token
+    delete axiosInstance.defaults.headers.common["Authorization"];
+
+    // 4. Navigate to home page
     navigate("/");
   }, [navigate]);
 
@@ -134,11 +144,3 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
-
-// export const useAuth = () => {
-//   const context = useContext(AuthContext);
-//   if (!context) {
-//     throw new Error("useAuth must be used within an AuthProvider");
-//   }
-//   return context;
-// };

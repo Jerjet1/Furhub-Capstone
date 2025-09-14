@@ -10,15 +10,6 @@ local_ip = socket.gethostbyname(hostname)
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(os.path.join(BASE_DIR/'.env'))
-# os.environ['GDAL_LIBRARY_PATH'] = r'C:\OSGeo4W\bin\gdal310.dll'
-# GDAL_DDL = BASE_DIR / 'gdal' / 'gdal310.dll'
-# if os.name == 'nt':  # Windows
-#     OSGEO4W = r"C:\OSGeo4W"
-#     os.environ['OSGEO4W_ROOT'] = OSGEO4W
-#     os.environ['GDAL_DATA'] = os.path.join(OSGEO4W, 'share', 'gdal')
-#     os.environ['PROJ_LIB'] = os.path.join(OSGEO4W, 'share', 'proj')
-#     os.environ['PATH'] = os.path.join(OSGEO4W, 'bin') + ';' + os.environ['PATH']
-#     GDAL_LIBRARY_PATH = os.path.join(OSGEO4W, 'bin', 'gdal310.dll')  # Match your version
 
 PAYPAL_CLIENT_ID = os.getenv("PAYPAL_CLIENT_ID")
 PAYPAL_CLIENT_SECRET = os.getenv('PAYPAL_CLIENT_SECRET')
@@ -65,17 +56,26 @@ MIDDLEWARE = [
 
 # CORS_ALLOWED_ORIGINS = ['http://localhost:5173', 'exp://192.168.1.3:8081']
 # ALLOWED_HOSTS = ['localhost', '127.0.0.1', local_ip]
-CORS_ALLOWED_CREDENTIALS = True
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:8081",  # React Native Web/Expo Go via browser
-    "http://127.0.0.1:8081",  # In case you use this format
-    f"http://{local_ip}:8081", # change sa inyong IP address para makaconnect sa web & mobile
-    "http://localhost:5173",
-]
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = True
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:5173",     # vite
+#     "http://127.0.0.1:5173",
+#     "http://localhost:8081",     # expo web
+#     "http://127.0.0.1:8081",
+#     f"http://{local_ip}:8081",
+# ]
 
 CORS_ALLOW_HEADERS = [
-    "content-type",
+    # "content-type",
+    # "authorization",
     "authorization",
+    "content-type",
+    "accept",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
 ]
 
 # EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'

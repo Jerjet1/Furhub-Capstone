@@ -21,7 +21,7 @@ export const AuthRoute = ({ children }) => {
     }
 
     if (roles.includes("admin") || activeRole === "admin") {
-      return <Navigate to="/Admin/Dashboard" replace />;
+      return <Navigate to="/Admin/ManageLocation" replace />;
     } else if (roles.includes("boarding") || activeRole === "boarding") {
       return <Navigate to="/Petboarding/Dashboard" replace />;
       // if (user.pet_boarding_status === "approved") {

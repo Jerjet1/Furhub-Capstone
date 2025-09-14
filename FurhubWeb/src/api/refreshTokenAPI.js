@@ -1,5 +1,4 @@
 import axios from "axios";
-import { API_URL } from "../config/config";
 import { API_ENDPOINTS } from "./apiEndpoints";
 
 export const refreshAccessToken = async () => {
@@ -8,9 +7,6 @@ export const refreshAccessToken = async () => {
     if (!refreshToken) {
       throw new Error("No refresh token available");
     }
-
-    // Debug log the token being used
-    console.log("Using refresh token:", refreshToken);
 
     const response = await axios.post(
       API_ENDPOINTS.REFRESH_TOKEN,
@@ -21,8 +17,6 @@ export const refreshAccessToken = async () => {
         },
       }
     );
-
-    console.log("Refresh token response:", response.data);
 
     if (!response.data.access) {
       throw new Error("No access token in response");
@@ -36,10 +30,6 @@ export const refreshAccessToken = async () => {
     if (response.data.refresh) {
       localStorage.setItem("refresh", response.data.refresh);
     }
-
-    // localStorage.setItem("token", response.data.access);
-    // localStorage.setItem("refresh", response.data.refresh);
-
     return newAccessToken;
     // return response.data.access;
   } catch (error) {
