@@ -35,6 +35,7 @@ import {
   Badge,
   AlertCircle,
   Upload,
+  PhilippinePeso,
 } from "lucide-react";
 export const FacilityProfile = () => {
   const [loading, setLoading] = useState(false);
@@ -100,6 +101,7 @@ export const FacilityProfile = () => {
                 Services & Pricing
               </CardTitle>
               <CardDescription className="text-[#757575]">
+                <PhilippinePeso className="h-5 w-5" />
                 Set your service rates
               </CardDescription>
             </CardHeader>

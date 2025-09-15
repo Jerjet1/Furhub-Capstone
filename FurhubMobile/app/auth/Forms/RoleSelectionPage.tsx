@@ -24,7 +24,7 @@ export default function RoleSelectionPage() {
         <View>
           <ProgressIndicator
             currentStep={1}
-            steps={["Choose Role", "Account details"]}
+            steps={["Choose Role", "Fill Form"]}
           />
         </View>
       </View>
