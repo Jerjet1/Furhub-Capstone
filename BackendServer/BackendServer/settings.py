@@ -23,8 +23,8 @@ SECRET_KEY = 'django-insecure-=9um0w6h1lt=epz-f8uhiqhj_+4r0o#no&cczzte5a!+!a58ku
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
-ALLOWED_HOSTS = ["*"]
+# NGROK_DOMAIN = "osvaldo-gigantesque-expostulatingly.ngrok-free.app"
+# ALLOWED_HOSTS = [NGROK_DOMAIN]
 
 
 # Application definition
@@ -55,7 +55,7 @@ MIDDLEWARE = [
 ]
 
 # CORS_ALLOWED_ORIGINS = ['http://localhost:5173', 'exp://192.168.1.3:8081']
-# ALLOWED_HOSTS = ['localhost', '127.0.0.1', local_ip]
+ALLOWED_HOSTS = ["*"]
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_ALL_ORIGINS = True
 # CORS_ALLOWED_ORIGINS = [
@@ -65,17 +65,19 @@ CORS_ALLOW_ALL_ORIGINS = True
 #     "http://127.0.0.1:8081",
 #     f"http://{local_ip}:8081",
 # ]
-
+# USE_X_FORWARDED_HOST = True  # 👈 Add this
+# SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 CORS_ALLOW_HEADERS = [
-    # "content-type",
-    # "authorization",
-    "authorization",
-    "content-type",
-    "accept",
-    "origin",
-    "user-agent",
-    "x-csrftoken",
-    "x-requested-with",
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+    "ngrok-skip-browser-warning",
 ]
 
 # EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
@@ -96,7 +98,7 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
-    ]
+    ],
 }
 
 SIMPLE_JWT = {

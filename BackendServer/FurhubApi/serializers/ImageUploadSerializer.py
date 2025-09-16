@@ -3,7 +3,8 @@ from FurhubApi.models import UploadedImage
 
 class UploadImageSerializer(serializers.ModelSerializer):
 
-    image = serializers.ImageField(use_url = True)
+    # image = serializers.ImageField(use_url = True)
+    image = serializers.SerializerMethodField()
 
     class Meta:
         model = UploadedImage
@@ -11,6 +12,16 @@ class UploadImageSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             "user": {"required": False}  # 🔑 don’t force it
         }
+
+    def get_image(self, obj):
+        request = self.context.get("request")
+        if obj.image:
+            # This ensures the URL works both on local network and ngrok
+            url = request.build_absolute_uri(obj.image.url)
+            print(f"Generated image URL: {url}")  # 👈 Check this in your console
+            return url
+            # return request.build_absolute_uri(obj.image.url)
+        return None
 
 # class BulkUploadImageSerializer(serializers.Serializer):
 #     images = UploadImageSerializer(many=True)

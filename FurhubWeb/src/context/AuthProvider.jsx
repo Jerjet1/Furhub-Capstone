@@ -99,7 +99,7 @@ export const AuthProvider = ({ children }) => {
       if (role === ROLES.ADMIN) {
         navigate("/Admin/ManageLocation");
       } else if (role === ROLES.BOARDING) {
-        navigate("/Petboarding/Dashboard");
+        navigate("/Petboarding/Bookings");
       } else {
         navigate("/unauthorized");
       }

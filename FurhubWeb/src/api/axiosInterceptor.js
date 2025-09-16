@@ -100,6 +100,8 @@ axiosInstance.interceptors.response.use(
 // Add request interceptor to attach token to every request
 axiosInstance.interceptors.request.use(
   (config) => {
+    // Always skip ngrok warning page
+    config.headers["ngrok-skip-browser-warning"] = "true";
     const token = localStorage.getItem("token");
     if (token) {
       config.headers["Authorization"] = `Bearer ${token}`;
