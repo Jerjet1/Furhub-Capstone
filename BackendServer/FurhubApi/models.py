@@ -161,7 +161,7 @@ class UploadedImage(models.Model):
     user = models.ForeignKey(Users, on_delete=models.CASCADE)
     image = models.ImageField(upload_to='uploads/')
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
-    label = models.CharField(max_length=100, blank=True)  # e.g., "NBI Clearance", "Barangay Clearance"
+    label = models.CharField(max_length=100, blank=True)  # e.g., "Valid Id, Selfie with ID"
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

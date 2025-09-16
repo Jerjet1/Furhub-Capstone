@@ -9,15 +9,6 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
@@ -28,17 +19,48 @@ import {
 } from "@/components/ui/select";
 import { LottieSpinner } from "@/components/LottieSpinner";
 import { UserLayoutPage } from "../../components/Layout/UserLayoutPage";
-import {
-  Clock,
-  FileText,
-  CheckCircle,
-  Badge,
-  AlertCircle,
-  Upload,
-  PhilippinePeso,
-} from "lucide-react";
+import { Clock, PhilippinePeso } from "lucide-react";
 export const FacilityProfile = () => {
   const [loading, setLoading] = useState(false);
+  const [hourlyEnabled, setHourlyEnabled] = useState(false);
+  const [dailyEnabled, setDailyEnabled] = useState(false);
+  const [weeklyEnabled, setWeeklyEnabled] = useState(false);
+
+  const [hourly, setHourly] = useState("");
+  const [daily, setDaily] = useState("");
+  const [weekly, setWeekly] = useState("");
+
+  const regex = /^\d{0,10}(\.\d{0,2})?$/;
+
+  // Utility: keep value as number-formatted string with max 2 decimals
+  const formatTwoDecimals = (val) => {
+    if (val === "") return "";
+    const num = Number(val);
+    if (Number.isNaN(num)) return "";
+    return parseFloat(num.toFixed(2)).toString();
+  };
+
+  const handleHourlyChange = (e) => {
+    const input = e.target.value;
+    if (input === "" || regex.test(input)) {
+      // allow typing but when possible update formatted values
+      setHourly(input);
+    }
+  };
+
+  const handleDailyChange = (e) => {
+    const input = e.target.value;
+    if (input === "" || regex.test(input)) {
+      setDaily(input);
+    }
+  };
+
+  const handleWeeklyChange = (e) => {
+    const input = e.target.value;
+    if (input === "" || regex.test(input)) {
+      setWeekly(input);
+    }
+  };
   return (
     <UserLayoutPage>
       {/* Loading screen */}
@@ -98,10 +120,118 @@ export const FacilityProfile = () => {
           <Card>
             <CardHeader>
               <CardTitle className="text-[#212121] flex items-center gap-2">
+                <PhilippinePeso className="h-5 w-5" />
                 Services & Pricing
               </CardTitle>
               <CardDescription className="text-[#757575]">
+                Set your service rates
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="service-type" className="text-[#424242]">
+                  Service Type
+                </Label>
+                <Select>
+                  <SelectTrigger className="border-[#E0E0E0] focus:border-[#4285F4] bg-[#FAFAFA]">
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="boarding">Pet Boarding</SelectItem>
+                    {/* You can add more services later like grooming, daycare, etc. */}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Rates Section */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <Checkbox
+                    id={`hourly-enabled`}
+                    checked={hourlyEnabled}
+                    onCheckedChange={(checked) =>
+                      setHourlyEnabled(checked === true)
+                    }
+                  />
+                  <Label
+                    htmlFor={`hourly-enabled`}
+                    className="text-sm text-[#424242] w-28">
+                    Hourly Rate
+                  </Label>
+                  <Input
+                    type="text"
+                    value={hourly}
+                    onChange={handleHourlyChange}
+                    onBlur={() =>
+                      setHourly((v) => (v === "" ? "" : formatTwoDecimals(v)))
+                    }
+                    placeholder="Enter amount"
+                    disabled={!hourlyEnabled}
+                    className="border-[#E0E0E0] focus:border-[#4285F4] bg-[#FAFAFA] w-40"
+                  />
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <Checkbox
+                    id={`daily-enabled`}
+                    checked={dailyEnabled}
+                    onCheckedChange={(checked) =>
+                      setDailyEnabled(checked === true)
+                    }
+                  />
+                  <Label
+                    htmlFor={`daily-enabled`}
+                    className="text-sm text-[#424242] w-28">
+                    Daily Rate
+                  </Label>
+                  <Input
+                    type="text"
+                    value={daily}
+                    onChange={handleDailyChange}
+                    onBlur={() =>
+                      setDaily((v) => (v === "" ? "" : formatTwoDecimals(v)))
+                    }
+                    placeholder="Enter amount"
+                    disabled={!dailyEnabled}
+                    className="border-[#E0E0E0] focus:border-[#4285F4] bg-[#FAFAFA] w-40"
+                  />
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <Checkbox
+                    id={`weekly-enabled`}
+                    checked={weeklyEnabled}
+                    onCheckedChange={(checked) =>
+                      setWeeklyEnabled(checked === true)
+                    }
+                  />
+                  <Label
+                    htmlFor={`weekly-enabled`}
+                    className="text-sm text-[#424242] w-28">
+                    Weekly Rate
+                  </Label>
+                  <Input
+                    type="text"
+                    value={weekly}
+                    onChange={handleWeeklyChange}
+                    onBlur={() =>
+                      setWeekly((v) => (v === "" ? "" : formatTwoDecimals(v)))
+                    }
+                    placeholder="Enter amount"
+                    disabled={!weeklyEnabled}
+                    className="border-[#E0E0E0] focus:border-[#4285F4] bg-[#FAFAFA] w-40"
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          {/* <Card>
+            <CardHeader>
+              <CardTitle className="text-[#212121] flex items-center gap-2">
                 <PhilippinePeso className="h-5 w-5" />
+                Services & Pricing
+              </CardTitle>
+              <CardDescription className="text-[#757575]">
                 Set your service rates
               </CardDescription>
             </CardHeader>
@@ -148,7 +278,7 @@ export const FacilityProfile = () => {
                 </div>
               </div>
             </CardContent>
-          </Card>
+          </Card> */}
           <Card className="border-[#E0E0E0]">
             <CardHeader>
               <CardTitle className="text-[#212121] flex items-center gap-2">
@@ -202,106 +332,6 @@ export const FacilityProfile = () => {
 
         {/* Right Sidebar: Required Documents */}
         <aside className="space-y-6 md:col-span-1">
-          <Card className="border-[#E0E0E0] md:w-80">
-            <CardHeader>
-              <CardTitle className="text-[#212121] flex items-center gap-2">
-                <FileText className="h-5 w-5" />
-                Required Documents
-              </CardTitle>
-              <CardDescription className="text-[#757575]">
-                Upload documents for admin approval
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center justify-between p-3 bg-[#FAFAFA] rounded-lg">
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-[#4CAF50]" />
-                  <span className="text-sm text-[#424242]">Valid ID</span>
-                </div>
-                <Badge className="bg-[#E8F5E8] text-[#4CAF50] hover:bg-[#E8F5E8]">
-                  Uploaded
-                </Badge>
-              </div>
-
-              <div className="flex items-center justify-between p-3 bg-[#FAFAFA] rounded-lg">
-                <div className="flex items-center gap-2">
-                  <AlertCircle className="h-4 w-4 text-[#FF9800]" />
-                  <span className="text-sm text-[#424242]">Selfie with ID</span>
-                </div>
-                <Badge className="bg-[#FFF3E0] text-[#E65100] hover:bg-[#FFF3E0]">
-                  Pending
-                </Badge>
-              </div>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button className="w-full bg-[#4285F4] hover:bg-[#1976D2] text-white">
-                    <Upload className="h-4 w-4 mr-2" />
-                    Upload Documents
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-md">
-                  <DialogHeader>
-                    <DialogTitle className="text-[#212121]">
-                      Upload Documents
-                    </DialogTitle>
-                    <DialogDescription className="text-[#757575]">
-                      Upload required documents for admin review and approval
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="document-type" className="text-[#424242]">
-                        Document Type
-                      </Label>
-                      <Select>
-                        <SelectTrigger className="border-[#E0E0E0] focus:border-[#4285F4] bg-[#FAFAFA]">
-                          <SelectValue placeholder="Select document type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="license">
-                            Business License
-                          </SelectItem>
-                          <SelectItem value="insurance">
-                            Insurance Certificate
-                          </SelectItem>
-                          <SelectItem value="permit">Health Permit</SelectItem>
-                          <SelectItem value="certification">
-                            Professional Certification
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label
-                        htmlFor="document-upload"
-                        className="text-[#424242]">
-                        Choose File
-                      </Label>
-                      <Input
-                        id="document-upload"
-                        type="file"
-                        accept=".pdf,.jpg,.jpeg,.png"
-                        className="border-[#E0E0E0] focus:border-[#4285F4] bg-[#FAFAFA]"
-                      />
-                      <p className="text-sm text-[#9E9E9E] mt-1">
-                        PDF, JPG, PNG up to 10MB
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        className="flex-1 border-[#E0E0E0] text-[#424242] hover:bg-[#F5F5F5] bg-transparent">
-                        Cancel
-                      </Button>
-                      <Button className="flex-1 bg-[#4285F4] hover:bg-[#1976D2] text-white">
-                        Upload
-                      </Button>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </CardContent>
-          </Card>
           <Card className="border-[#E0E0E0]">
             <CardContent className="pt-6 space-y-3">
               <Button className="w-full bg-[#4285F4] hover:bg-[#1976D2] text-white">
