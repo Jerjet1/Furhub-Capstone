@@ -2,7 +2,6 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Login } from "./auth/Login";
 import { Registration } from "./auth/Registration";
 import { Unauthorize } from "./pages/Unauthorize";
-import { BoardingDashboard } from "./pages/PetBoardingPage/BoardingDashboard";
 import { BoardingReports } from "./pages/PetBoardingPage/BoardingReports";
 import { AuthProvider } from "./context/AuthProvider";
 import { AuthRoute } from "./context/AuthRoute";
@@ -50,7 +49,6 @@ const PetBoardingRoute = () => {
     <ProtectedRoute allowedRoles={ROLES.BOARDING}>
       <ProfileProvider>
         <Routes>
-          <Route path="Dashboard" element={<BoardingDashboard />} />
           <Route path="Reports" element={<BoardingReports />} />
           <Route path="FacilityProfile" element={<FacilityProfile />} />
           <Route path="Bookings" element={<BookingPage />} />

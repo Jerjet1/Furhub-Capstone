@@ -44,13 +44,13 @@ export const BoardingNavbar = () => {
   return (
     <div className="w-full h-full">
       <nav className="h-full flex flex-col justify-between">
-        <div className="space-y-2 w-full">
+        <div className=" w-full">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
                   to="/Petboarding/ProfilePage"
-                  className="block w-full rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-800">
+                  className="block w-full rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-800 mb-1">
                   <div className="flex items-center gap-3 px-3 py-1">
                     <UserAvatar
                       src={profilePicture}
@@ -148,8 +148,14 @@ export const BoardingNavbar = () => {
             <h2 className="text-md">Subscription</h2>
           </NavLink>
           <NavLink
+            to="/Petboarding/Reports"
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2 rounded-lg font-medium`
+              `flex items-center gap-3 px-3 py-2 rounded-lg font-medium
+            ${
+              isActive
+                ? "bg-blue-100 text-blue-600"
+                : "text-gray-600 hover:bg-gray-100 hover:text-gray-800"
+            }`
             }>
             <FileText className="w-5 h-5" />
             <h2 className="text-md">Reports</h2>

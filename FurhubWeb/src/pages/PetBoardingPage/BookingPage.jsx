@@ -301,34 +301,41 @@ export const BookingPage = () => {
           <div className="space-y-4">
             {requests.map((req) => (
               <Card key={req.id} className="border-[#E0E0E0]">
-                <CardContent className="p-6">
+                <CardContent className="px-6 py-3">
                   <div className="flex items-start justify-between">
-                    <div className="flex gap-4">
+                    {/* Avatar + details */}
+                    <div className="flex gap-4 w-full">
                       <Avatar className="h-12 w-12">
                         <AvatarImage src="/dog.png" />
                         <AvatarFallback>{req.pet[0]}</AvatarFallback>
                       </Avatar>
-                      <div>
+
+                      <div className="flex flex-col gap-2 w-full">
+                        {/* Pet Name */}
                         <h3 className="font-semibold">{req.pet}</h3>
-                        <p className="text-sm text-[#757575]">
-                          Owner: {req.owner}
-                        </p>
-                        <p className="text-sm text-[#757575] flex items-center gap-1">
-                          <Phone className="h-3 w-3" />
-                          {req.phone}
-                        </p>
-                        <p className="text-sm text-[#757575] flex items-center gap-1">
-                          <Mail className="h-3 w-3" />
-                          {req.email}
-                        </p>
-                        <p className="text-sm text-[#757575]">
-                          {req.dates} ({req.duration})
-                        </p>
-                        <p className="text-sm text-[#757575] flex items-center gap-1">
-                          <MapPin className="h-3 w-3" />
-                          {req.distance}
-                        </p>
-                        <div className="mt-2 p-2 bg-[#FAFAFA] rounded">
+
+                        {/* Info row */}
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-1 text-sm text-[#757575]">
+                          <p>Owner: {req.owner}</p>
+                          <p className="flex items-center gap-1">
+                            <Phone className="h-3 w-3" />
+                            {req.phone}
+                          </p>
+                          <p className="flex items-center gap-1">
+                            <Mail className="h-3 w-3" />
+                            {req.email}
+                          </p>
+                          <p>
+                            {req.dates} ({req.duration})
+                          </p>
+                          <p className="flex items-center gap-1">
+                            <MapPin className="h-3 w-3" />
+                            {req.distance}
+                          </p>
+                        </div>
+
+                        {/* Note section */}
+                        <div className="mt-3 p-2 bg-[#eeeeee] rounded">
                           <strong className="text-md text-[#424242]">
                             Note
                           </strong>
@@ -338,6 +345,8 @@ export const BookingPage = () => {
                         </div>
                       </div>
                     </div>
+
+                    {/* Action buttons */}
                     <div className="flex gap-2">
                       <Button size="sm" variant="outline">
                         <Eye className="h-4 w-4 mr-1" /> View
