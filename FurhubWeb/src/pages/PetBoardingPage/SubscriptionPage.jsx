@@ -9,6 +9,14 @@ import {
 } from "@/components/ui/card";
 import { AlertTriangle, CheckCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { UserLayoutPage } from "../../components/Layout/UserLayoutPage";
 export const SubscriptionPage = () => {
   return (
@@ -23,96 +31,54 @@ export const SubscriptionPage = () => {
           </p>
         </div>
       </div>
+      <Card className="border-[#E0E0E0] mt-6">
+        <CardHeader>
+          <div className="flex items-center justify-between border-b-[#8a8989] border-b-2">
+            <CardTitle className="text-[#212121] text-xl py-2">
+              Subscription
+            </CardTitle>
+            <Button
+              variant="outline"
+              className="text-[#fafafa] bg-[#297ddd] hover:bg-[#9cb8d8]">
+              Subscribe
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <p className="text-center text-[#212121] text-xl">No active plan</p>
+        </CardContent>
+      </Card>
 
       {/* Billing History */}
       <Card className="border-[#E0E0E0] mt-6">
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-[#212121]">Billing History</CardTitle>
+          <div className="flex items-center justify-between border-b-[#8a8989] border-b-2">
+            <CardTitle className="text-[#212121] text-xl py-2">
+              Billing History
+            </CardTitle>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 bg-[#FAFAFA] rounded-lg">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 bg-[#E8F5E8] rounded-full flex items-center justify-center">
-                  <CheckCircle className="h-5 w-5 text-[#4CAF50]" />
-                </div>
-                <div>
-                  <p className="font-medium text-[#212121]">
-                    February 2024 - Professional Plan
-                  </p>
-                  <p className="text-sm text-[#757575]">Paid on Feb 15, 2024</p>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="font-medium text-[#212121]">$49.99</p>
-                <Badge className="bg-[#E8F5E8] text-[#4CAF50] hover:bg-[#E8F5E8]">
-                  Paid
-                </Badge>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between p-4 bg-[#FAFAFA] rounded-lg">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 bg-[#E8F5E8] rounded-full flex items-center justify-center">
-                  <CheckCircle className="h-5 w-5 text-[#4CAF50]" />
-                </div>
-                <div>
-                  <p className="font-medium text-[#212121]">
-                    January 2024 - Professional Plan
-                  </p>
-                  <p className="text-sm text-[#757575]">Paid on Jan 15, 2024</p>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="font-medium text-[#212121]">$49.99</p>
-                <Badge className="bg-[#E8F5E8] text-[#4CAF50] hover:bg-[#E8F5E8]">
-                  Paid
-                </Badge>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between p-4 bg-[#FAFAFA] rounded-lg">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 bg-[#E8F5E8] rounded-full flex items-center justify-center">
-                  <CheckCircle className="h-5 w-5 text-[#4CAF50]" />
-                </div>
-                <div>
-                  <p className="font-medium text-[#212121]">
-                    December 2023 - Professional Plan
-                  </p>
-                  <p className="text-sm text-[#757575]">Paid on Dec 15, 2023</p>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="font-medium text-[#212121]">$49.99</p>
-                <Badge className="bg-[#E8F5E8] text-[#4CAF50] hover:bg-[#E8F5E8]">
-                  Paid
-                </Badge>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between p-4 bg-[#FAFAFA] rounded-lg">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 bg-[#FFF3E0] rounded-full flex items-center justify-center">
-                  <AlertTriangle className="h-5 w-5 text-[#FF9800]" />
-                </div>
-                <div>
-                  <p className="font-medium text-[#212121]">
-                    Setup Fee - Account Activation
-                  </p>
-                  <p className="text-sm text-[#757575]">Paid on Nov 20, 2023</p>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="font-medium text-[#212121]">$25.00</p>
-                <Badge className="bg-[#E8F5E8] text-[#4CAF50] hover:bg-[#E8F5E8]">
-                  Paid
-                </Badge>
-              </div>
-            </div>
-          </div>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Order ID</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>Price</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-center">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <TableRow>
+                <TableCell
+                  colSpan={5}
+                  className="text-center text-[#212121] text-xl py-2">
+                  No data available.
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
     </UserLayoutPage>

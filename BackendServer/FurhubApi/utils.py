@@ -1,5 +1,6 @@
 from django.core.mail import send_mail
 from django.core.mail import EmailMessage
+from django.conf import settings
 from .models import Users
 def send_verification_email(user):
     code = Users.generate_verification_code(user)

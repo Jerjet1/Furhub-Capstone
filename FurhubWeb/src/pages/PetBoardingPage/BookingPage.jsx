@@ -13,7 +13,6 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-  PaginationEllipsis,
 } from "@/components/ui/pagination";
 import { UserLayoutPage } from "../../components/Layout/UserLayoutPage";
 
@@ -335,29 +334,34 @@ export const BookingPage = () => {
                         </div>
 
                         {/* Note section */}
-                        <div className="mt-3 p-2 bg-[#eeeeee] rounded">
+                        {/* <div className="mt-3 p-2 bg-[#eeeeee] rounded">
                           <strong className="text-md text-[#424242]">
                             Note
                           </strong>
                           <p className="text-sm text-[#757575]">
                             {req.special}
                           </p>
-                        </div>
+                        </div> */}
                       </div>
                     </div>
 
                     {/* Action buttons */}
                     <div className="flex gap-2">
-                      <Button size="sm" variant="outline">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-[#E0E0E0] text-[#424242] hover:bg-[#F5F5F5]">
                         <Eye className="h-4 w-4 mr-1" /> View
                       </Button>
                       <Button
                         size="sm"
                         variant="outline"
-                        className="border-[#F44336] text-[#F44336]">
+                        className="border-[#F44336] text-[#F44336] hover:bg-[#FFEBEE] bg-transparent">
                         <X className="h-4 w-4 mr-1" /> Decline
                       </Button>
-                      <Button size="sm" className="bg-[#4285F4] text-white">
+                      <Button
+                        size="sm"
+                        className="bg-[#4285F4] hover:bg-[#1e6ce9] text-white">
                         <Check className="h-4 w-4 mr-1" /> Accept
                       </Button>
                     </div>

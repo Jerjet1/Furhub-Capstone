@@ -26,13 +26,13 @@ export const AdminNavbar = () => {
   return (
     <div className="w-full h-full">
       <nav className="h-full flex flex-col justify-between">
-        <div className="space-y-2 w-full">
+        <div className="w-full">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
                   to="/Admin/ProfilePage"
-                  className="block w-full rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-800">
+                  className="block w-full rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-800 mb-1">
                   <div className="flex items-center gap-3 px-3 py-1">
                     <UserAvatar
                       src={profilePicture}
@@ -68,6 +68,7 @@ export const AdminNavbar = () => {
             <h2 className="text-md">Manage Location</h2>
           </NavLink>
           <NavLink
+            to="/Admin/Subscription"
             className={({ isActive }) =>
               `flex items-center gap-3 px-3 py-2 rounded-lg font-medium
             ${

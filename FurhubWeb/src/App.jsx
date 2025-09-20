@@ -23,6 +23,7 @@ import { SubscriptionPage } from "./pages/PetBoardingPage/SubscriptionPage";
 import { ProfilePage } from "./pages/PetBoardingPage/ProfilePage";
 import { AdminProfilePage } from "./pages/AdminPage/AdminProfilePage";
 import { ManageLocation } from "./pages/AdminPage/ManageLocation";
+import { AdminSubscription } from "./pages/AdminPage/AdminSubscription";
 
 export const ROLES = {
   ADMIN: "Admin",
@@ -37,6 +38,7 @@ const AdminRoute = () => {
           <Route path="ManageLocation" element={<ManageLocation />} />
           {/* <Route path="Reports" element={<AdminReports />} /> */}
           <Route path="ManageUsers" element={<ManageUser />} />
+          <Route path="Subscription" element={<AdminSubscription />} />
           <Route path="ProfilePage" element={<AdminProfilePage />} />
         </Routes>
       </ProfileProvider>

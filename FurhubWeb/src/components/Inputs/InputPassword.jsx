@@ -16,6 +16,7 @@ export const InputPassword = ({ id, name, placeholder, register, errors }) => {
           id={id}
           placeholder={placeholder}
           maxLength={16}
+          autoComplete="off"
           {...register(name)}
           className="w-full outline-none bg-transparent"
         />

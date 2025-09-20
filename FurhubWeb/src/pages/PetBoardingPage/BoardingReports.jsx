@@ -9,6 +9,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Eye } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PaginationButton } from "../../components/Buttons/PaginationButton";
@@ -30,6 +38,9 @@ export const BoardingReports = () => {
   const [page, setPage] = useState(1);
   const [transactionPage, setTransactionPage] = useState(1);
   const [bookingPage, setBookingPage] = useState(1);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedReport, setSelectedReport] = useState(null);
+
   const pageSize = 5;
 
   // Paginated Data
@@ -59,6 +70,12 @@ export const BoardingReports = () => {
     { key: "phone_no", label: "Phone No." },
     { key: "action", label: "Action" },
   ];
+
+  const handleView = (report) => {
+    setSelectedReport(report);
+    setOpenDialog(true);
+  };
+
   return (
     <UserLayoutPage>
       {/* header */}
@@ -134,7 +151,7 @@ export const BoardingReports = () => {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => console.log("View log:", log)}>
+                          onClick={() => handleView(log)}>
                           <Eye className="h-4 w-4 mr-1" /> View
                         </Button>
                       </TableCell>
@@ -179,7 +196,7 @@ export const BoardingReports = () => {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => console.log("View booking:", history)}>
+                          onClick={() => handleView(history)}>
                           <Eye className="h-4 w-4 mr-1" /> View
                         </Button>
                       </TableCell>
@@ -190,51 +207,43 @@ export const BoardingReports = () => {
             </CardContent>
           </Card>
         </TabsContent>
-
-        {/* Transaction Logs Table */}
-        {/* <TabsContent value="transaction">
-          <Card className="border-[#E0E0E0] ">
-            <CardContent className="px-6 py-3">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    {header.map((header, idx) => (
-                      <TableHead key={idx}>{header.label}</TableHead>
-                    ))}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  <TableRow>
-                    <TableCell></TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent> */}
-
-        {/* bookingHistory  Table */}
-        {/* <TabsContent value="bookingHistory">
-          <Card className="border-[#E0E0E0] ">
-            <CardContent className="px-6 py-3">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    {header.map((header, idx) => (
-                      <TableHead key={idx}>{header.label}</TableHead>
-                    ))}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  <TableRow>
-                    <TableCell></TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent> */}
       </Tabs>
+
+      {/* Modal for viewing details */}
+      <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Report Details</DialogTitle>
+            <DialogDescription>
+              View the details of the selected report.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedReport && (
+            <div className="space-y-2">
+              <p>
+                <span className="font-semibold">ID:</span> {selectedReport.id}
+              </p>
+              <p>
+                <span className="font-semibold">Name:</span>{" "}
+                {selectedReport.name}
+              </p>
+              <p>
+                <span className="font-semibold">Email:</span>{" "}
+                {selectedReport.email}
+              </p>
+              <p>
+                <span className="font-semibold">Phone:</span>{" "}
+                {selectedReport.phone_no}
+              </p>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpenDialog(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </UserLayoutPage>
   );
 };
