@@ -1,25 +1,27 @@
-import {
-  View,
-  Text,
-  TextInput,
-  KeyboardAvoidingView,
-  Keyboard,
-  TouchableWithoutFeedback,
-  TouchableOpacity,
-  Platform,
-  Pressable,
-} from "react-native";
-import Ionicons from "@expo/vector-icons/Ionicons";
-import { Controller, useForm } from "react-hook-form";
+import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import { router } from "expo-router";
+import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { ActivityIndicator } from "react-native";
 import { login } from "@/services/api";
+import Layout from "@/components/Layouts/Layout";
 import * as Yup from "yup";
 import React, { useState } from "react";
+import { useAuth } from "@/context/useAuth";
+import CustomToast from "@/components/CustomToast";
+import InputEmail from "@/components/Inputs/InputEmail";
+import InputPassword from "@/components/Inputs/InputPassword";
+import { parseError } from "@/utils/parseError";
 
-export default function LoginPage({ navigation }: any) {
-  const [showPassword, setShowPassword] = useState(false);
+export default function LoginPage() {
+  const [toast, setToast] = useState<{
+    message: string;
+    type?: "success" | "error";
+  } | null>(null);
+
   const [loading, setLoading] = useState(false);
+  const { login: setUserAuth } = useAuth();
+
   const formValidation = Yup.object().shape({
     email: Yup.string().email("invalid email").required("Email is required"),
     password: Yup.string().required("password is required"),
@@ -34,119 +36,147 @@ export default function LoginPage({ navigation }: any) {
   const userLogin = async (data: any) => {
     setLoading(true);
     try {
-      const result = await login(data);
-      console.log("login successfully", result);
+      const result = await login(data); // result should include token and roles
+      console.log("login successfully", result.email);
+      console.log("is_verified", result.is_verified);
+      console.log("role: ", result.roles);
+      console.log("pet_walker status: ", result.pet_walker);
+
+      const token = result.access;
+      const roles = result.roles || []; // Adjust based on your backend response
+      const is_verified = result.is_verified !== false;
+      const walkerStatus = result.pet_walker;
+      const refresh = result.refresh;
+
+      setUserAuth(
+        token,
+        roles,
+        is_verified,
+        result.email,
+        walkerStatus || "",
+        refresh
+      ); // Update AuthContext
+
+      console.log("results:", result);
+
+      // check if user is verified
+      if (!is_verified) {
+        router.replace({
+          pathname: "/auth/VerificationPage",
+        });
+        return;
+      }
+
+      // Redirect based on role
+      if (roles.includes("Owner")) {
+        router.replace("/(owner)/Home");
+      } else if (roles.includes("Walker")) {
+        // Check walker status
+        if (result.pet_walker === "approved") {
+          router.replace("/(walker)/Home");
+        } else {
+          // Redirect to PendingProviders if status is pending or rejected
+          router.replace({
+            pathname: "/auth/PendingProviders",
+            params: walkerStatus,
+          });
+        }
+      } else {
+        // fallback
+        router.replace("/auth/Unauthorize");
+      }
     } catch (error: any) {
-      console.log("error", error);
+      console.log("Login error:", error);
+      setToast({
+        message: parseError(error),
+        type: "error",
+      });
     } finally {
       setLoading(false);
     }
   };
+
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      className="flex-1"
-      keyboardVerticalOffset={Platform.OS === "ios" ? 50 : 0}>
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View className="flex-1">
-          <View className="flex bg-indigo-500 h-[30%] w-full">
-            <Text className="mt-[70px] ml-[40px] text-[45px] text-gray-200 font-poppins">
-              Sign In
-            </Text>
-          </View>
-          {loading && (
-            <View className="absolute top-0 left-0 right-0 bottom-0  z-50 justify-center items-center">
-              <ActivityIndicator size={50} color="black" />
-              <Text className="text-black mt-3 text-xl">Logging...</Text>
-            </View>
-          )}
-          <View className="absolute items-center justify-center z-50 top-[170px] left-[40px] w-[80%] h-fit bg-white rounded-xl">
-            <View className="w-full p-5 mt-5">
-              <Text className="text-xl text-black font-poppins">Email</Text>
-              <Controller
-                control={control}
-                name="email"
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <>
-                    <TextInput
-                      placeholder="sample@mail.com"
-                      keyboardType="email-address"
-                      className="border-b border-gray-500 text-lg font-poppins"
-                      onBlur={onBlur}
-                      onChangeText={(text) => onChange(text)}
-                      value={value}
-                      autoCapitalize="none"
-                    />
-                    {errors.email && (
-                      <Text className="text-red-600 mt-1">
-                        {errors.email.message}
-                      </Text>
-                    )}
-                  </>
-                )}
-              />
-              <Text className="mt-2 text-xl font-poppins text-black">
-                Password
-              </Text>
-              <Controller
-                control={control}
-                name="password"
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <>
-                    <View className="flex-row items-center border-b border-gray-500">
-                      <TextInput
-                        placeholder="Password"
-                        secureTextEntry={!showPassword}
-                        className="text-lg font-poppins py-2 flex-1"
-                        onChangeText={onChange}
-                        onBlur={onBlur}
-                        value={value}
-                      />
-                      <Pressable
-                        onPress={() => setShowPassword(!showPassword)}
-                        className="px-3">
-                        <Ionicons
-                          name={showPassword ? "eye-off" : "eye"}
-                          size={20}
-                          color="#6b7280"
-                        />
-                      </Pressable>
-                    </View>
-                    {errors.password && (
-                      <Text className="text-red-600 mt-2">
-                        {errors.password.message}
-                      </Text>
-                    )}
-                  </>
-                )}
-              />
-              <View className="flex justify-end items-end mt-2">
-                <TouchableOpacity>
-                  <Text className="text-blue-500 text-base">
-                    Forgot password?
-                  </Text>
-                </TouchableOpacity>
-              </View>
-              <TouchableOpacity
-                className="mt-6 bg-indigo-500 py-3 rounded-full"
-                onPress={handleSubmit(userLogin)}>
-                <Text className="text-white text-center font-extrabold">
-                  Sign In
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-          <View className="flex justify-center items-center bg-slate-300 h-[70%] w-full">
-            <View className="flex-row w-full items-center justify-center px-4">
-              <Text className="text-lg">Don't have account yet?</Text>
-              <TouchableOpacity
-                onPress={() => navigation.replace("Registration")}>
-                <Text className="text-blue-600 text-lg"> Register</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+    <Layout>
+      {/* Loading Overlay */}
+      {loading && (
+        <View className="absolute top-0 left-0 right-0 bottom-0 z-50 justify-center items-center bg-black/20">
+          <ActivityIndicator size={50} color="black" />
+          <Text className="text-black mt-3 text-xl">Logging...</Text>
         </View>
-      </TouchableWithoutFeedback>
-    </KeyboardAvoidingView>
+      )}
+
+      {/* Toast message */}
+      {toast && (
+        <CustomToast
+          message={toast.message}
+          type={toast.type}
+          duration={3000}
+          onHide={() => setToast(null)}
+        />
+      )}
+
+      {/* Header */}
+      <View className="h-[12rem] w-full justify-start items-start">
+        <Text className="ml-[40px] mt-[70px] text-[45px] text-gray-200 font-poppins">
+          Login
+        </Text>
+      </View>
+
+      {/* Form Container */}
+      <View className="w-[90%] mx-auto bg-white rounded-xl p-9">
+        {/* Email */}
+        <Text className="text-xl text-black font-poppins">Email</Text>
+        <InputEmail
+          control={control}
+          name="email"
+          placeholder="JohnDoe@mail.com"
+        />
+        <View className="min-h-[24px]">
+          {errors.email && (
+            <Text className="text-red-600 mt-1">{errors.email.message}</Text>
+          )}
+        </View>
+
+        {/* Password */}
+        <Text className="mt-4 text-xl font-poppins text-black">Password</Text>
+        <InputPassword
+          control={control}
+          name="password"
+          placeholder="Enter your password"
+        />
+        <View className="min-h-[24px]">
+          {errors.password && (
+            <Text className="text-red-600 mt-2">{errors.password.message}</Text>
+          )}
+        </View>
+
+        {/* Forgot password */}
+        <TouchableOpacity
+          className="self-end mt-2"
+          onPress={() =>
+            router.replace("/auth/ForgotPassword/ForgotPasswordPage")
+          }>
+          <Text className="text-blue-500 text-base">Forgot password?</Text>
+        </TouchableOpacity>
+
+        {/* Sign in Button */}
+        <TouchableOpacity
+          className="mt-6 bg-indigo-500 py-3 rounded-full"
+          onPress={handleSubmit(userLogin)}>
+          <Text className="text-white text-center font-extrabold">Sign In</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Footer (Register Link) */}
+      <View className="flex-row justify-center mt-[80px] mb-10">
+        <Text className="text-lg">Don't have an account yet?</Text>
+        <TouchableOpacity
+          // onPress={() => router.replace("/auth/Forms/RoleSelectionPage")}>
+          onPress={() => router.replace("/auth/Forms/RoleSelectionPage")}>
+          <Text className="text-blue-600 text-lg"> Register</Text>
+        </TouchableOpacity>
+      </View>
+    </Layout>
   );
 }

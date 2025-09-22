@@ -1,8 +1,8 @@
+import { debouncePromise } from "@/utils/debounce";
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
-const API_URL = "http://192.168.1.3:8000/";
-const registerURL = new URL("users/register/", API_URL).toString();
-const loginURL = new URL("users/login/", API_URL).toString();
+import { axiosInstance } from "./axiosInterceptor";
+import { API_ENDPOINTS } from "./endpoints";
 
 type RegisterUser = {
   first_name: string;
@@ -11,29 +11,13 @@ type RegisterUser = {
   email: string;
   password: string;
   confirm_password: string;
+  role: "Owner" | "Walker";
 };
 
-export const registerUser = async ({
-  first_name,
-  last_name,
-  phone_no,
-  email,
-  password,
-  confirm_password,
-}: RegisterUser) => {
-  try {
-    const response = await axios.post(registerURL, {
-      first_name,
-      last_name,
-      phone_no,
-      email,
-      password,
-      confirm_password,
-    });
-    return response.data;
-  } catch (error: any) {
-    throw error.response?.data || { details: "Something went wrong" };
-  }
+type ChangePasswordProps = {
+  old_password: string;
+  new_password: string;
+  confirm_password: string;
 };
 
 type userCredentials = {
@@ -41,26 +25,112 @@ type userCredentials = {
   password: string;
 };
 
-export const login = async ({ email, password }: userCredentials) => {
+export const registerUserAPI = async ({
+  first_name,
+  last_name,
+  phone_no,
+  email,
+  password,
+  confirm_password,
+  role,
+}: RegisterUser) => {
   try {
-    const response = await axios.post(loginURL, { email, password });
-    if (response.data.access) {
-      // localStorage.setItem("token", response.data.access);
-      await SecureStore.setItemAsync("token", response.data.access);
-      // localStorage.setItem('role', response.data.role);
-    }
+    const response = await axiosInstance.post(API_ENDPOINTS.REGISTER, {
+      first_name,
+      last_name,
+      phone_no,
+      email,
+      password,
+      confirm_password,
+      role,
+    });
+
     return response.data;
   } catch (error: any) {
     throw error.response?.data || { details: "Something went wrong" };
   }
 };
 
-export const logout = () => {
-  localStorage.removeItem("token");
-  localStorage.removeItem("role");
+export const checkEmailAvailability = async (
+  email: string
+): Promise<boolean> => {
+  try {
+    await axios.get(API_ENDPOINTS.CHECK_MAIL, { params: { email } });
+    // If 200, email does NOT exist (available)
+    return false;
+  } catch (error: any) {
+    if (error.response?.status === 400 && error.response.data?.exist) {
+      // If 400 and response is "exist: true", then email is in use
+      return true;
+    }
+    throw error.response?.data || { details: "Something went wrong" };
+  }
 };
 
-export const getRole = () => {
-  localStorage.getItem("role");
+export const login = async ({ email, password }: userCredentials) => {
+  try {
+    const response = await axiosInstance.post(API_ENDPOINTS.LOGIN, {
+      email,
+      password,
+    });
+    if (response.data.access) {
+      await SecureStore.setItemAsync("token", response.data.access);
+      await SecureStore.setItemAsync("refresh", response.data.refresh);
+      if (response.data.role) {
+        await SecureStore.setItemAsync(
+          "roles",
+          JSON.stringify(response.data.role)
+        );
+      }
+    }
+    console.log("user id:", response.data.id);
+    return response.data;
+  } catch (error: any) {
+    throw error.response?.data || { details: "Something went wrong" };
+  }
 };
 
+export const logout = async () => {
+  await SecureStore.deleteItemAsync("token");
+  await SecureStore.deleteItemAsync("refresh");
+  await SecureStore.deleteItemAsync("role");
+};
+
+export const getRole = async (): Promise<string | null> => {
+  return await SecureStore.getItemAsync("role");
+};
+
+export const resendCodeAPI = async (email: string) => {
+  try {
+    const response = await axios.post(API_ENDPOINTS.RESEND_CODE, { email });
+    return response.data;
+  } catch (error: any) {
+    throw error.response?.data || { details: "Something went wrong" };
+  }
+};
+
+export const verifyEmailAPI = async (data: any) => {
+  try {
+    const response = await axiosInstance.post(API_ENDPOINTS.VERIFY_EMAIL, data);
+    return response.data;
+  } catch (error: any) {
+    throw error.response?.data || { details: "Something went wrong" };
+  }
+};
+
+export const changePasswordAPI = async ({
+  old_password,
+  new_password,
+  confirm_password,
+}: ChangePasswordProps) => {
+  try {
+    const response = await axiosInstance.put(API_ENDPOINTS.CHANGE_PASSWORD, {
+      old_password,
+      new_password,
+      confirm_password,
+    });
+    return response.data;
+  } catch (error: any) {
+    throw error.response?.data || { details: "Something went wrong" };
+  }
+};
