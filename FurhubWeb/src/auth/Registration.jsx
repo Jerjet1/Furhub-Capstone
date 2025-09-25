@@ -5,17 +5,14 @@ import { useForm, useWatch } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { LottieSpinner } from "../components/LottieSpinner";
-// import { ModalService } from "../components/Modals/ModalService";
 import { registerAuth, checkEmailAvailable } from "../api/authAPI";
 import { Link } from "react-router-dom";
 import { ROLES } from "../App";
 import { useAuth } from "../context/useAuth";
-import { ImageLayout } from "../components/Layout/ImageLayout";
 import { InputName } from "../components/Inputs/InputName";
 import { InputPhone } from "../components/Inputs/InputPhone";
 import { InputEmail } from "../components/Inputs/InputEmail";
 import { InputPassword } from "../components/Inputs/InputPassword";
-import { Toast } from "../components/Toast";
 import { Button } from "../components/Buttons/Button";
 import { parseError } from "@/utils/parseError";
 import { toast } from "sonner";
@@ -55,7 +52,6 @@ export const Registration = () => {
   const [showServiceModal, setShowServiceModal] = useState(false);
   const [offeredServices, setOfferedServices] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
   const { registerUser } = useAuth();
 
   const debounceCheckEmail = useCallback(
@@ -112,15 +108,6 @@ export const Registration = () => {
       confirm_password,
     } = data;
 
-    // console.log("user details:", {
-    //   first_name,
-    //   last_name,
-    //   phone_no,
-    //   email,
-    //   password,
-    //   confirm_password,
-    // });
-
     setLoading(true);
     try {
       const result = await registerAuth(
@@ -170,53 +157,20 @@ export const Registration = () => {
       // barangayFormData.append("image", selfieWithID);
       // await requirementsUpload(selfieFormData);
     } catch (error) {
-      // console.log("error", error);
-      // let message = "Login failed. Please try again.";
-
-      // if (typeof error === "string") {
-      //   message = error;
-      // } else if (typeof error.details === "string") {
-      //   message = error.details;
-      // } else if (typeof error.detail === "string") {
-      //   message = error.detail;
-      // } else if (typeof error.message === "string") {
-      //   message = error.message;
-      // } else if (Array.isArray(error)) {
-      //   message = error.join("\n");
-      // } else if (typeof error === "object") {
-      //   message = Object.values(error).flat().join("\n");
-      // }
-      // setMessage(message);
       toast.error(parseError(error));
     } finally {
       setLoading(false);
     }
   };
 
-  const handleAddService = (service) => {
-    setOfferedServices([...offeredServices, service]);
-  };
-
   return (
     <Layout>
-      <div className="w-[30rem] h-full flex flex-col items-center justify-center py-5">
+      <div className="w-[30rem] flex flex-col items-center justify-center p-7 border-1 rounded-2xl bg-white/90 shadow">
         <div className="flex w-full h-fit justify-start items-start">
           <h1 className="text-[2rem] font-open-sans font-semibold">
             Register as Pet Boarding
           </h1>
         </div>
-
-        {showServiceModal && (
-          <ModalService
-            onClose={() => {
-              setShowServiceModal(false);
-            }}
-            onAddService={handleAddService}
-          />
-        )}
-
-        {/* display message */}
-        <Toast error={message} setError={setMessage} />
 
         {/* Loading screen */}
         {loading && (
@@ -458,7 +412,6 @@ export const Registration = () => {
           </Link>
         </div>
       </div>
-      <ImageLayout src="/src/assets/catdog.jpg" size="450px" />
     </Layout>
   );
 };

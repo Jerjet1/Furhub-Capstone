@@ -10,10 +10,9 @@ import { loginAuth } from "../api/authAPI";
 import { useAuth } from "../context/useAuth";
 import { InputEmail } from "../components/Inputs/InputEmail";
 import { InputPassword } from "../components/Inputs/InputPassword";
-import { ImageLayout } from "../components/Layout/ImageLayout";
 import { Button } from "../components/Buttons/Button";
-import { Toast } from "../components/Toast";
 import { toast } from "sonner";
+import { parseError } from "@/utils/parseError";
 
 const validationSchema = yup.object().shape({
   email: yup.string().email("invalid email").required("Email is required"),
@@ -51,24 +50,7 @@ export const Login = () => {
         pet_boarding_status
       );
     } catch (error) {
-      console.log("error", error);
-      let message = "Login failed. Please try again.";
-
-      if (typeof error === "string") {
-        message = error;
-      } else if (typeof error.details === "string") {
-        message = error.details;
-      } else if (typeof error.detail === "string") {
-        message = error.detail;
-      } else if (typeof error.message === "string") {
-        message = error.message;
-      } else if (Array.isArray(error)) {
-        message = error.join("\n");
-      } else if (typeof error === "object") {
-        message = Object.values(error).flat().join("\n");
-      }
-      // setMessage(message);
-      toast.error(message);
+      toast.error(parseError(error));
     } finally {
       setLoading(false);
     }
@@ -76,14 +58,11 @@ export const Login = () => {
 
   return (
     <Layout>
-      <div className="w-[30rem] h-full flex flex-col items-center justify-center py-5 px-5">
-        <div className="flex flex-col w-full h-fit justify-center items-start mb-[30px]">
+      <div className="w-[30rem] flex flex-col items-center justify-center p-7 border-1 rounded-2xl bg-white/90 shadow">
+        <div className="flex flex-col w-full h-fit justify-center items-center mb-[30px]">
           <h1 className="text-[50px] font-open-sans">Login</h1>
-          <p className="text-[20px] font-open-sans">Welcome to Furhub</p>
+          <p className="text-[25px] font-open-sans">Welcome to Furhub</p>
         </div>
-
-        {/* display message */}
-        {/* <Toast error={message} setError={setMessage} /> */}
 
         {/* Loading screen */}
         {loading && (
@@ -109,9 +88,9 @@ export const Login = () => {
               register={register}
               errors={errors.email}
             />
-            {errors.email && (
+            {/* {errors.email && (
               <p className="text-red-500 text-sm">{errors.email.message}</p>
-            )}
+            )} */}
           </div>
 
           {/* Password Input */}
@@ -126,9 +105,9 @@ export const Login = () => {
               register={register}
               errors={errors.password}
             />
-            {errors.password && (
+            {/* {errors.password && (
               <p className="text-red-500 text-sm">{errors.password.message}</p>
-            )}
+            )} */}
           </div>
           <div className="flex justify-end">
             <Link
@@ -142,14 +121,14 @@ export const Login = () => {
         </form>
         <div className="flex flex-row justify-center mt-5 gap-1">
           <p>Dont have an account?</p>
-          <Link to="/register">
+          <Link to="/pre-registration">
             <h2 className="font-semibold text-blue-500 underline hover:text-blue-900">
               Register
             </h2>
           </Link>
         </div>
       </div>
-      <ImageLayout src="/src/assets/catdog.jpg" />
+      {/* <ImageLayout src="/src/assets/catdog.jpg" /> */}
     </Layout>
   );
 };

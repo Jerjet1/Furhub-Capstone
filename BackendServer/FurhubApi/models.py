@@ -2,7 +2,6 @@ from django.db import models
 import random
 from django.utils import timezone
 from datetime import timedelta
-# from django.contrib.gis.db import models as gis_models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 # Create your models here.
 
@@ -99,7 +98,6 @@ class Location(models.Model):
     barangay = models.CharField(max_length=255, blank=True, null=False)
     user = models.ForeignKey(Users, on_delete=models.CASCADE, related_name="locations")
     street = models.CharField(max_length=255)
-    # coordinates = gis_models.PointField(geography=True, blank=True, null=True)
     latitude = models.FloatField(blank=True, null=True)
     longitude = models.FloatField(blank=True, null=True)
     class Meta:
@@ -114,29 +112,17 @@ class PetOwner(models.Model):
         db_table = 'pet_owner'
 
 class PetWalker(models.Model):
-
-    STATUS_CHOICE = [("pending", "Pending") ,
-                     ("approved", "Approved"), 
-                     ("rejected", "Rejected")]
-
     user = models.OneToOneField(Users, on_delete=models.CASCADE, primary_key=True)
     availability = models.CharField(max_length=255, null=True, blank=True)
-    status = models.CharField(max_length=20,default="pending", choices=STATUS_CHOICE)
 
     class Meta:
         db_table = 'pet_walker'
 
 class PetBoarding(models.Model):
 
-    STATUS_CHOICE = [("pending", "Pending") ,
-                     ("approved", "Approved"), 
-                     ("rejected", "Rejected"),
-                     ("unverified", "Unverified")]
-    
     user = models.OneToOneField(Users, on_delete=models.CASCADE, primary_key=True)
     hotel_name = models.CharField(max_length=255, null=True, blank=True)
     availability = models.CharField(max_length=255, null=True, blank=True)
-    status = models.CharField(max_length=20,default="unverified", choices=STATUS_CHOICE)
 
     class Meta:
         db_table = 'pet_boarding'
@@ -150,18 +136,60 @@ class Admin(models.Model):
     class Meta:
         db_table = 'admin'
 
+class ProviderApplication(models.Model):
+    PROVIDER_TYPE_CHOICE = [
+        ('walker', 'Pet Walker'),
+        ('boarding', 'Pet Boarding')
+    ]
+    STATUS_CHOICE = [("pending", "Pending") ,
+                     ("approved", "Approved"), 
+                     ("rejected", "Rejected")]
+
+    application_id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(Users, on_delete=models.SET_NULL, related_name="applications", blank=True, null=True)
+    provider_type = models.CharField(max_length=20, choices=PROVIDER_TYPE_CHOICE)
+    email = models.EmailField(blank=True, null=True)
+    first_name = models.CharField(max_length=50, blank=True, null=True) # for pet walker field
+    last_name = models.CharField(max_length=50, blank=True, null=True) # for pet walker field
+    facility_name = models.CharField(max_length=255, blank=True, null=True)  # boarding only
+    location = models.ForeignKey(Location, on_delete=models.CASCADE, null=True, blank=True)
+    status = models.CharField(max_length=20, default="pending", choices=STATUS_CHOICE)
+    reject_reason = models.TextField(blank=True, null=True)
+    applied_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'provider_application'
+
+class ProviderDocument(models.Model):
+    DOCUMENT_TYPE_CHOICES = [
+        ("valid_id", "Valid ID"),
+        ("selfie_with_id", "Selfie with ID"),
+    ]
+
+    application = models.ForeignKey(
+        ProviderApplication,
+        on_delete=models.CASCADE,
+        related_name="documents"
+    )
+    user = models.ForeignKey(Users, on_delete=models.CASCADE, related_name="documents", blank=True, null=True)
+    document_type = models.CharField(max_length=50, choices=DOCUMENT_TYPE_CHOICES)
+    image = models.FileField(upload_to="provider_documents/")  # or ImageField if always images
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "provider_documents"
+
+
 class UploadedImage(models.Model):
     CATEGORY_CHOICES = [
         ("profile_picture", "Profile Picture"),
         ("community_post", "Community Post"),
-        ("walker_requirement", "Walker Requirement"),
-        ("boarding_requirement", "Boarding Requirement"),
     ]
 
     user = models.ForeignKey(Users, on_delete=models.CASCADE)
     image = models.ImageField(upload_to='uploads/')
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
-    label = models.CharField(max_length=100, blank=True)  # e.g., "Valid Id, Selfie with ID"
+    # label = models.CharField(max_length=100, blank=True)  # e.g., "Valid Id, Selfie with ID"
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

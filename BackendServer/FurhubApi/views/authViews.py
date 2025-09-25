@@ -10,9 +10,9 @@ from django.db import transaction
 # import socket
 from django.utils import timezone
 from FurhubApi.utils import send_verification_email, get_client_ip
-from FurhubApi.serializers import (RegisterSerializer, LoginSerializer, EmailVerificationSerializer, 
+from FurhubApi.serializers.authSerializer import (RegisterSerializer, LoginSerializer, EmailVerificationSerializer, 
                                    ForgotPasswordSerializer, VerifyCodeSerializer, ResetPasswordSerializer, 
-                                   ChangePasswordSerializer)
+                                   ChangePasswordSerializer,)
 
 class LoginView(APIView):
     permission_classes = [AllowAny]
@@ -41,13 +41,13 @@ class LoginView(APIView):
                 petwalker_status = None
                 petboarding_status = None
 
-                if PetWalker.objects.filter(user=user).exists():
-                    petwalker = PetWalker.objects.get(user=user)
-                    petwalker_status = petwalker.status
+                # if PetWalker.objects.filter(user=user).exists():
+                #     petwalker = PetWalker.objects.get(user=user)
+                #     petwalker_status = petwalker.status
                 
-                if PetBoarding.objects.filter(user=user).exists():
-                    petboarding = PetBoarding.objects.get(user=user)
-                    petboarding_status = petboarding.status
+                # if PetBoarding.objects.filter(user=user).exists():
+                #     petboarding = PetBoarding.objects.get(user=user)
+                #     petboarding_status = petboarding.status
 
                 if not user.is_verified:
                     if user.code_expiry is None or user.code_expiry < timezone.now():
@@ -59,8 +59,8 @@ class LoginView(APIView):
                         "refresh": str(refresh),
                         "roles": roles,
                         "is_verified": user.is_verified,
-                        "pet_walker": petwalker_status,
-                        "pet_boarding": petboarding_status,
+                        # "pet_walker": petwalker_status,
+                        # "pet_boarding": petboarding_status,
                         "email": user.email,
                         "details": "Account not verified."
                     },status=status.HTTP_200_OK)
@@ -111,8 +111,8 @@ class RegisterView(APIView):
                 "email": user.email,
                 "access": str(refresh.access_token),
                 "roles": roles,
-                "pet_walker": petwalker_status,
-                "pet_boarding": petboarding_status,
+                # "pet_walker": petwalker_status,
+                # "pet_boarding": petboarding_status,
                 "is_verified": user.is_verified,
                 "refresh": str(refresh),
                 "id": user.id
@@ -130,8 +130,7 @@ class RegisterView(APIView):
         #     return Response({
         #         "message": "Register Successfully. Check your email for verification",
         #         "email": user.email}, status=status.HTTP_201_CREATED)
-        # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+        # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)     
 class CheckEmailExist(APIView):
     permission_classes = [AllowAny]
 

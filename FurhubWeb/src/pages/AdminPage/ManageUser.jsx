@@ -1,12 +1,4 @@
 import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
-import {
   Card,
   CardContent,
   CardDescription,
@@ -14,17 +6,16 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  Users,
   Search,
   Filter,
   MapPin,
-  FileText,
   Eye,
   Check,
   X,
   Phone,
   Mail,
   Calendar,
+  Loader2,
 } from "lucide-react";
 import {
   Table,
@@ -35,13 +26,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { UserLayoutPage } from "../../components/Layout/UserLayoutPage";
@@ -49,13 +39,23 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { fetchUsers } from "../../api/Users";
+import { fetchPendingProvider } from "../../api/preRegistrationAPI";
+import { formatDateTime } from "@/utils/formatDateTime";
+import { PaginationButton } from "@/components/Buttons/PaginationButton";
+import { searchDebounce } from "../../utils/searchDebounce";
 
 export const ManageUser = () => {
   const [page, setPage] = useState(1);
+  const [pendingPage, setPendingPage] = useState(1);
   const [selectedProvider, setSelectedProvider] = useState(null);
+  const [filterProvider, setFilterProvider] = useState("");
+  const [openDialog, setOpenDialog] = useState(false);
   const [documentView, setDocumentView] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
+  const [searchQuery, setSearchQuery] = useState(""); // Add search state
+
+  const debounceSearch = searchDebounce(searchQuery, 300);
 
   const {
     data: userData,
@@ -64,85 +64,35 @@ export const ManageUser = () => {
   } = useQuery({
     queryKey: ["users", page],
     queryFn: () => fetchUsers(page),
+    keepPreviousData: true,
+    refetchOnWindowFocus: false,
+    refetchOnMount: true, // fetch only the first time page mounts
+    refetchOnReconnect: false,
   });
 
-  const pendingProviders = [
-    {
-      id: "1",
-      name: "Happy Paws Pet Hotel",
-      owner: "Sarah Johnson",
-      email: "sarah@happypaws.com",
-      phone: "+1 (555) 123-4567",
-      location: "123 Pet Street, Austin, TX",
-      coordinates: { lat: 30.2672, lng: -97.7431 },
-      submittedDate: "2024-01-15",
-      documents: [
-        {
-          type: "Business License",
-          url: "/business-license.pdf",
-          status: "pending",
-        },
-        { type: "Owner ID", url: "/owner-id.jpg", status: "pending" },
-        {
-          type: "Insurance Certificate",
-          url: "/insurance.pdf",
-          status: "pending",
-        },
-      ],
-      services: ["Pet Boarding", "Dog Walking", "Pet Grooming"],
-      status: "pending",
-    },
-    {
-      id: "2",
-      name: "Cozy Tails Boarding",
-      owner: "Michael Chen",
-      email: "mike@cozytails.com",
-      phone: "+1 (555) 987-6543",
-      location: "456 Animal Ave, Dallas, TX",
-      coordinates: { lat: 32.7767, lng: -96.797 },
-      submittedDate: "2024-01-18",
-      documents: [
-        {
-          type: "Business License",
-          url: "/business-license-2.pdf",
-          status: "approved",
-        },
-        { type: "Owner ID", url: "/owner-id-2.jpg", status: "pending" },
-        {
-          type: "Insurance Certificate",
-          url: "/insurance-2.pdf",
-          status: "rejected",
-        },
-      ],
-      services: ["Pet Boarding", "Pet Sitting"],
-      status: "pending",
-    },
-    {
-      id: "3",
-      name: "Furry Friends Resort",
-      owner: "Emily Rodriguez",
-      email: "emily@furryresort.com",
-      phone: "+1 (555) 456-7890",
-      location: "789 Doggy Lane, Houston, TX",
-      coordinates: { lat: 29.7604, lng: -95.3698 },
-      submittedDate: "2024-01-20",
-      documents: [
-        {
-          type: "Business License",
-          url: "/business-license-3.pdf",
-          status: "pending",
-        },
-        { type: "Owner ID", url: "/owner-id-3.jpg", status: "pending" },
-        {
-          type: "Insurance Certificate",
-          url: "/insurance-3.pdf",
-          status: "pending",
-        },
-      ],
-      services: ["Pet Boarding", "Dog Walking", "Pet Training"],
-      status: "pending",
-    },
-  ];
+  const {
+    data: providerData,
+    isLoading: isProviderLoading,
+    isError: isProviderError,
+  } = useQuery({
+    queryKey: [
+      "providerApplications",
+      pendingPage,
+      filterProvider,
+      debounceSearch,
+    ],
+    queryFn: () =>
+      fetchPendingProvider(
+        pendingPage,
+        "pending",
+        filterProvider,
+        debounceSearch
+      ),
+    keepPreviousData: true,
+    refetchOnWindowFocus: false,
+    refetchOnMount: true,
+    refetchOnReconnect: false,
+  });
 
   const header = [
     { key: "id", label: "ID" },
@@ -162,6 +112,123 @@ export const ManageUser = () => {
       default:
         return "bg-[#FFF3E0] text-[#E65100]";
     }
+  };
+
+  const handeView = (provider) => {
+    setDocumentView(provider);
+    setOpenDialog(true);
+  };
+
+  // modal for Image
+  const CustomModal = () => {
+    return (
+      <>
+        {/* Main Modal */}
+        {openDialog && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+            <div className="bg-white dark:bg-neutral-900 rounded-xl shadow-lg w-full max-w-2xl h-2xl flex flex-col">
+              {/* Header */}
+              <div className="p-4 border-b">
+                <h2 className="text-lg font-semibold">Supporting Documents</h2>
+                <p className="text-[#757575]">
+                  Application ID: {documentView.application_id}
+                </p>
+              </div>
+
+              {/* Body */}
+              <div className="flex flex-row justify-center gap-8 p-5 flex-1 overflow-auto">
+                {/* Valid ID */}
+                <div className="text-center">
+                  <h3 className="font-medium mb-2">Valid ID</h3>
+                  <div
+                    className="w-64 h-64 border-2 border-gray-300 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center cursor-pointer"
+                    onClick={() =>
+                      setPreviewImage(
+                        documentView?.documents.find(
+                          (doc) => doc.document_type === "valid_id"
+                        )?.image_url || null
+                      )
+                    }>
+                    {documentView?.documents.find(
+                      (doc) => doc.document_type === "valid_id"
+                    )?.image_url ? (
+                      <img
+                        src={
+                          documentView.documents.find(
+                            (doc) => doc.document_type === "valid_id"
+                          ).image_url
+                        }
+                        alt="Valid ID"
+                        className="w-full h-full object-contain"
+                      />
+                    ) : (
+                      <div className="text-gray-500">No Valid ID uploaded</div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Selfie with ID */}
+                <div className="text-center">
+                  <h3 className="font-medium mb-2">Selfie with ID</h3>
+                  <div
+                    className="w-64 h-64 border-2 border-gray-300 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center cursor-pointer"
+                    onClick={() =>
+                      setPreviewImage(
+                        documentView?.documents.find(
+                          (doc) => doc.document_type === "selfie_with_id"
+                        )?.image_url || null
+                      )
+                    }>
+                    {documentView?.documents.find(
+                      (doc) => doc.document_type === "selfie_with_id"
+                    )?.image_url ? (
+                      <img
+                        src={
+                          documentView.documents.find(
+                            (doc) => doc.document_type === "selfie_with_id"
+                          ).image_url
+                        }
+                        alt="Selfie with ID"
+                        className="w-full h-full object-contain"
+                      />
+                    ) : (
+                      <div className="text-gray-500">
+                        No Selfie with ID uploaded
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="p-4 border-t flex justify-end">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="px-4 py-2 border rounded-md hover:border-gray-400 dark:hover:bg-neutral-800"
+                  onClick={() => setOpenDialog(false)}>
+                  Close
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Image Preview Modal */}
+        {previewImage && (
+          <div
+            className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80"
+            onClick={() => setPreviewImage(null)} // close when clicking outside
+          >
+            <img
+              src={previewImage}
+              alt="Preview"
+              className="max-w-[90%] max-h-[90%] object-contain rounded-lg shadow-lg"
+            />
+          </div>
+        )}
+      </>
+    );
   };
 
   const approveProvider = (providerId) => {
@@ -204,64 +271,22 @@ export const ManageUser = () => {
 
           {/* Pagination */}
           <div>
+            {/* pending Providers */}
             <TabsContent value="pendingProviders">
-              <Pagination className="m-0">
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious href="#" />
-                  </PaginationItem>
-                  <PaginationItem>
-                    <PaginationLink>1</PaginationLink>
-                  </PaginationItem>
-                  <PaginationItem>
-                    <PaginationNext href="#" />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
+              <PaginationButton
+                page={pendingPage}
+                setPage={setPendingPage}
+                data={Math.ceil(providerData?.count / 5)}
+              />
             </TabsContent>
 
+            {/* All user */}
             <TabsContent value="users">
-              <Pagination className="m-0">
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        if (userData?.previous)
-                          setPage((prev) => Math.max(prev - 1, 1));
-                      }}
-                    />
-                  </PaginationItem>
-
-                  {Array.from(
-                    { length: Math.ceil((userData?.count || 0) / 10) }, // 10 = page size
-                    (_, i) => (
-                      <PaginationItem key={i}>
-                        <PaginationLink
-                          href="#"
-                          isActive={page === i + 1}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setPage(i + 1);
-                          }}>
-                          {i + 1}
-                        </PaginationLink>
-                      </PaginationItem>
-                    )
-                  )}
-
-                  <PaginationItem>
-                    <PaginationNext
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        if (userData?.next) setPage((prev) => prev + 1);
-                      }}
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
+              <PaginationButton
+                page={page}
+                setPage={setPage}
+                data={Math.ceil((userData?.count || 0) / 10)}
+              />
             </TabsContent>
           </div>
         </div>
@@ -273,7 +298,7 @@ export const ManageUser = () => {
             <div className="lg:col-span-2">
               <Card className="border-[#E0E0E0]">
                 <CardHeader>
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-2">
                     <div>
                       <CardTitle className="text-[#212121]">
                         Pending Providers
@@ -288,108 +313,139 @@ export const ManageUser = () => {
                         <Input
                           placeholder="Search providers..."
                           className="pl-10 w-64 border-[#E0E0E0]"
+                          value={searchQuery}
+                          onChange={(e) => {
+                            setSearchQuery(e.target.value);
+                            setPendingPage(1); // Reset to first page when searching
+                          }}
                         />
                       </div>
                     </div>
+                    <Select onValueChange={setFilterProvider}>
+                      <SelectTrigger className="w-48 border-[#E0E0E0]">
+                        <Filter className="h-4 w-4 mr-2" />
+                        <SelectValue placeholder="Filter" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All</SelectItem>
+                        <SelectItem value="boarding">Pet Boarding</SelectItem>
+                        <SelectItem value="walker">Pet Walker</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {pendingProviders.map((provider) => (
-                    <div
-                      key={provider.id}
-                      className={`p-4 rounded-lg border cursor-pointer transition-colors ${
-                        selectedProvider === provider.id
-                          ? "border-[#4285F4] bg-[#E3F2FD]"
-                          : "border-[#E0E0E0] hover:border-[#BDBDBD]"
-                      }`}
-                      onClick={() => setSelectedProvider(provider.id)}>
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center gap-3">
-                          <Avatar className="h-12 w-12">
-                            <AvatarFallback className="bg-[#4285F4] text-white">
-                              {provider.name
-                                .split(" ")
-                                .map((n) => n[0])
-                                .join("")}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <h3 className="font-medium text-[#212121]">
-                              {provider.name}
-                            </h3>
-                            <p className="text-sm text-[#757575]">
-                              {provider.owner}
-                            </p>
-                            <div className="flex items-center gap-4 mt-1">
-                              <div className="flex items-center gap-1 text-sm text-[#757575]">
-                                <Mail className="h-3 w-3" />
-                                {provider.email}
+                  {isProviderLoading ? (
+                    <div className="flex justify-center items-center py-8">
+                      <Loader2 className="h-16 w-16 animate-spin text-blue-500" />
+                    </div>
+                  ) : isProviderError ? (
+                    <div className="text-center py-4 text-red-500">
+                      Error loading providers
+                    </div>
+                  ) : !providerData.results ||
+                    providerData.results.length === 0 ? (
+                    <div className="text-center py-4">
+                      No pending providers found
+                    </div>
+                  ) : (
+                    providerData.results.map((provider) => (
+                      <div
+                        key={provider.application_id}
+                        className={`p-4 rounded-lg border cursor-pointer transition-colors ${
+                          selectedProvider === provider.application_id
+                            ? "border-[#4285F4] bg-[#E3F2FD]"
+                            : "border-[#E0E0E0] hover:border-[#BDBDBD]"
+                        }`}
+                        onClick={() =>
+                          setSelectedProvider(provider.application_id)
+                        }>
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex items-center gap-3">
+                            <div>
+                              <h3 className="font-medium text-[#212121]">
+                                {provider.facility_name}
+                              </h3>
+                              <div>
+                                <p className="text-sm text-[#757575]">
+                                  Application ID: {provider.application_id}
+                                </p>
+                                <p className="text-sm text-[#757575]">
+                                  {provider.provider_type_display}
+                                </p>
                               </div>
-                              <div className="flex items-center gap-1 text-sm text-[#757575]">
-                                <Phone className="h-3 w-3" />
-                                {provider.phone}
+                              <div className="flex items-center gap-4 mt-1">
+                                <div className="flex items-center gap-1 text-sm text-[#757575]">
+                                  <Mail className="h-3 w-3" />
+                                  {provider.email}
+                                </div>
+                                <div className="flex items-center gap-1 text-sm text-[#757575]">
+                                  <Phone className="h-3 w-3" />
+                                  {/* {provider.phone} */} 09123123123
+                                </div>
                               </div>
                             </div>
                           </div>
+                          <Badge className={getStatusColor(provider.status)}>
+                            {provider.status}
+                          </Badge>
                         </div>
-                        <Badge className={getStatusColor(provider.status)}>
-                          {provider.status}
-                        </Badge>
-                      </div>
 
-                      <div className="flex items-center gap-2 mb-3">
-                        <MapPin className="h-4 w-4 text-[#757575]" />
-                        <span className="text-sm text-[#757575]">
-                          {provider.location}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4 text-[#757575]" />
+                        <div className="flex items-center gap-2 mb-3">
+                          <MapPin className="h-4 w-4 text-[#757575]" />
                           <span className="text-sm text-[#757575]">
-                            Submitted: {provider.submittedDate}
+                            {provider.location}
                           </span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="border-[#E0E0E0] text-[#424242] hover:bg-[#F5F5F5]"
-                            onClick={(e) => {
-                              console.log("open dialog");
-                            }}>
-                            <Eye className="h-4 w-4 mr-1" />
-                            View
-                          </Button>
-                          <Button
-                            size="sm"
-                            className="bg-[#4CAF50] hover:bg-[#388E3C] text-white"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              approveProvider(provider.id);
-                            }}>
-                            <Check className="h-4 w-4 mr-1" />
-                            Approve
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="border-[#F44336] text-[#F44336] hover:bg-[#FFEBEE] bg-transparent"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              rejectProvider(provider.id);
-                            }}>
-                            <X className="h-4 w-4 mr-1" />
-                            Reject
-                          </Button>
+
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4 text-[#757575]" />
+                            <span className="text-sm text-[#757575]">
+                              Submitted: {formatDateTime(provider.applied_at)}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="border-[#E0E0E0] text-[#424242] hover:bg-[#F5F5F5]"
+                              onClick={() => handeView(provider)}>
+                              <Eye className="h-4 w-4 mr-1" />
+                              View
+                            </Button>
+                            <Button
+                              size="sm"
+                              className="bg-[#4CAF50] hover:bg-[#388E3C] text-white"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                approveProvider(provider.application_id);
+                              }}>
+                              <Check className="h-4 w-4 mr-1" />
+                              Approve
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="border-[#F44336] text-[#F44336] hover:bg-[#FFEBEE] bg-transparent"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                rejectProvider(provider.application_id);
+                              }}>
+                              <X className="h-4 w-4 mr-1" />
+                              Reject
+                            </Button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </CardContent>
               </Card>
             </div>
+
+            {/* Image Modal */}
+            {openDialog && <CustomModal />}
 
             {/* Provider Details & Map */}
             <div className="space-y-6">
@@ -409,8 +465,8 @@ export const ManageUser = () => {
                           </p>
                           <p className="text-[#9E9E9E] text-xs mt-1">
                             {(() => {
-                              const provider = pendingProviders.find(
-                                (p) => p.id === selectedProvider
+                              const provider = providerData?.results?.find(
+                                (p) => p.application_id === selectedProvider
                               );
                               return provider?.location || "";
                             })()}

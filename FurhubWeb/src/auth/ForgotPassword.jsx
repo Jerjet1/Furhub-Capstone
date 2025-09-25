@@ -18,9 +18,7 @@ import { resendCode } from "../utils/resendCode";
 import { useForgotPassword } from "../context/ForgotPasswordProvider";
 import { useAuth } from "../context/useAuth";
 import { ResendButtom } from "../components/Buttons/ResendButtom";
-import { ImageLayout } from "../components/Layout/ImageLayout";
 import { LottieSpinner } from "../components/LottieSpinner";
-import { Toast } from "../components/Toast";
 import { toast } from "sonner";
 import { parseError } from "@/utils/parseError";
 
@@ -57,23 +55,6 @@ export const ForgotPassword = () => {
       console.log("message: ", result);
       navigate("/verify-code", { replace: true });
     } catch (error) {
-      // console.log("error", error);
-      // let message = "Submit failed. Please try again.";
-
-      // if (typeof error === "string") {
-      //   message = error;
-      // } else if (typeof error.details === "string") {
-      //   message = error.details;
-      // } else if (typeof error.detail === "string") {
-      //   message = error.detail;
-      // } else if (typeof error.message === "string") {
-      //   message = error.message;
-      // } else if (Array.isArray(error)) {
-      //   message = error.join("\n");
-      // } else if (typeof error === "object") {
-      //   message = Object.values(error).flat().join("\n");
-      // }
-      // setMessage(message);
       toast.error(parseError(error));
     } finally {
       setLoading(false);
@@ -82,9 +63,6 @@ export const ForgotPassword = () => {
 
   return (
     <Layout>
-      {/* display message */}
-      {/* <Toast error={message} setError={setMessage} /> */}
-
       {/* Loading screen */}
       {loading && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 flex-col">
@@ -93,7 +71,7 @@ export const ForgotPassword = () => {
         </div>
       )}
 
-      <div className="w-[30rem] h-full flex flex-col items-start justify-start py-5 px-5">
+      <div className="w-[30rem] h-[25rem] flex flex-col items-center justify-center p-7 border-1 rounded-2xl bg-white/90 shadow">
         <div className="flex-1 w-full h-full space-y-4">
           <button
             onClick={() => {
@@ -116,14 +94,13 @@ export const ForgotPassword = () => {
               register={register}
               errors={errors.email}
             />
-            {errors.email && (
+            {/* {errors.email && (
               <p className="text-red-500 text-sm">{errors.email.message}</p>
-            )}
+            )} */}
             <Button label="Submit" />
           </form>
         </div>
       </div>
-      <ImageLayout src="/src/assets/catdog.jpg" />
     </Layout>
   );
 };
@@ -161,23 +138,6 @@ export const VerifyCode = () => {
 
       navigate("/reset-password", { replace: true });
     } catch (error) {
-      // console.log("error", error);
-      // let message = "Submit failed. Please try again.";
-
-      // if (typeof error === "string") {
-      //   message = error;
-      // } else if (typeof error.details === "string") {
-      //   message = error.details;
-      // } else if (typeof error.detail === "string") {
-      //   message = error.detail;
-      // } else if (typeof error.message === "string") {
-      //   message = error.message;
-      // } else if (Array.isArray(error)) {
-      //   message = error.join("\n");
-      // } else if (typeof error === "object") {
-      //   message = Object.values(error).flat().join("\n");
-      // }
-      // setMessage(message);
       toast.error(parseError(error));
     } finally {
       setLoading(false);
@@ -190,9 +150,6 @@ export const VerifyCode = () => {
 
   return (
     <Layout>
-      {/* display message */}
-      {/* <Toast error={message} setError={setMessage} /> */}
-
       {/* Loading screen */}
       {loading && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 flex-col">
@@ -201,7 +158,7 @@ export const VerifyCode = () => {
         </div>
       )}
 
-      <div className="w-[30rem] h-full flex flex-col items-start justify-start py-5 px-5">
+      <div className="w-[30rem] h-[25rem] flex flex-col items-center justify-center p-7 border-1 rounded-2xl bg-white/90 shadow">
         <div className="flex-1 w-full h-full space-y-4">
           <button
             onClick={() => {
@@ -223,7 +180,6 @@ export const VerifyCode = () => {
           </form>
         </div>
       </div>
-      <ImageLayout src="/src/assets/catdog.jpg" />
     </Layout>
   );
 };
@@ -232,7 +188,6 @@ export const VerifyCode = () => {
 export const ResetPassword = () => {
   const { email, remove_Email } = useForgotPassword();
   const [loading, setLoading] = useState(false);
-  // const [message, setMessage] = useState("");
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -276,23 +231,6 @@ export const ResetPassword = () => {
       navigate("/");
       console.log({ email: email, "message: ": result });
     } catch (error) {
-      // console.log("error", error);
-      // let message = "Submit failed. Please try again.";
-
-      // if (typeof error === "string") {
-      //   message = error;
-      // } else if (typeof error.details === "string") {
-      //   message = error.details;
-      // } else if (typeof error.detail === "string") {
-      //   message = error.detail;
-      // } else if (typeof error.message === "string") {
-      //   message = error.message;
-      // } else if (Array.isArray(error)) {
-      //   message = error.join("\n");
-      // } else if (typeof error === "object") {
-      //   message = Object.values(error).flat().join("\n");
-      // }
-      // setMessage(message);
       toast.error(parseError(error));
     } finally {
       setLoading(false);
@@ -301,9 +239,6 @@ export const ResetPassword = () => {
 
   return (
     <Layout>
-      {/* display message */}
-      {/* <Toast error={message} setError={setMessage} /> */}
-
       {/* Loading screen */}
       {loading && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 flex-col">
@@ -311,7 +246,7 @@ export const ResetPassword = () => {
           <p className="text-xl font-Fugaz">Loading...</p>
         </div>
       )}
-      <div className="w-[30rem] h-full flex flex-col items-start justify-start py-5 px-5">
+      <div className="w-[30rem] h-[25rem] flex flex-col items-center justify-center p-7 border-1 rounded-2xl bg-white/90 shadow">
         <div className="flex-1 w-full h-full space-y-4">
           <h1 className="text-[25px] font-open-sans">Set a Password</h1>
           <p className="text-neutral-600">
@@ -329,11 +264,11 @@ export const ResetPassword = () => {
                 register={register}
                 errors={errors.password}
               />
-              {errors.password && (
+              {/* {errors.password && (
                 <p className="text-red-500 text-sm">
                   {errors.password.message}
                 </p>
-              )}
+              )} */}
             </div>
             <div className="mb-2">
               <label
@@ -348,17 +283,16 @@ export const ResetPassword = () => {
                 register={register}
                 errors={errors.confirmPassword}
               />
-              {errors.confirmPassword && (
+              {/* {errors.confirmPassword && (
                 <p className="text-red-500 text-sm">
                   {errors.confirmPassword.message}
                 </p>
-              )}
+              )} */}
             </div>
             <Button label="Submit" />
           </form>
         </div>
       </div>
-      <ImageLayout src="/src/assets/catdog.jpg" />
     </Layout>
   );
 };

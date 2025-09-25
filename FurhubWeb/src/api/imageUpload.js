@@ -1,5 +1,6 @@
 import { API_ENDPOINTS } from "./apiEndpoints";
 import axiosInstance from "./axiosInterceptor";
+import axios from "axios";
 
 export const requirementsUpload = async (formData) => {
   try {
@@ -39,7 +40,7 @@ export const uploadImageAPI = async (formData) => {
 export const fetchProfileAPI = async () => {
   try {
     const response = await axiosInstance.get(API_ENDPOINTS.PROFILE_PICTURE);
-    return response.data.image;
+    return response.data.image_url;
   } catch (error) {
     throw error.response?.data || { details: "Something went wrong" };
   }

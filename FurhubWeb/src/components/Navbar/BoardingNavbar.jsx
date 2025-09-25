@@ -66,10 +66,10 @@ export const BoardingNavbar = () => {
                         <span className="text-sm text-gray-500">
                           Pet Boarding
                         </span>
-                        <span
+                        {/* <span
                           className={`text-[14px] ${textColor} border ${borderColor} px-1 rounded-lg`}>
                           {user.pet_boarding_status}
-                        </span>
+                        </span> */}
                       </div>
                     </div>
                   </div>

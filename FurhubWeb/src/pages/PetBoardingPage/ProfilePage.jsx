@@ -207,7 +207,7 @@ export const ProfilePage = () => {
     try {
       const profileImage = new FormData();
       profileImage.append("category", "profile_picture");
-      profileImage.append("label", "Profile Picture");
+      // profileImage.append("label", "Profile Picture");
       profileImage.append("image", selectedFile);
 
       await uploadImageAPI(profileImage);

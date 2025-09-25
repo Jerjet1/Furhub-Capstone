@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from FurhubApi.models import Users, Roles, User_roles, PetOwner, PetWalker,Admin, PetBoarding, ProviderService
+from FurhubApi.models import Users, Roles, User_roles, PetOwner, PetWalker,Admin, PetBoarding
 from django.utils import timezone
 from FurhubApi.utils import send_verification_email
 

@@ -24,6 +24,7 @@ import { ProfilePage } from "./pages/PetBoardingPage/ProfilePage";
 import { AdminProfilePage } from "./pages/AdminPage/AdminProfilePage";
 import { ManageLocation } from "./pages/AdminPage/ManageLocation";
 import { AdminSubscription } from "./pages/AdminPage/AdminSubscription";
+import { PreRegistration } from "./auth/PreRegistration";
 
 export const ROLES = {
   ADMIN: "Admin",
@@ -84,6 +85,14 @@ export default function App() {
               element={
                 <AuthRoute>
                   <Registration />
+                </AuthRoute>
+              }
+            />
+            <Route
+              path="/pre-registration"
+              element={
+                <AuthRoute>
+                  <PreRegistration />
                 </AuthRoute>
               }
             />
