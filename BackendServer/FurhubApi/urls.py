@@ -6,14 +6,17 @@ from FurhubApi.views.authViews import (RegisterView, LoginView, VerifyEmailView,
 from FurhubApi.views.userView import (AllUserView, BaseUserUpdateView, PetOwnerUpdateView)
 from FurhubApi.views.imageUploadView import ProfileUploadView, ProviderDocumentView
 from rest_framework_simplejwt.views import (TokenObtainPairView, TokenRefreshView)
-from FurhubApi.views.PreRegistrationViews import ProviderApplicationView, ProviderApplicationListView
+from FurhubApi.views.PreRegistrationViews import (ProviderApplicationView, ProviderApplicationListView, 
+                                                  ApprovedProviderApplicationView, RejectProviderApplicationView,
+                                                  ProviderRegistrationView)
 
 urlpatterns = [
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
-    path('users/register/', RegisterView.as_view(), name='register'),
-    path('users/pre-register/', ProviderApplicationView.as_view(), name='pre-register'),
+    path('users/register/', RegisterView.as_view(), name='register'),# for Pet Owner Registration
+    path('users/pre-register/', ProviderApplicationView.as_view(), name='pre-register'), # Provider pre-registration
+    path('users/provider/register/<str:token>/', ProviderRegistrationView.as_view(), name="provider-registration"), #Provider Registration
     path('users/check-email/', CheckEmailExist.as_view(), name='check_email'),
     path('users/login/', LoginView.as_view(), name='login'),
     path('users/verify/', VerifyEmailView.as_view(), name='verify_email'),
@@ -32,6 +35,8 @@ urlpatterns = [
 
     # path('users/service_list/', ServiceView.as_view(), name='service_list'),
     path('administrator/pending_applications/', ProviderApplicationListView.as_view(), name='pending_applications'),
+    path('administrator/provider_applications/approve/<int:application_id>/', ApprovedProviderApplicationView.as_view(), name="approved_applications"),
+    path('administrator/provider_applications/reject/<int:application_id>/', RejectProviderApplicationView.as_view(), name="reject_applications"),
     # path('administrator/pending_pet_walker/', PendingPetWalker.as_view(), name='pet_walker'),
     # path('administrator/pending_pet_boarding/', PendingPetBoarding.as_view(), name='pet_boarding'),
     # path('administrator/pending_providers/', PendingProviders.as_view(), name='pending_providers'),

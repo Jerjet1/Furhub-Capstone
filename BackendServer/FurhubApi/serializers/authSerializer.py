@@ -7,7 +7,7 @@ class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField()
         
-class RegisterSerializer(serializers.ModelSerializer):
+class RegisterSerializer(serializers.ModelSerializer): #Pet Owner Serializer
     confirm_password = serializers.CharField(write_only=True)
     role = serializers.CharField(write_only=True)
     class Meta:

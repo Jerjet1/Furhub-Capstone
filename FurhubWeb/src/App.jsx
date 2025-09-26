@@ -81,7 +81,7 @@ export default function App() {
               }
             />
             <Route
-              path="/register"
+              path="/provider/registration/:token"
               element={
                 <AuthRoute>
                   <Registration />

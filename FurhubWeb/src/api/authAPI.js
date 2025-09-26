@@ -3,7 +3,7 @@ import { API_ENDPOINTS } from "./apiEndpoints";
 import axiosInstance from "./axiosInterceptor";
 export const loginAuth = async (email, password) => {
   try {
-    const response = await axiosInstance.post(API_ENDPOINTS.LOGIN, {
+    const response = await axios.post(API_ENDPOINTS.LOGIN, {
       email,
       password,
     });
@@ -23,17 +23,16 @@ export const registerAuth = async (
   email,
   password,
   confirm_password,
-  role
+  token
 ) => {
   try {
-    const response = await axiosInstance.post(API_ENDPOINTS.REGISTER, {
+    const response = await axios.post(API_ENDPOINTS.REGISTER + `${token}/`, {
       first_name,
       last_name,
       phone_no,
       email,
       password,
       confirm_password,
-      role,
     });
     return response.data;
   } catch (error) {

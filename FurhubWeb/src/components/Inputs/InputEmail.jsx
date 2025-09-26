@@ -1,7 +1,14 @@
 import React, { useState } from "react";
 import { FiMail } from "react-icons/fi";
 
-export const InputEmail = ({ id, name, placeholder, register, errors }) => {
+export const InputEmail = ({
+  id,
+  name,
+  placeholder,
+  register,
+  errors,
+  readOnly,
+}) => {
   return (
     <div>
       <div
@@ -17,6 +24,7 @@ export const InputEmail = ({ id, name, placeholder, register, errors }) => {
           {...register(name)}
           autoCapitalize="none"
           autoComplete="off"
+          readOnly={readOnly}
         />
       </div>
     </div>

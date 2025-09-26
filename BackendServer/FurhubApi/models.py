@@ -2,6 +2,7 @@ from django.db import models
 import random
 from django.utils import timezone
 from datetime import timedelta
+import secrets
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 # Create your models here.
 
@@ -157,6 +158,20 @@ class ProviderApplication(models.Model):
     reject_reason = models.TextField(blank=True, null=True)
     applied_at = models.DateTimeField(auto_now_add=True)
 
+    registration_token = models.CharField(max_length=100, blank=True, null=True, unique=True)
+    token_expiry = models.DateTimeField(blank=True, null=True)
+    email_sent = models.BooleanField(default=False)
+    email_sent_at = models.DateTimeField(blank=True, null=True)
+
+    def generate_registration_token(self):
+        self.registration_token = secrets.token_urlsafe(32)
+        self.token_expiry = timezone.now() + timedelta(days=7)
+        self.save()
+        return self.registration_token
+
+    def is_token_valid(self):
+        return self.registration_token and self.token_expiry and self.token_expiry > timezone.now()
+
     class Meta:
         db_table = 'provider_application'
 
@@ -211,7 +226,7 @@ class ProviderService(models.Model):
     service = models.ForeignKey(Service, on_delete=models.CASCADE)
     provider = models.ForeignKey(Users, on_delete=models.CASCADE)
     provider_type = models.CharField(max_length=15, choices=PROVIDER_TYPE_CHOICE)
-    provider_rate = models.DecimalField(decimal_places=2, max_digits=10)
+    # provider_rate = models.DecimalField(decimal_places=2, max_digits=10)
 
     class Meta:
         unique_together = ['service', 'provider', 'provider_type']

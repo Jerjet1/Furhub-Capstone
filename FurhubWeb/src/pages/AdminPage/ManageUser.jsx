@@ -32,18 +32,35 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import React, { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { UserLayoutPage } from "../../components/Layout/UserLayoutPage";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import { fetchUsers } from "../../api/Users";
 import { fetchPendingProvider } from "../../api/preRegistrationAPI";
+import {
+  approveProviderApplication,
+  rejectProviderApplication,
+} from "../../api/preRegistrationAPI";
 import { formatDateTime } from "@/utils/formatDateTime";
 import { PaginationButton } from "@/components/Buttons/PaginationButton";
 import { searchDebounce } from "../../utils/searchDebounce";
+import { toast } from "sonner";
+import { parseError } from "@/utils/parseError";
 
 export const ManageUser = () => {
   const [page, setPage] = useState(1);
@@ -53,7 +70,10 @@ export const ManageUser = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [documentView, setDocumentView] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
+  const [rejectDialog, setRejectDialog] = useState(false);
   const [searchQuery, setSearchQuery] = useState(""); // Add search state
+  const [rejectReason, setRejectReason] = useState("");
+  const queryClient = useQueryClient();
 
   const debounceSearch = searchDebounce(searchQuery, 300);
 
@@ -231,14 +251,42 @@ export const ManageUser = () => {
     );
   };
 
-  const approveProvider = (providerId) => {
+  const approveProvider = async (providerId) => {
     console.log("[v0] Approving provider:", providerId);
     // Handle approval logic
+    try {
+      const result = await approveProviderApplication(providerId);
+      toast.success(`${result.message} ${result.email_sent}`);
+      queryClient.invalidateQueries(["providerApplications"]);
+    } catch (error) {
+      toast.error(parseError(error));
+    }
   };
 
-  const rejectProvider = (providerId) => {
-    console.log("[v0] Rejecting provider:", providerId);
+  const openRejectDialog = (providerId) => {
+    setSelectedProvider(providerId);
+    setRejectDialog(true);
+  };
+
+  const rejectProvider = async () => {
     // Handle rejection logic
+    if (!rejectReason.trim()) {
+      toast.error("Please provide a rejection reason");
+      return;
+    }
+    try {
+      const result = await rejectProviderApplication(
+        selectedProvider,
+        rejectReason
+      );
+      toast.success(result.message);
+      setRejectDialog(false);
+      setRejectReason("");
+      // Refresh the data
+      queryClient.invalidateQueries(["providerApplications"]);
+    } catch (error) {
+      toast.error(parseError(error));
+    }
   };
 
   return (
@@ -430,7 +478,7 @@ export const ManageUser = () => {
                               className="border-[#F44336] text-[#F44336] hover:bg-[#FFEBEE] bg-transparent"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                rejectProvider(provider.application_id);
+                                openRejectDialog(provider.application_id);
                               }}>
                               <X className="h-4 w-4 mr-1" />
                               Reject
@@ -446,6 +494,40 @@ export const ManageUser = () => {
 
             {/* Image Modal */}
             {openDialog && <CustomModal />}
+
+            {/* reject Modal */}
+            <Dialog open={rejectDialog} onOpenChange={setRejectDialog}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Reject Application</DialogTitle>
+                  <DialogDescription>
+                    Please provide a reason for rejecting this application. This
+                    will be sent to the applicant.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <Textarea
+                    placeholder="Enter rejection reason..."
+                    value={rejectReason}
+                    onChange={(e) => setRejectReason(e.target.value)}
+                    rows={4}
+                  />
+                </div>
+                <DialogFooter>
+                  <Button
+                    variant="outline"
+                    onClick={() => setRejectDialog(false)}>
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={rejectProvider}
+                    disabled={!rejectReason.trim()}>
+                    Confirm Reject
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
 
             {/* Provider Details & Map */}
             <div className="space-y-6">

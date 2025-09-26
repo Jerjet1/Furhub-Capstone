@@ -26,14 +26,12 @@ export const AuthProvider = ({ children }) => {
           const roleToSet = activeRole || parsedRole[0];
           const is_verified = localStorage.getItem("is_verified") === "true";
           const email = localStorage.getItem("email");
-          const pet_boarding_status = localStorage.getItem("pet_boarding");
           setUser({
             token,
             roles: parsedRole,
             activeRole: roleToSet,
             is_verified,
             email,
-            pet_boarding_status,
           });
         }
       } catch (error) {
@@ -52,17 +50,15 @@ export const AuthProvider = ({ children }) => {
     refreshToken,
     roles,
     is_verified = false,
-    email = "",
-    pet_boarding_status
+    email = ""
   ) => {
     localStorage.setItem("token", token);
     localStorage.setItem("refresh", refreshToken);
     localStorage.setItem("roles", JSON.stringify(roles));
     localStorage.setItem("is_verified", is_verified ? "true" : "false");
     localStorage.setItem("email", email);
-    localStorage.setItem("pet_boarding", pet_boarding_status);
 
-    setUser({ token, roles, is_verified, email, pet_boarding_status });
+    setUser({ token, roles, is_verified, email });
   };
 
   const login = (
@@ -70,8 +66,7 @@ export const AuthProvider = ({ children }) => {
     refreshToken,
     roles,
     is_verified = false,
-    email = "",
-    pet_boarding_status
+    email = ""
   ) => {
     localStorage.setItem("token", token);
     localStorage.setItem("refresh", refreshToken);
@@ -79,7 +74,6 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem("activeRole", roles[0]);
     localStorage.setItem("is_verified", is_verified ? "true" : "false");
     localStorage.setItem("email", email);
-    localStorage.setItem("pet_boarding", pet_boarding_status);
 
     setUser({
       token,
@@ -87,7 +81,6 @@ export const AuthProvider = ({ children }) => {
       activeRole: roles[0],
       is_verified,
       email,
-      pet_boarding_status,
     });
   };
 
@@ -114,7 +107,6 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("activeRole");
     localStorage.removeItem("is_verified");
     localStorage.removeItem("email");
-    localStorage.removeItem("pet_boarding");
 
     // 2. Clear any application state
     setUser(null);

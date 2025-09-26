@@ -3,18 +3,22 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from FurhubApi.permission import IsAdminRole
 from rest_framework.views import APIView
-from FurhubApi.models import ProviderApplication
+from FurhubApi.models import ProviderApplication, User_roles
 from django.db import transaction
 from rest_framework.pagination import PageNumberPagination
 from django.db.models import Q
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.db import transaction
+from FurhubApi.utils import send_approval_email, send_rejection_email, send_verification_email
 # from rest_framework.parsers import MultiPartParser, FormParser
 # import socket
 from FurhubApi.serializers.PreRegistrationSerializer import (
     BoardingApplicationSerializer,
     ProviderApplicationSerializer,
     WalkerApplicationSerializer,
+    ProviderRegistrationSerializer
 )
 
 class ProviderApplicationView(APIView):
@@ -60,8 +64,6 @@ class ProviderApplicationView(APIView):
             provider_type=provider_type
         )
 
-
-        
         if existing_email_apps.filter(status__in=["pending", "approved"]).exists():
             return {
                 "error": f"An application with this email already exists."
@@ -126,6 +128,81 @@ class ProviderApplicationView(APIView):
                 },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+        
+class ApprovedProviderApplicationView(APIView):
+    permission_classes = [IsAdminRole, IsAuthenticated]
+
+    def post(self, request, application_id):
+        try:
+            application = ProviderApplication.objects.get(application_id=application_id)
+            if application.status == "approved":
+                return Response(
+                    {"message": "Application is already approved."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        
+            # Update status to approved
+            application.status = "approved"
+            application.save()
+
+            # send email notification to applicant
+            email_sent = send_approval_email(application)
+
+            return Response(
+                {"message" : "Application approved successfully.",
+                 "email_sent": email_sent,
+                },
+                status=status.HTTP_200_OK
+            )
+        except ProviderApplication.DoesNotExist:
+            return Response(
+                {"error" : "Application not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {"error": "Failed to approve application due to unexpected error."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        
+class RejectProviderApplicationView(APIView):
+    permission_classes = [IsAdminRole, IsAuthenticated]
+
+    def post(self, request, application_id):
+        try:
+            application = ProviderApplication.objects.get(application_id=application_id)
+            reject_reason = request.data.get("reject_reason", "").strip()
+
+            if application.status == "rejected":
+                return Response(
+                    {"error": "Application is already rejected."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Update status to rejected
+            application.status = "rejected"
+            application.reject_reason = reject_reason
+            application.save()
+
+            # send email notification to applicant about rejection
+            email_sent = send_rejection_email(application)
+
+            return Response(
+                {"message": "Application rejected successfully.",
+                "email_sent": email_sent
+                },
+                status=status.HTTP_200_OK
+            )
+
+        except ProviderApplication.DoesNotExist:
+            return Response(
+                {"error": "Application not found."}, status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {"error": "Failed to reject application due to unexpected error."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 class ProviderApplicationListView(APIView):
     permission_classes = [IsAdminRole, IsAuthenticated]
@@ -167,5 +244,132 @@ class ProviderApplicationListView(APIView):
             context={'request': request}
         )
         return paginator.get_paginated_response(serializer.data)
+    
+class ProviderRegistrationView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, token):
+        """
+        Validate registration token and return application details
+        """
+        try:
+            application = ProviderApplication.objects.get(
+                registration_token = token,
+                status = "approved"
+            )
+
+            if not application.is_token_valid():
+                return Response(
+                    {"error": "Registration link has expired. Please contact support."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            # Check if user already registered (in case they clicked link multiple times)
+            if application.user:
+                return Response(
+                    {"error": "Registration already completed. Please login."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Return application details for pre-filled form
+            data = {
+                "valid": True,
+                "application": {
+                    "application_id": application.application_id,
+                    "email": application.email,
+                    "first_name": application.first_name,
+                    "last_name": application.last_name,
+                    "facility_name": application.facility_name,
+                    "provider_type": application.provider_type,
+                    "provider_type_display": application.get_provider_type_display(),
+                },
+                "token_expiry": application.token_expiry
+            }
+            
+            return Response(data)
         
+        except ProviderApplication.DoesNotExist:
+            return Response(
+                {"error": "Invalid registration link"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+    def post(self, request, token):
+        """
+        Complete provider registration with account creation
+        """
+        try:
+            application = ProviderApplication.objects.get(
+                registration_token=token,
+                status='approved'
+            )
+
+            if not application.is_token_valid():
+                return Response(
+                    {"error": "Registration link has expired"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Check if user already registered
+            if application.user:
+                return Response(
+                    {"error": "Registration already completed"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Validate registration data
+            serializer = ProviderRegistrationSerializer(
+                data=request.data,
+                context={
+                    'application': application,
+                    'provider_type': application.provider_type
+                }
+            )
+
+            if not serializer.is_valid():
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            try:
+                with transaction.atomic():
+                    user = serializer.save()
+
+                    # Send email verification (YES, providers also need email verification)
+                    send_verification_email(user)
+
+                    # Invalidate token after successful registration
+                    application.registration_token = None
+                    application.token_expiry = None
+                    application.save()
+
+                    # Generate tokens for auto-login
+                    refresh = RefreshToken.for_user(user)
+                    user_roles = User_roles.objects.filter(user=user).select_related('role')
+                    roles = [ur.role.role_name for ur in user_roles]
+
+                    # later I add the ProviderService table
+                    if application.provider_type == 'walker':
+                        pass
+                    elif application.provider_type == 'boarding':
+                        pass
+
+                return Response({
+                    "message": "Provider registration completed successfully. Please verify your email.",
+                    "email": user.email,
+                    "access": str(refresh.access_token),
+                    "roles": roles,
+                    "provider_type": application.provider_type,
+                    "is_verified": user.is_verified,
+                    "refresh": str(refresh),
+                    "user_id": user.id
+                }, status=status.HTTP_201_CREATED)
+
+            except Exception as e:
+                print(f"Registration error: {e}")
+                return Response({
+                    "message": "Registration failed due to an unexpected error",
+                }, status=status.HTTP_500_INTERNAL_SOUND)
+            
+        except ProviderApplication.DoesNotExist:
+            return Response(
+                {"error": "Invalid registration link"},
+                status=status.HTTP_404_NOT_FOUND
+            )
       

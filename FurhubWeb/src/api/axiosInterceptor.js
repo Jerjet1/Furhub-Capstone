@@ -104,6 +104,8 @@ axiosInstance.interceptors.request.use(
     config.headers["ngrok-skip-browser-warning"] = "true";
     const token = localStorage.getItem("token");
     if (token) {
+      // config.headers["Authorization"] = `Bearer ${JSON.parse(token)}`;
+      // config.headers["Authorization"] = `Bearer ${JSON.stringify(token)}`;
       config.headers["Authorization"] = `Bearer ${token}`;
     }
     return config;

@@ -1,13 +1,12 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { debounce } from "lodash";
+import React, { useEffect, useState } from "react";
 import { Layout } from "../components/Layout/Layout";
-import { useForm, useWatch } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { LottieSpinner } from "../components/LottieSpinner";
-import { registerAuth, checkEmailAvailable } from "../api/authAPI";
-import { Link } from "react-router-dom";
-import { ROLES } from "../App";
+import { registerAuth } from "../api/authAPI";
+import { validateRegistrationToken } from "../api/preRegistrationAPI";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 import { InputName } from "../components/Inputs/InputName";
 import { InputPhone } from "../components/Inputs/InputPhone";
@@ -24,7 +23,7 @@ const validationSchema = yup.object().shape({
     .string()
     .required("field required")
     .matches(/^09[0-9]{9}$/, "Phone number must start with 09 and be 11 digit"),
-  email: yup.string().email("invalid email").required("field required"),
+  email: yup.string().email().notRequired(),
   password: yup
     .string()
     .required("fill this field")
@@ -44,61 +43,56 @@ const validationSchema = yup.object().shape({
 });
 
 export const Registration = () => {
-  const [emailError, setEmailError] = useState("");
-  const [barangayClearance, setBarangayClearance] = useState(null);
-  const [validID, setValidID] = useState(null);
-  const [selfieWithID, setSelfieWithID] = useState(null);
-  const [submissionAttempt, setSubmissionAttempt] = useState(false);
-  const [showServiceModal, setShowServiceModal] = useState(false);
-  const [offeredServices, setOfferedServices] = useState([]);
+  const { token } = useParams(); // Get token from URL
+  const navigate = useNavigate();
+  const [validating, setValidating] = useState(true);
+  const [applicationInfo, setApplicationInfo] = useState(null);
+  const [tokenError, setTokenError] = useState(null);
   const [loading, setLoading] = useState(false);
   const { registerUser } = useAuth();
-
-  const debounceCheckEmail = useCallback(
-    debounce(async (emailToCheck) => {
-      try {
-        const isTaken = await checkEmailAvailable(emailToCheck);
-        if (isTaken) {
-          setEmailError("Email is already in use");
-        } else {
-          setEmailError("");
-        }
-      } catch (error) {
-        console.log("unexpected Error occured");
-      }
-    }, 1000),
-    []
-  );
 
   const {
     register,
     handleSubmit,
-    control,
+    setValue,
     formState: { errors },
   } = useForm({ resolver: yupResolver(validationSchema) });
 
-  const email = control
-    ? useWatch({
-        control,
-        name: "email",
-      })
-    : "";
-
   useEffect(() => {
-    if (email) {
-      debounceCheckEmail(email);
-    } else {
-      setEmailError("");
-    }
-  }, [email, debounceCheckEmail]);
+    const validateToken = async () => {
+      if (!token) {
+        setTokenError("No registration token provided");
+        setValidating(false);
+        return;
+      }
+
+      try {
+        setValidating(true);
+        const result = await validateRegistrationToken(token);
+
+        if (result.valid && result.application) {
+          setApplicationInfo(result.application);
+
+          // Pre-fill form with application data
+          // setValue("first_name", result.application.first_name || "");
+          // setValue("last_name", result.application.last_name || "");
+          setValue("email", result.application.email || "");
+
+          setTokenError(null);
+        } else {
+          setTokenError(result.error || "Invalid registration link");
+        }
+      } catch (error) {
+        setTokenError("Failed to validate registration token");
+        console.error("Token validation error:", error);
+      } finally {
+        setValidating(false);
+      }
+    };
+    validateToken();
+  }, [token, setValue]);
 
   const registrationForm = async (data) => {
-    const formData = new FormData();
-    // setSubmissionAttempt(true);
-    // if (!barangayClearance || !validID || !selfieWithID) {
-    //   return;
-    // }
-
     const {
       first_name,
       last_name,
@@ -107,6 +101,12 @@ export const Registration = () => {
       password,
       confirm_password,
     } = data;
+
+    // Verify that the email matches the application
+    if (applicationInfo && applicationInfo.email !== email) {
+      toast.error("Email must match the application email");
+      return;
+    }
 
     setLoading(true);
     try {
@@ -117,45 +117,26 @@ export const Registration = () => {
         email,
         password,
         confirm_password,
-        ROLES.BOARDING
+        token // Include the registration token
       );
 
-      const user_id = result.id;
-      const token = result.access;
+      const tokenData = result.access;
       const refreshToken = result.refresh;
       const roles = result.roles || [];
       const is_verified = result.is_verified === true;
-      const pet_boarding_status = result.pet_boarding;
 
       registerUser(
-        token,
+        tokenData,
         refreshToken,
         roles,
         is_verified,
-        result.email || email,
-        pet_boarding_status
+        result.email || email
       );
-
-      // const barangayFormData = formData;
-      // barangayFormData.append("user", user_id);
-      // barangayFormData.append("category", "boarding_requirement");
-      // barangayFormData.append("label", "barangay_clearance");
-      // barangayFormData.append("image", barangayClearance);
-      // await requirementsUpload(barangayFormData);
-
-      // const validIDFormData = formData;
-      // barangayFormData.append("user", user_id);
-      // barangayFormData.append("category", "boarding_requirement");
-      // barangayFormData.append("label", "valid_id");
-      // barangayFormData.append("image", validID);
-      // await requirementsUpload(validIDFormData);
-
-      // const selfieFormData = formData;
-      // barangayFormData.append("user", user_id);
-      // barangayFormData.append("category", "boarding_requirement");
-      // barangayFormData.append("label", "selfie_with_id");
-      // barangayFormData.append("image", selfieWithID);
-      // await requirementsUpload(selfieFormData);
+      toast.success(
+        "Registration completed! Please check your email for verification."
+      );
+      //not sure if i navigate
+      // navigate("/verify");
     } catch (error) {
       toast.error(parseError(error));
     } finally {
@@ -163,12 +144,56 @@ export const Registration = () => {
     }
   };
 
+  // Show loading while validating token
+  if (validating) {
+    return (
+      <Layout>
+        <div className="max-w-2xl flex flex-col items-center justify-center p-7 border-1 rounded-2xl bg-white/90 shadow">
+          <div className="flex flex-col items-center justify-center py-12">
+            <LottieSpinner size={80} />
+            <p className="text-xl font-semibold mt-4">
+              Validating registration link...
+            </p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  // Show error if token is invalid
+  if (tokenError) {
+    return (
+      <Layout>
+        <div className="max-w-2xl flex flex-col items-center justify-center p-7 border-1 rounded-2xl bg-white/90 shadow">
+          <div className="text-center py-12">
+            <div className="text-6xl mb-4">❌</div>
+            <h1 className="text-2xl font-semibold text-red-600 mb-2">
+              Invalid Registration Link
+            </h1>
+            <p className="text-gray-600 mb-6">{tokenError}</p>
+
+            <div className="space-y-3">
+              {/* <Link
+                to="/provider/resend-link"
+                className="block bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600">
+                Request New Registration Link
+              </Link> */}
+              <Link to="/" className="block text-blue-500 hover:underline">
+                Back to Login
+              </Link>
+            </div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
-      <div className="w-[30rem] flex flex-col items-center justify-center p-7 border-1 rounded-2xl bg-white/90 shadow">
+      <div className="max-w-2xl flex flex-col items-center justify-center p-7 border-1 rounded-2xl bg-white/90 shadow">
         <div className="flex w-full h-fit justify-start items-start">
           <h1 className="text-[2rem] font-open-sans font-semibold">
-            Register as Pet Boarding
+            Complete Your Provider Registration
           </h1>
         </div>
 
@@ -176,7 +201,7 @@ export const Registration = () => {
         {loading && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 flex-col">
             <LottieSpinner size={120} />
-            <p className="text-xl font-Fugaz">Loading...</p>
+            <p className="text-xl font-Fugaz">Creating your account...</p>
           </div>
         )}
 
@@ -257,13 +282,8 @@ export const Registration = () => {
                     name="email"
                     placeholder="sample@mail.com"
                     register={register}
-                    errors={errors.email}
+                    readOnly={!!applicationInfo?.email}
                   />
-                  {(errors.email || emailError) && (
-                    <p className="text-red-500 text-sm">
-                      {errors.email?.message || emailError}
-                    </p>
-                  )}
                 </div>
               </div>
 
@@ -310,96 +330,6 @@ export const Registration = () => {
                 </div>
               </div>
             </div>
-            {/* Requirements Upload container*/}
-            {/* <div className="border-b-1 py-2">
-              <h2 className="text-2xl mb-2 font-semibold">
-                Requirements Upload
-              </h2>
-              <div className="flex flex-wrap w-full justify-between gap-2">
-                <div className="flex flex-col w-52">
-                  <label
-                    htmlFor="barangayClearance"
-                    className="block text-black mb-2 text-lg">
-                    Barangay Clearance
-                  </label>
-                  <input
-                    type="file"
-                    id="barangayClearance"
-                    accept="image/jpeg, image/jpg, image/png"
-                    onChange={(e) => {
-                      setBarangayClearance(e.target.files[0]);
-                    }}
-                    className={`w-full rounded-xl border ${
-                      submissionAttempt && !barangayClearance
-                        ? "border-red-500"
-                        : "border-black"
-                    } bg-indigo-300 p-1 hover:bg-indigo-500`}
-                  />
-                  {submissionAttempt && !barangayClearance && (
-                    <p className="text-red-500 text-sm">
-                      Please upload Barangay Clearance
-                    </p>
-                  )}
-                </div>
-
-                <div className="flex flex-col w-52">
-                  <label
-                    htmlFor="validID"
-                    className="block text-black mb-2 text-lg">
-                    Valid ID
-                  </label>
-                  <input
-                    type="file"
-                    id="validID"
-                    accept="image/jpeg, image/jpg, image/png"
-                    onChange={(e) => {
-                      setValidID(e.target.files[0]);
-                    }}
-                    className={`w-full rounded-xl border ${
-                      submissionAttempt && !validID
-                        ? "border-red-500"
-                        : "border-black"
-                    } bg-indigo-300 p-1 hover:bg-indigo-500`}
-                  />
-                  {submissionAttempt && !validID && (
-                    <p className="text-red-500 text-sm">
-                      Please upload Valid ID
-                    </p>
-                  )}
-                </div>
-
-                <div className="flex flex-col w-52">
-                  <label
-                    htmlFor="selfieWithID"
-                    className="block text-black mb-2 text-lg">
-                    Selfie with ID
-                  </label>
-                  <input
-                    type="file"
-                    id="selfieWithID"
-                    accept="image/jpeg, image/jpg, image/png"
-                    onChange={(e) => {
-                      setSelfieWithID(e.target.files[0]);
-                    }}
-                    className={`w-full rounded-xl border ${
-                      submissionAttempt && !selfieWithID
-                        ? "border-red-500"
-                        : "border-black"
-                    } bg-indigo-300 p-1 hover:bg-indigo-500`}
-                  />
-                  {submissionAttempt && !selfieWithID && (
-                    <p className="text-red-500 text-sm">
-                      Please upload Selfie with ID
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div> */}
-            {/* <button
-              type="submit"
-              className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition duration-200 mt-2 text-lg">
-              Sign Up
-            </button> */}
             <Button label="Sign up" />
           </form>
         </div>

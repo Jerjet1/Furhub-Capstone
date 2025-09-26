@@ -80,7 +80,7 @@ class LoginView(APIView):
             return Response({"details": "Invalid credentials."}, status=status.HTTP_401_UNAUTHORIZED)      
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-class RegisterView(APIView):
+class RegisterView(APIView): # Pet Owner Registration
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -122,15 +122,8 @@ class RegisterView(APIView):
             print(e)
             return Response({
             "message": "Registration failed due to an unexpected error",
-            # "error": str(e)  # Be cautious about exposing raw errors in production
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        # if serializer.is_valid():
-        #     user = serializer.save()
-        #     send_verification_email(user)
-        #     return Response({
-        #         "message": "Register Successfully. Check your email for verification",
-        #         "email": user.email}, status=status.HTTP_201_CREATED)
-        # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)     
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)  
+        
 class CheckEmailExist(APIView):
     permission_classes = [AllowAny]
 
@@ -155,13 +148,13 @@ class VerifyEmailView(APIView):
             petwalker_status = None
             petboarding_status = None
 
-            if PetWalker.objects.filter(user=user).exists():
-                petwalker = PetWalker.objects.get(user=user)
-                petwalker_status = petwalker.status
+            # if PetWalker.objects.filter(user=user).exists():
+            #     petwalker = PetWalker.objects.get(user=user)
+            #     petwalker_status = petwalker.status
             
-            if PetBoarding.objects.filter(user=user).exists():
-                petboarding = PetBoarding.objects.get(user=user)
-                petboarding_status = petboarding.status
+            # if PetBoarding.objects.filter(user=user).exists():
+            #     petboarding = PetBoarding.objects.get(user=user)
+            #     petboarding_status = petboarding.status
 
             return Response({
                 "id": user.id,
@@ -170,9 +163,9 @@ class VerifyEmailView(APIView):
                 "refresh": str(refresh),
                 "roles": roles,
                 "is_verified": user.is_verified,
-                "pet_walker": petwalker_status,
+                # "pet_walker": petwalker_status,
                 "email": user.email,
-                "pet_boarding": petboarding_status,
+                # "pet_boarding": petboarding_status,
                 },status=status.HTTP_200_OK)
         return Response(serializer.errors, status=400)
 

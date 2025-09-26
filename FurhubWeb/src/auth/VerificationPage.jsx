@@ -8,12 +8,10 @@ import { verifyEmail } from "../api/authAPI";
 import { ResendButtom } from "../components/Buttons/ResendButtom";
 import { resendCode } from "../utils/resendCode";
 import { LottieSpinner } from "../components/LottieSpinner";
-import { Toast } from "../components/Toast";
 import { toast } from "sonner";
 import { parseError } from "@/utils/parseError";
 
 export const VerificationPage = () => {
-  // const [message, setMessage] = useState("");
   const [otp, setOTP] = useState("");
   const { user, logout, registerUser } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -52,51 +50,19 @@ export const VerificationPage = () => {
       const refreshToken = result.refresh;
       const roles = result.roles || [];
       const is_verified = result.is_verified === true;
-      const pet_boarding_status = result.pet_boarding;
       registerUser(
         token,
         refreshToken,
         roles,
         is_verified,
-        result.email || email,
-        pet_boarding_status
+        result.email || email
       );
-
-      // if (roles.includes("Admin")) {
-      //   navigate("/Admin/Dashboard", { replace: true });
-      // } else if (roles.includes("Boarding")) {
-      //   if (pet_boarding_status === "approved") {
-      //     navigate("/Petboarding/Dashboard", { replace: true });
-      //   } else if (pet_boarding_status === "pending") {
-      //     navigate("/pending_providers", { replace: true });
-      //   } else {
-      //     navigate("/unauthorized", { replace: true });
-      //   }
-      // } else {
-      //   navigate("/unauthorized", { replace: true });
-      // }
       if (roles.includes("Boarding")) {
-        navigate("/Petboarding/Dashboard", { replace: true });
+        navigate("/Petboarding/Bookings", { replace: true });
       } else {
         navigate("/unauthorized", { replace: true });
       }
     } catch (error) {
-      // let message = "Verification failed";
-      // console.error("something went wrong:", error);
-      // if (typeof error === "string") {
-      //   message = error;
-      // } else if (typeof error.details === "string") {
-      //   message = error.details;
-      // } else if (typeof error.detail === "string") {
-      //   message = error.detail;
-      // } else if (typeof error.message === "string") {
-      //   message = error.message;
-      // } else if (Array.isArray(error)) {
-      //   message = error.join("\n");
-      // } else if (typeof error === "object") {
-      //   message = Object.values(error).flat().join("\n");
-      // }
-      // setMessage(message);
       toast.error(parseError(error));
     } finally {
       setLoading(false);
@@ -117,11 +83,8 @@ export const VerificationPage = () => {
         </div>
       )}
 
-      {/* display message */}
-      {/* <Toast error={message} setError={setMessage} /> */}
-
       {/* form container */}
-      <div className="w-[25rem] h-full flex flex-col items-start justify-start py-5">
+      <div className="max-w-2xl h-full flex flex-col items-start justify-start p-10 border-1 rounded-2xl bg-white/90 shadow">
         <div className="flex-1 w-full h-full space-y-4">
           <button
             onClick={handleBack}
@@ -146,12 +109,6 @@ export const VerificationPage = () => {
             </button>
           </form>
         </div>
-      </div>
-      <div className="flex-1 flex justify-center items-center">
-        <img
-          src="/src/assets/catdog.jpg"
-          className="object-fill h-[90%] rounded-md"
-        />
       </div>
     </Layout>
   );

@@ -41,3 +41,42 @@ export const fetchPendingProvider = async (
     throw error.response?.data || { details: "Something went wrong" };
   }
 };
+
+export const validateRegistrationToken = async (token) => {
+  try {
+    const response = await axios.get(
+      API_ENDPOINTS.VALIDATE_REGISTER_TOKEN + `${token}/`
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { details: "Something went wrong" };
+  }
+};
+
+export const approveProviderApplication = async (application_id) => {
+  try {
+    const response = await axiosInstance.post(
+      API_ENDPOINTS.APPROVED_PROVIDER + `${application_id}/`
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { details: "Something went wrong" };
+  }
+};
+
+export const rejectProviderApplication = async (
+  application_id,
+  reject_reason
+) => {
+  try {
+    const response = await axiosInstance.post(
+      API_ENDPOINTS.REJECT_PROVIDER + `${application_id}/`,
+      {
+        reject_reason: reject_reason,
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { details: "Something went wrong" };
+  }
+};
