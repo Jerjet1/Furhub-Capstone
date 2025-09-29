@@ -1,6 +1,7 @@
 from rest_framework import serializers
-from .models import Users, Roles, User_roles, PetOwner, PetWalker,Admin, PetBoarding, UploadedImage, Service
+from .models import Users, Roles, User_roles, PetOwner, PetWalker,Admin, PetBoarding, UploadedImage, Service, Message, Conversation
 from django.utils import timezone
+
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
@@ -122,6 +123,64 @@ class ServiceSerializer(serializers.ModelSerializer):
         model = Service
         fields = [ 'service_id','service_name']
 
+
+class MessageSerializer(serializers.ModelSerializer):
+    conversation_id = serializers.IntegerField(source='conversation.conversation_id', read_only=True)
+    # sender_id = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = Message
+        fields = ('message_id', 'conversation_id', 'sender_id', 'content', 'sent_at', 'is_read')
+        read_only_fields = ('message_id', 'conversation_id', 'sender_id', 'sent_at', 'is_read')
+
+
+class ConversationSerializer(serializers.ModelSerializer):
+    last_message = serializers.SerializerMethodField()
+    last_sent_at = serializers.SerializerMethodField()
+    unread_count = serializers.SerializerMethodField()
+    other_user_name = serializers.SerializerMethodField()
+    other_user_id = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Conversation
+        fields = ('conversation_id', 'user1_id', 'user2_id', 'last_message', 'last_sent_at', 'unread_count', 'other_user_name', 'other_user_id')
+
+    def get_last_message(self, obj: Conversation):
+        last = obj.messages.order_by('-sent_at').first()
+        return last.content if last else None
+
+    def get_last_sent_at(self, obj: Conversation):
+        last = obj.messages.order_by('-sent_at').first()
+        return last.sent_at.isoformat() if last else None
+
+    def get_unread_count(self, obj: Conversation):
+        request = self.context.get('request')
+        if not request or not request.user.is_authenticated:
+            return 0
+        return obj.messages.filter(is_read=False).exclude(sender=request.user).count()
+
+    def get_other_user_name(self, obj: Conversation):
+        request = self.context.get('request')
+        if not request or not request.user.is_authenticated:
+            return None
+        
+        # Return the name of the user who is not the current user
+        if obj.user1_id == request.user.id:
+            return f"{obj.user2.first_name} {obj.user2.last_name}"
+        else:
+            return f"{obj.user1.first_name} {obj.user1.last_name}"
+
+    def get_other_user_id(self, obj: Conversation):
+        request = self.context.get('request')
+        if not request or not request.user.is_authenticated:
+            return None
+        
+        # Return the ID of the user who is not the current user
+        if obj.user1_id == request.user.id:
+            return obj.user2_id
+        else:
+            return obj.user1_id
+
 # class BulkUploadImageSerializer(serializers.Serializer):
 #     images = UploadImageSerializer(many=True)
 
@@ -131,3 +190,4 @@ class ServiceSerializer(serializers.ModelSerializer):
 #         for image_data in images_data:
 #             uploaded_images.append(UploadedImage.objects.create(**image_data))
 #         return uploaded_images
+# FurhubApi/serializers/MessageSerializer.py

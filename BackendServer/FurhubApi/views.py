@@ -13,7 +13,7 @@ from .permission import IsAdminRole
 from django.utils import timezone
 from datetime import timedelta
 from .utils import send_verification_email, get_client_ip
-from FurhubApi.serializers import RegisterSerializer, LoginSerializer, EmailVerificationSerializer, UploadImageSerializer, ServiceSerializer, PetBoardingSerializer, PetWalkerSerializer
+from FurhubApi.serializers import RegisterSerializer, LoginSerializer, EmailVerificationSerializer, UploadImageSerializer, ServiceSerializer, PetBoardingSerializer, PetWalkerSerializer,ConversationSerializer, MessageSerializer
 # Create your views here.
 
 class RegisterView(APIView):
@@ -250,3 +250,49 @@ class PendingProviders(APIView):
 #             serializer.save()
 #             return Response({"message": "Images uploaded successfully."}, status=status.HTTP_201_CREATED)
 #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class ConversationViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    serializer_class = ConversationSerializer
+    permission_classes = [IsAuthenticated, IsOwnerOrWalker]
+
+    def get_queryset(self):
+        user = self.request.user
+        qs = Conversation.objects.filter(Q(user1=user) | Q(user2=user))
+        q = self.request.query_params.get('search')
+        if q:
+            # Optional: filter by last message content or counterpart name if you track it
+            qs = qs.filter(messages__content__icontains=q).distinct()
+        return qs
+
+class MessageViewSet(viewsets.ModelViewSet):
+    serializer_class = MessageSerializer
+    permission_classes = [IsAuthenticated, IsOwnerOrWalker, IsConversationParticipant]
+
+    def get_queryset(self):
+        user = self.request.user
+        conversation_id = self.kwargs['conversation_pk']
+        # Assert the user participates in this conversation
+        Conversation.objects.get(Q(conversation_id=conversation_id) & (Q(user1=user) | Q(user2=user)))
+        return Message.objects.filter(conversation_id=conversation_id)
+
+    def perform_create(self, serializer):
+        conversation_id = self.kwargs['conversation_pk']
+        conversation = Conversation.objects.get(conversation_id=conversation_id)
+        # Sender must be a participant
+        if self.request.user.id not in (conversation.user1_id, conversation.user2_id):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        serializer.save(conversation=conversation, sender=self.request.user)
+
+    def update(self, request, *args, **kwargs):
+        # Only the sender can edit
+        instance = self.get_object()
+        if instance.sender_id != request.user.id:
+            return Response({'detail': 'Not allowed'}, status=status.HTTP_403_FORBIDDEN)
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        # Only the sender can delete
+        instance = self.get_object()
+        if instance.sender_id != request.user.id:
+            return Response({'detail': 'Not allowed'}, status=status.HTTP_403_FORBIDDEN)
+        return super().destroy(request, *args, **kwargs)

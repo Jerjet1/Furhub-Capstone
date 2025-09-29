@@ -2,6 +2,8 @@ from django.db import models
 import random
 from django.utils import timezone
 from datetime import timedelta
+from django.conf import settings
+from django.db import models
 # from django.contrib.gis.db import models as gis_models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 # Create your models here.
@@ -337,3 +339,29 @@ class Ledger(models.Model):
 
 
 
+
+User = settings.AUTH_USER_MODEL
+
+class Conversation(models.Model):
+    conversation_id = models.AutoField(primary_key=True)
+    user1 = models.ForeignKey(User, related_name='conversations_as_user1', on_delete=models.CASCADE)
+    user2 = models.ForeignKey(User, related_name='conversations_as_user2', on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'conversation'
+        unique_together = ('user1', 'user2')
+
+    def __str__(self):
+        return f'{self.conversation_id} ({self.user1_id}, {self.user2_id})'
+
+class Message(models.Model):
+    message_id = models.AutoField(primary_key=True)
+    conversation = models.ForeignKey(Conversation, related_name='messages', on_delete=models.CASCADE)
+    sender = models.ForeignKey(User, related_name='sent_messages', on_delete=models.CASCADE)
+    content = models.TextField(null=True, blank=True)
+    sent_at = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'message'
+        ordering = ['sent_at']

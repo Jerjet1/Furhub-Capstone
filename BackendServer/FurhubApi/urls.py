@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from FurhubApi.views.authViews import (RegisterView, LoginView, VerifyEmailView, 
                     ResendCodeView,CheckEmailExist, ForgotPasswordView, VerifyCodeView, ResetPasswordView,
                     ChangePasswordView)
@@ -7,6 +7,13 @@ from FurhubApi.views.userView import (ServiceView, AllUserView, PendingPetBoardi
                                       BaseUserUpdateView, PetOwnerUpdateView)
 from FurhubApi.views.imageUploadView import UploadImageView, ProfileUploadView
 from rest_framework_simplejwt.views import (TokenObtainPairView, TokenRefreshView)
+from rest_framework_nested import routers
+from FurhubApi.views.MessageViews import ConversationViewSet, MessageViewSet
+
+router = routers.SimpleRouter()
+router.register(r'messages/conversations', ConversationViewSet, basename='conversations')
+nested = routers.NestedSimpleRouter(router, r'messages/conversations', lookup='conversation')
+nested.register(r'messages', MessageViewSet, basename='conversation-messages')
 
 urlpatterns = [
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
@@ -35,5 +42,9 @@ urlpatterns = [
     path('administrator/pending_pet_walker/', PendingPetWalker.as_view(), name='pet_walker'),
     path('administrator/pending_pet_boarding/', PendingPetBoarding.as_view(), name='pet_boarding'),
     # path('administrator/pending_providers/', PendingProviders.as_view(), name='pending_providers'),
-    path('administrator/all_users/', AllUserView.as_view(), name='all_users')
+    path('administrator/all_users/', AllUserView.as_view(), name='all_users'),
+
+    # Messaging
+    path('', include(router.urls)),
+    path('', include(nested.urls)),
 ]

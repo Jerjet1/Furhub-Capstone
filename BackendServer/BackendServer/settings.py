@@ -39,6 +39,7 @@ ALLOWED_HOSTS = ["*"]
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -50,6 +51,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -129,6 +131,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'BackendServer.wsgi.application'
+ASGI_APPLICATION = 'BackendServer.asgi.application'
 
 
 # Database
@@ -203,3 +206,20 @@ AUTH_USER_MODEL = 'FurhubApi.Users'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# Channels config
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [
+                (
+                    os.getenv("REDIS_HOST", "127.0.0.1"),
+                    int(os.getenv("REDIS_PORT", "6379")),
+                )
+            ],
+            # Optional: prefix to isolate environments
+            "prefix": os.getenv("CHANNEL_LAYER_PREFIX", "furhub"),
+        },
+    }
+}

@@ -28,6 +28,14 @@ export default function SettingScreen() {
       </TouchableOpacity>
       <TouchableOpacity
         className="py-5 px-2 border-b bg-gray-300"
+        onPress={() => router.replace("/(owner)/Settings/HistoryReports")}>
+        <View className="flex flex-row justify-between px-4">
+          <Text className="text-xl font-semibold">History Reports</Text>
+          <Ionicons name="chevron-right" size={25} color="gray" />
+        </View>
+      </TouchableOpacity>
+      <TouchableOpacity
+        className="py-5 px-2 border-b bg-gray-300"
         onPress={() => router.replace("/(owner)/Settings/PetProfile")}>
         <View className="flex flex-row justify-between px-4">
           <Text className="text-xl font-semibold">Pet Profile</Text>

@@ -1,6 +1,6 @@
 # permissions.py
 from rest_framework.permissions import BasePermission
-from .models import Admin, User_roles, Roles
+from .models import Admin, User_roles, Roles, Conversation
 
 class IsAdminRole(BasePermission):
     def has_permission(self, request, view):
@@ -26,3 +26,32 @@ class IsAdminRole(BasePermission):
         except Exception as e:
             print(f"Permission check error: {str(e)}")  # Debugging
             return False
+
+
+class IsOwnerOrWalker(BasePermission):
+    """Allow only Pet Owner and Pet Walker to access the view."""
+    def has_permission(self, request, view):
+        user = request.user
+        if not user or not user.is_authenticated:
+            return False
+
+        try:
+            # Find roles of the user via join table
+            roles = set(
+                User_roles.objects.filter(user_id=user.id).values_list("role__role_name", flat=True)
+            )
+            return any(r.lower() in {"owner", "walker"} for r in roles)
+        except Exception:
+            return False
+
+
+class IsConversationParticipant(BasePermission):
+    """Object-level permission: user must be a participant in the conversation."""
+    def has_object_permission(self, request, view, obj):
+        # obj can be a Conversation or a Message (with .conversation)
+        conversation = obj if isinstance(obj, Conversation) else getattr(obj, "conversation", None)
+        if not conversation:
+            return False
+        return request.user and request.user.is_authenticated and (
+            request.user.id in (conversation.user1_id, conversation.user2_id)
+        )

@@ -19,3 +19,16 @@ export const USER_ENDPOINTS = {
   USER_DETAILS: new URL("users/account-details/", API_URL).toString(),
   PET_OWNER_DETAILS: new URL("users/pet-owner-details/", API_URL).toString(),
 } as const;
+
+// Messaging endpoints (adjust paths to match your Django URLs)
+export const MESSAGE_ENDPOINTS = {
+  CONVERSATIONS: new URL("messages/conversations/", API_URL).toString(),
+  CONVERSATION_GET_OR_CREATE: (otherUserId: number | string) =>
+    new URL(`messages/conversations/get_or_create/?other_user_id=${otherUserId}`, API_URL).toString(),
+  MESSAGES: (conversationId: number | string) =>
+    new URL(`messages/conversations/${conversationId}/messages/`, API_URL).toString(),
+  MESSAGE_DETAIL: (conversationId: number | string, messageId: number | string) =>
+    new URL(`messages/conversations/${conversationId}/messages/${messageId}/`, API_URL).toString(),
+  MARK_READ: (conversationId: number | string) =>
+    new URL(`messages/conversations/${conversationId}/read/`, API_URL).toString(),
+} as const;

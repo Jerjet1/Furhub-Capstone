@@ -47,6 +47,10 @@ export default function OwnerTabs() {
         options={createScreenOptions("Search", "search")}
       />
       <Tabs.Screen
+        name="Reviews"
+        options={createScreenOptions("Reviews", "star")}
+      />
+      <Tabs.Screen
         name="Settings"
         options={createScreenOptions("Settings", "gear")}
       />
