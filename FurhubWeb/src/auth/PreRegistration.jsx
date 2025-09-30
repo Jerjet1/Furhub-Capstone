@@ -91,7 +91,7 @@ export const PreRegistration = () => {
         formData.append("image", files[i]);
         await requirementsUpload(formData);
       }
-
+      navigate("/");
       toast.success(result.message);
       // toast.success("Application sent successfully");
     } catch (error) {

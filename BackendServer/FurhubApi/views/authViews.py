@@ -95,24 +95,12 @@ class RegisterView(APIView): # Pet Owner Registration
                 refresh = RefreshToken.for_user(user)
                 user_roles = User_roles.objects.filter(user=user).select_related('role')
                 roles = [ur.role.role_name for ur in user_roles]
-                petwalker_status = None
-                petboarding_status = None
-
-                if PetWalker.objects.filter(user=user).exists():
-                    petwalker = PetWalker.objects.get(user=user)
-                    petwalker_status = petwalker.status
-                
-                if PetBoarding.objects.filter(user=user).exists():
-                    petboarding = PetBoarding.objects.get(user=user)
-                    petboarding_status = petboarding.status
 
             return Response({
                 "message": "Register Successfully. Check your email for verification",
                 "email": user.email,
                 "access": str(refresh.access_token),
                 "roles": roles,
-                # "pet_walker": petwalker_status,
-                # "pet_boarding": petboarding_status,
                 "is_verified": user.is_verified,
                 "refresh": str(refresh),
                 "id": user.id
@@ -145,17 +133,6 @@ class VerifyEmailView(APIView):
             refresh = RefreshToken.for_user(user)
             roles = [ur.role.role_name for ur in user_roles]
 
-            petwalker_status = None
-            petboarding_status = None
-
-            # if PetWalker.objects.filter(user=user).exists():
-            #     petwalker = PetWalker.objects.get(user=user)
-            #     petwalker_status = petwalker.status
-            
-            # if PetBoarding.objects.filter(user=user).exists():
-            #     petboarding = PetBoarding.objects.get(user=user)
-            #     petboarding_status = petboarding.status
-
             return Response({
                 "id": user.id,
                 "message": "Email verified successfully.",
@@ -163,9 +140,7 @@ class VerifyEmailView(APIView):
                 "refresh": str(refresh),
                 "roles": roles,
                 "is_verified": user.is_verified,
-                # "pet_walker": petwalker_status,
                 "email": user.email,
-                # "pet_boarding": petboarding_status,
                 },status=status.HTTP_200_OK)
         return Response(serializer.errors, status=400)
 

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from FurhubApi.models import Users, Roles, User_roles, PetOwner, PetWalker,Admin, PetBoarding
+from FurhubApi.models import Users, Roles, User_roles, PetOwner, PetWalker,Admin, PetBoarding, ProviderApplication
 from django.utils import timezone
 from FurhubApi.utils import send_verification_email
 
@@ -21,8 +21,40 @@ class RegisterSerializer(serializers.ModelSerializer): #Pet Owner Serializer
         return data
     
     def validate_email(self, value):
+        # Check if email already exists in Users table (active accounts)
         if Users.objects.filter(email=value).exists():
-            raise serializers.ValidationError('Email is alreay in use.')
+            raise serializers.ValidationError('Email is already registered. Please use a different email or login.')
+        
+        # Check for non-rejected provider applications
+        active_applications = ProviderApplication.objects.filter(
+            email=value
+        ).exclude(
+            status='rejected'  # Allow rejected applications to register
+        )
+        
+        if active_applications.exists():
+            # Get the latest application for better error message
+            latest_application = active_applications.latest('applied_at')
+            
+            if latest_application.status == 'approved':
+                if latest_application.user:
+                    raise serializers.ValidationError(
+                        'This email is already registered as a service provider. '
+                        'Please login to your provider account.'
+                    )
+                else:
+                    raise serializers.ValidationError(
+                        'This email has an approved service provider application. '
+                        'Please check your email for the registration link to complete your provider account.'
+                    )
+                    
+            elif latest_application.status == 'pending':
+                applied_date = latest_application.applied_at.strftime('%B %d, %Y')
+                raise serializers.ValidationError(
+                    f'This email has a pending service provider application (submitted on {applied_date}). '
+                    'Please wait for application review or use a different email for pet owner registration.'
+                )
+        
         return value
     
     def create(self, validated_data):
@@ -34,10 +66,6 @@ class RegisterSerializer(serializers.ModelSerializer): #Pet Owner Serializer
         #Assigned role
         role = Roles.objects.get(role_name = role_name)
 
-        if role.role_name == 'Walker':
-            PetWalker.objects.create(user = user)
-        if role.role_name == 'Boarding':
-            PetBoarding.objects.create(user = user)
         if role.role_name == 'Admin':
             Admin.objects.create(user = user)
         if role.role_name == 'Owner':

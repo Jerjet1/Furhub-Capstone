@@ -80,3 +80,13 @@ export const rejectProviderApplication = async (
     throw error.response?.data || { details: "Something went wrong" };
   }
 };
+
+export const resendLinkAPI = async (payload) => {
+  try {
+    const response = await axios.post(API_ENDPOINTS.RESEND_LINK, payload);
+    return response.data;
+  } catch (error) {
+    return error.response?.data;
+    // || { details: "Something went wrong" };
+  }
+};

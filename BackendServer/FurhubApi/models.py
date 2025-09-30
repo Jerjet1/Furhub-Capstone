@@ -114,7 +114,8 @@ class PetOwner(models.Model):
 
 class PetWalker(models.Model):
     user = models.OneToOneField(Users, on_delete=models.CASCADE, primary_key=True)
-    availability = models.CharField(max_length=255, null=True, blank=True)
+    emergency_no = models.CharField(max_length=15, null=True, blank=True)
+    max_pet_walk = models.PositiveIntegerField(default=1)
 
     class Meta:
         db_table = 'pet_walker'
@@ -123,7 +124,8 @@ class PetBoarding(models.Model):
 
     user = models.OneToOneField(Users, on_delete=models.CASCADE, primary_key=True)
     hotel_name = models.CharField(max_length=255, null=True, blank=True)
-    availability = models.CharField(max_length=255, null=True, blank=True)
+    max_capacity = models.PositiveIntegerField(default=1)
+    facility_phone = models.CharField(max_length=15, null=True, blank=True)
 
     class Meta:
         db_table = 'pet_boarding'
@@ -236,12 +238,24 @@ class Booking(models.Model):
     STATUS_CHOICE = [("pending", "Pending"),
                      ("approved", "Approved"),
                      ("ongoing", "Ongoing"),
+                     ("checked_in", "Checked In"),
+                     ("checked_out", "Checked Out"),
+                     ("canceled", "Canceled"),
+                     ("completed", "Completed"),
                      ("rejected", "Rejected")]
+    
+    DURATION_UNITS = [
+    ("hour", "Hour"),
+    ("day", "Day"),
+    ("week", "Week"),
+]
     
     booking_id = models.AutoField(primary_key=True)
     owner = models.ForeignKey(PetOwner, on_delete=models.CASCADE, related_name="bookings")
     provider = models.ForeignKey(ProviderService, on_delete=models.CASCADE, related_name="bookings")
     status = models.CharField(max_length=15, choices=STATUS_CHOICE, default="pending")
+    duration_value = models.PositiveIntegerField(null=True, blank=True)  # e.g., 3
+    duration_unit = models.CharField(max_length=10, choices=DURATION_UNITS, null=True, blank=True)
     start_at = models.DateTimeField()
     end_at = models.DateTimeField()
     created_at = models.DateTimeField(auto_now_add=True)
@@ -275,10 +289,77 @@ class PetSchedule(models.Model):
     
     pet_form = models.ForeignKey(Pet_Form, on_delete=models.CASCADE, related_name="schedules")
     schedule_type = models.CharField(max_length=20,choices=SERVICE_CHOICE)
-    time = models.TimeField()  
+    time = models.TimeField()
+    frequency_per_day = models.PositiveIntegerField(default=1)
 
     class Meta:
         db_table = 'pet_schedule'
+
+class OperationalHours(models.Model):
+    DAYS_OF_WEEKS = [
+        ('monday', 'Monday'),
+        ('tuesday', 'Tuesday'),
+        ('wednesday', 'Wednesday'),
+        ('thursday', 'Thursday'),
+        ('friday', 'Friday'),
+        ('saturday', 'Saturday'),
+        ('sunday', 'Sunday'),
+    ]
+
+    provider = models.ForeignKey(Users, on_delete=models.CASCADE, related_name="operational_hours")
+    day = models.CharField(max_length=12, choices=DAYS_OF_WEEKS)
+    open_time = models.TimeField(blank=True, null=True)
+    close_time = models.TimeField(blank=True, null=True)
+    is_open = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'operational_hours'
+        unique_together = ['provider', 'day']
+
+class WalkerRate(models.Model):
+    pet_walker = models.OneToOneField(PetWalker, on_delete=models.CASCADE, primary_key=True, related_name='walker_rate')
+    per_walk_rate = models.DecimalField(max_digits=10, decimal_places=2)
+
+    class Meta:
+        db_table = 'walker_rate'
+
+class BoardingRate(models.Model):
+
+
+    pet_boarding = models.OneToOneField(PetBoarding, on_delete=models.CASCADE,related_name='boarding_rate')
+    hourly_rate = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    daily_rate = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    weekly_rate = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    class Meta:
+        db_table = 'boarding_rate'
+
+class BoardingPolicy(models.Model):
+    POLICY_TYPES = [
+        ("late_pickup", "Late Pickup"),
+        ("cancellation", "Cancellation"),
+    ]
+
+    pet_boarding = models.ForeignKey(PetBoarding, on_delete=models.CASCADE, related_name="boarding_policy")
+    policy_type = models.CharField(max_length=50, choices=POLICY_TYPES)
+    description = models.TextField()
+    fee = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # if extra charge applies
+    grace_period_minutes = models.PositiveIntegerField(null=True, blank=True)  # optional for late pickup, etc.
+    active = models.BooleanField(default=True)
+    last_edited = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "boarding_policy"
+
+class WalkerPolicy(models.Model):
+    pet_walker = models.ForeignKey(PetWalker, on_delete=models.CASCADE, related_name="policies")
+    policy_type = models.CharField(max_length=50)  # "cancellation", "extra_pet_fee", "group_walk"
+    description = models.TextField()
+    fee = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    active = models.BooleanField(default=True)
+    last_edited = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "walker_policy"
 
 class Payment(models.Model):
     PAYMENT_TYPE_CHOICES = [

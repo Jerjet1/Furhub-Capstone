@@ -252,7 +252,6 @@ export const ManageUser = () => {
   };
 
   const approveProvider = async (providerId) => {
-    console.log("[v0] Approving provider:", providerId);
     // Handle approval logic
     try {
       const result = await approveProviderApplication(providerId);
@@ -513,6 +512,7 @@ export const ManageUser = () => {
                     rows={4}
                   />
                 </div>
+
                 <DialogFooter>
                   <Button
                     variant="outline"

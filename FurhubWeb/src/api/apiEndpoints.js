@@ -8,6 +8,7 @@ export const API_ENDPOINTS = {
     "users/provider/register/",
     API_URL
   ).toString(), //validate registration token
+  RESEND_LINK: new URL("users/resend-link/", API_URL).toString(), //resend link for registration
   VERIFY_EMAIL: new URL("users/verify/", API_URL).toString(),
   RESEND_CODE: new URL("users/resend-code/", API_URL).toString(),
   CHECK_MAIL: new URL("users/check-email/", API_URL).toString(),
@@ -19,6 +20,10 @@ export const API_ENDPOINTS = {
   REQUIREMENTS_UPLOAD: new URL("users/documents_upload/", API_URL).toString(),
   PROFILE_PICTURE: new URL("users/profile/", API_URL).toString(),
   USER_DETAILS: new URL("users/account-details/", API_URL).toString(),
+  PET_BOARDING_DETAILS: new URL(
+    "users/pet-boarding-details/",
+    API_URL
+  ).toString(),
 
   USERS: new URL("administrator/all_users/", API_URL).toString(),
   PENDING_PROVIDERS: new URL(

@@ -260,7 +260,14 @@ class ProviderRegistrationView(APIView):
 
             if not application.is_token_valid():
                 return Response(
-                    {"error": "Registration link has expired. Please contact support."},
+                    {
+                        "error": "Registration link has expired. Please contact support.",
+                        "expired": True,
+                        "application": {
+                            "application_id": application.application_id,
+                            "email": application.email,
+                        }
+                    },
                     status=status.HTTP_400_BAD_REQUEST
                 )
             # Check if user already registered (in case they clicked link multiple times)
@@ -372,4 +379,38 @@ class ProviderRegistrationView(APIView):
                 {"error": "Invalid registration link"},
                 status=status.HTTP_404_NOT_FOUND
             )
-      
+
+class ResendRegistrationView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        app_id = request.data.get("application_id")
+        email = request.data.get("email")
+        if not email or not app_id:
+            print("error here")
+            return Response({"detail": "Missing fields"}, status=400)
+
+        try:
+            application = ProviderApplication.objects.get(
+                application_id=app_id, 
+                email=email, 
+                status='approved')
+        except ProviderApplication.DoesNotExist:
+            return Response({"error": "Invalid application"}, status=400)
+        
+        if application.is_token_valid():
+            return Response(
+                {"error": "Token is still valid. Please use the existing link."}
+            )
+        
+        #generate new token + expiry
+        application.generate_registration_token()
+
+        email_sent = send_approval_email(application)
+
+        return Response(
+            {
+                "message": f"New Link has been sent to your email {application.email}"
+            }, 
+            status=status.HTTP_200_OK)
+        

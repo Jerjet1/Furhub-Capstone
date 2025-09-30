@@ -5,7 +5,10 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { LottieSpinner } from "../components/LottieSpinner";
 import { registerAuth } from "../api/authAPI";
-import { validateRegistrationToken } from "../api/preRegistrationAPI";
+import {
+  validateRegistrationToken,
+  resendLinkAPI,
+} from "../api/preRegistrationAPI";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 import { InputName } from "../components/Inputs/InputName";
@@ -44,7 +47,6 @@ const validationSchema = yup.object().shape({
 
 export const Registration = () => {
   const { token } = useParams(); // Get token from URL
-  const navigate = useNavigate();
   const [validating, setValidating] = useState(true);
   const [applicationInfo, setApplicationInfo] = useState(null);
   const [tokenError, setTokenError] = useState(null);
@@ -70,7 +72,7 @@ export const Registration = () => {
         setValidating(true);
         const result = await validateRegistrationToken(token);
 
-        if (result.valid && result.application) {
+        if (result?.valid && result.application) {
           setApplicationInfo(result.application);
 
           // Pre-fill form with application data
@@ -79,12 +81,19 @@ export const Registration = () => {
           setValue("email", result.application.email || "");
 
           setTokenError(null);
+        } else if (result?.expired && result.application) {
+          // Allow resend link flow even if token expired
+          setApplicationInfo(result.application);
+          setValue("email", result.application.email || "");
+          setTokenError(
+            "Registration link has expired. You can request a new link."
+          );
         } else {
           setTokenError(result.error || "Invalid registration link");
         }
       } catch (error) {
         setTokenError("Failed to validate registration token");
-        console.error("Token validation error:", error);
+        setApplicationInfo(error.application);
       } finally {
         setValidating(false);
       }
@@ -144,6 +153,26 @@ export const Registration = () => {
     }
   };
 
+  const resendLink = async () => {
+    setLoading(true);
+    if (!applicationInfo?.application_id || !applicationInfo?.email) {
+      toast.error("Invalid registration link");
+      return;
+    }
+    try {
+      const payload = {
+        email: applicationInfo?.email,
+        application_id: applicationInfo?.application_id,
+      };
+      const response = await resendLinkAPI(payload);
+      toast.success(response.message);
+    } catch (error) {
+      toast.error(parseError(error));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Show loading while validating token
   if (validating) {
     return (
@@ -171,13 +200,20 @@ export const Registration = () => {
               Invalid Registration Link
             </h1>
             <p className="text-gray-600 mb-6">{tokenError}</p>
-
+            {/* Loading screen */}
+            {loading && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 flex-col">
+                <LottieSpinner size={120} />
+                <p className="text-xl font-Fugaz">Creating your account...</p>
+              </div>
+            )}
             <div className="space-y-3">
-              {/* <Link
-                to="/provider/resend-link"
-                className="block bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600">
-                Request New Registration Link
-              </Link> */}
+              <button
+                type="button"
+                onClick={resendLink}
+                className="w-full underline cursor-pointer text-lg hover:text-blue-700">
+                Click here to send link to your email.
+              </button>
               <Link to="/" className="block text-blue-500 hover:underline">
                 Back to Login
               </Link>
