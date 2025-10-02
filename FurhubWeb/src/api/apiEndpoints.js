@@ -1,41 +1,33 @@
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_URL; // ensure this ends with /
 
 export const API_ENDPOINTS = {
-  REFRESH_TOKEN: new URL("api/token/refresh/", API_URL).toString(),
-  LOGIN: new URL("users/login/", API_URL).toString(),
-  REGISTER: new URL("users/provider/register/", API_URL).toString(), // Provider Registration
-  VALIDATE_REGISTER_TOKEN: new URL(
-    "users/provider/register/",
-    API_URL
-  ).toString(), //validate registration token
-  RESEND_LINK: new URL("users/resend-link/", API_URL).toString(), //resend link for registration
-  VERIFY_EMAIL: new URL("users/verify/", API_URL).toString(),
-  RESEND_CODE: new URL("users/resend-code/", API_URL).toString(),
-  CHECK_MAIL: new URL("users/check-email/", API_URL).toString(),
-  FORGOT_PASSWORD: new URL("users/forgot-password/", API_URL).toString(),
-  VERIFY_CODE: new URL("users/verify-code/", API_URL).toString(),
-  RESET_PASSWORD: new URL("users/reset-password/", API_URL).toString(),
-  CHANGE_PASSWORD: new URL("users/change-password/", API_URL).toString(),
-  PRE_REGISTRATION: new URL("users/pre-register/", API_URL).toString(),
-  REQUIREMENTS_UPLOAD: new URL("users/documents_upload/", API_URL).toString(),
-  PROFILE_PICTURE: new URL("users/profile/", API_URL).toString(),
-  USER_DETAILS: new URL("users/account-details/", API_URL).toString(),
-  PET_BOARDING_DETAILS: new URL(
-    "users/pet-boarding-details/",
-    API_URL
-  ).toString(),
+  // Auth
+  REFRESH_TOKEN: `${API_URL}api/token/refresh/`,
+  LOGIN: `${API_URL}users/login/`,
+  REGISTER: `${API_URL}users/provider/register/`,
+  VALIDATE_REGISTER_TOKEN: `${API_URL}users/provider/register/`,
+  VERIFY_EMAIL: `${API_URL}users/verify/`,
+  RESEND_CODE: `${API_URL}users/resend-code/`,
+  CHECK_MAIL: `${API_URL}users/check-email/`,
+  FORGOT_PASSWORD: `${API_URL}users/forgot-password/`,
+  VERIFY_CODE: `${API_URL}users/verify-code/`,
+  RESET_PASSWORD: `${API_URL}users/reset-password/`,
+  CHANGE_PASSWORD: `${API_URL}users/change-password/`,
+  PRE_REGISTRATION: `${API_URL}users/pre-register/`,
+  REQUIREMENTS_UPLOAD: `${API_URL}users/documents_upload/`,
+  PROFILE_PICTURE: `${API_URL}users/profile/`,
+  USER_DETAILS: `${API_URL}users/account-details/`,
 
-  USERS: new URL("administrator/all_users/", API_URL).toString(),
-  PENDING_PROVIDERS: new URL(
-    "administrator/pending_applications/",
-    API_URL
-  ).toString(),
-  APPROVED_PROVIDER: new URL(
-    "administrator/provider_applications/approve/",
-    API_URL
-  ).toString(),
-  REJECT_PROVIDER: new URL(
-    "administrator/provider_applications/reject/",
-    API_URL
-  ).toString(),
+  // Admin
+  USERS: `${API_URL}administrator/all_users/`,
+  PENDING_PROVIDERS: `${API_URL}administrator/pending_applications/`,
+  APPROVED_PROVIDER: `${API_URL}administrator/provider_applications/approve/`,
+  REJECT_PROVIDER: `${API_URL}administrator/provider_applications/reject/`,
+
+  // Locations / Service Areas
+  PROVINCES: `${API_URL}administrator/provinces/`,
+  CITIES: `${API_URL}administrator/cities/`,
+  BARANGAYS: `${API_URL}administrator/barangays/`,
+  LOCATIONS: `${API_URL}administrator/locations/`,
+  SERVICE_AREAS: `${API_URL}administrator/service-areas/`,
 };

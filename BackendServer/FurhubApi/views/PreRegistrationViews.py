@@ -122,6 +122,7 @@ class ProviderApplicationView(APIView):
             )
             
         except Exception as e:
+            print("ProviderApplicationView error:", str(e))
             return Response(
                 {
                     "error": "Application submission failed due to an unexpected error",
@@ -250,12 +251,12 @@ class ProviderRegistrationView(APIView):
 
     def get(self, request, token):
         """
-        Validate registration token and return application details
+        Validate registration token and return application details including location
         """
         try:
             application = ProviderApplication.objects.get(
-                registration_token = token,
-                status = "approved"
+                registration_token=token,
+                status="approved"
             )
 
             if not application.is_token_valid():
@@ -270,14 +271,26 @@ class ProviderRegistrationView(APIView):
                     },
                     status=status.HTTP_400_BAD_REQUEST
                 )
-            # Check if user already registered (in case they clicked link multiple times)
+
             if application.user:
                 return Response(
                     {"error": "Registration already completed. Please login."},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-            
-            # Return application details for pre-filled form
+
+            # Include location if available
+            location = application.location
+            location_data = None
+            if location:
+                location_data = {
+                    "province": location.city.province.province_name if location.city and location.city.province else None,
+                    "city": location.city.city_name if location.city else None,
+                    "barangay": location.barangay,
+                    "street": location.street,
+                    "latitude": location.latitude,
+                    "longitude": location.longitude
+                }
+
             data = {
                 "valid": True,
                 "application": {
@@ -288,12 +301,13 @@ class ProviderRegistrationView(APIView):
                     "facility_name": application.facility_name,
                     "provider_type": application.provider_type,
                     "provider_type_display": application.get_provider_type_display(),
+                    "location": location_data
                 },
                 "token_expiry": application.token_expiry
             }
-            
+
             return Response(data)
-        
+
         except ProviderApplication.DoesNotExist:
             return Response(
                 {"error": "Invalid registration link"},
@@ -315,15 +329,13 @@ class ProviderRegistrationView(APIView):
                     {"error": "Registration link has expired"},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-            
-            # Check if user already registered
+
             if application.user:
                 return Response(
                     {"error": "Registration already completed"},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-            
-            # Validate registration data
+
             serializer = ProviderRegistrationSerializer(
                 data=request.data,
                 context={
@@ -334,37 +346,34 @@ class ProviderRegistrationView(APIView):
 
             if not serializer.is_valid():
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
             try:
                 with transaction.atomic():
                     user = serializer.save()
 
-                    # Send email verification (YES, providers also need email verification)
+                    # Link user's location from application
+                    if application.location:
+                        application.location.user = user
+                        application.location.save()
+
                     send_verification_email(user)
 
-                    # Invalidate token after successful registration
                     application.registration_token = None
                     application.token_expiry = None
                     application.save()
 
-                    # Generate tokens for auto-login
                     refresh = RefreshToken.for_user(user)
                     user_roles = User_roles.objects.filter(user=user).select_related('role')
                     roles = [ur.role.role_name for ur in user_roles]
-
-                    # later I add the ProviderService table
-                    if application.provider_type == 'walker':
-                        pass
-                    elif application.provider_type == 'boarding':
-                        pass
 
                 return Response({
                     "message": "Provider registration completed successfully. Please verify your email.",
                     "email": user.email,
                     "access": str(refresh.access_token),
+                    "refresh": str(refresh),
                     "roles": roles,
                     "provider_type": application.provider_type,
                     "is_verified": user.is_verified,
-                    "refresh": str(refresh),
                     "user_id": user.id
                 }, status=status.HTTP_201_CREATED)
 
@@ -372,13 +381,14 @@ class ProviderRegistrationView(APIView):
                 print(f"Registration error: {e}")
                 return Response({
                     "message": "Registration failed due to an unexpected error",
-                }, status=status.HTTP_500_INTERNAL_SOUND)
-            
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
         except ProviderApplication.DoesNotExist:
             return Response(
                 {"error": "Invalid registration link"},
                 status=status.HTTP_404_NOT_FOUND
             )
+
 
 class ResendRegistrationView(APIView):
     permission_classes = [AllowAny]

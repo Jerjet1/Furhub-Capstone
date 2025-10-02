@@ -1,59 +1,143 @@
-import { View, Text, TouchableOpacity } from "react-native";
-import Ionicons from "@expo/vector-icons/FontAwesome";
-import Icon from "@expo/vector-icons/FontAwesome5";
+import React from "react";
+import { View, Text, TouchableOpacity, Image, StyleSheet } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { useAuth } from "@/context/useAuth";
 import { router } from "expo-router";
-import React from "react";
 
 export default function SettingsScreen() {
   const { logout, user, setActiveRole } = useAuth();
 
   const hasOwnerRole = user?.roles.includes("owner");
-  const switcherRoles = () => {
+  const switcherRole = () => {
     if (hasOwnerRole) {
       setActiveRole("owner");
     } else {
-      // router.replace("/(walker)/OwnerScreen")
-      console.log("owner? hello");
+      console.log("wanna become an owner?");
     }
   };
+
   return (
-    <View className="flex-1 p-3 gap-3 mt-5">
-      <TouchableOpacity
-        className="py-5 border-b bg-gray-200"
-        onPress={() => router.replace("/(walker)/Settings/AccountProfile")}>
-        <View className="flex flex-row justify-between px-4">
-          <Text className="text-xl font-semibold">Account Profile</Text>
-          <Ionicons name="chevron-right" size={25} color="gray" />
+    <LinearGradient colors={["#F9FAFB", "#F9FAFB"]} style={{ flex: 1 }}>
+      <SafeAreaView style={{ flex: 1, padding: 20 }}>
+        {/* Header */}
+        <View style={{ alignItems: "center", marginBottom: 20 }}>
+          <Image
+            source={{
+              uri: "https://cdn-icons-png.flaticon.com/512/1077/1077114.png",
+            }}
+            style={{ width: 80, height: 80, marginBottom: 10 }}
+          />
         </View>
-      </TouchableOpacity>
-      <TouchableOpacity
-        className="py-5 border-b bg-gray-200"
-        onPress={() => {
-          router.replace("/(walker)/Settings/WalkerProfile");
-          console.log("hello");
-        }}>
-        <View className="flex flex-row justify-between px-4">
-          <Text className="text-xl font-semibold">Walker Profile</Text>
-          <Ionicons name="chevron-right" size={25} color="gray" />
-        </View>
-      </TouchableOpacity>
-      <TouchableOpacity
-        className="py-5 border-b bg-gray-200"
-        onPress={switcherRoles}>
-        <View className="flex flex-row justify-between px-4">
-          <Text className="text-xl font-semibold">
-            {hasOwnerRole ? "Switch to Owner" : "Owner"}
-          </Text>
-          <Ionicons name="chevron-right" size={25} color="gray" />
-        </View>
-      </TouchableOpacity>
-      <TouchableOpacity className="py-5 border-b bg-gray-200" onPress={logout}>
-        <View className="flex flex-row justify-between px-4">
-          <Text className="text-xl font-semibold">Logout</Text>
-          <Icon name="door-open" size={25} color="gray" />
-        </View>
-      </TouchableOpacity>
-    </View>
+
+        {/* Account Profile */}
+        <TouchableOpacity
+          style={[styles.card, { borderColor: "#FBBF24" }]}
+          onPress={() => router.push("/(walker)/Settings/AccountProfile")}
+        >
+          <View style={styles.cardContent}>
+            <Ionicons name="person-circle" size={28} color="#f97316" />
+            <Text style={styles.cardText}>Account Profile</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={24} color="#f97316" />
+        </TouchableOpacity>
+
+        {/* Walker Profile */}
+        <TouchableOpacity
+          style={[styles.card, { borderColor: "#34D399" }]}
+          onPress={() => router.push("/(walker)/Settings/WalkerProfile")}
+        >
+          <View style={styles.cardContent}>
+            <FontAwesome5 name="user" size={28} color="#16a34a" />
+            <Text style={styles.cardText}>Walker Profile</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={24} color="#16a34a" />
+        </TouchableOpacity>
+
+        {/* View Reviews */}
+        <TouchableOpacity
+          style={[styles.card, { borderColor: "#60A5FA" }]}
+          onPress={() => router.push("/(walker)/Settings/ViewReviews")}
+        >
+          <View style={styles.cardContent}>
+            <Ionicons name="star" size={28} color="#2563EB" />
+            <Text style={styles.cardText}>View Reviews</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={24} color="#2563EB" />
+        </TouchableOpacity>
+
+        {/* Reports */}
+        <TouchableOpacity
+          style={[styles.card, { borderColor: "#A78BFA" }]}
+          onPress={() => router.push("/(walker)/Settings/Reports")}
+        >
+          <View style={styles.cardContent}>
+            <Ionicons name="document-text" size={28} color="#7C3AED" />
+            <Text style={styles.cardText}>Reports</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={24} color="#7C3AED" />
+        </TouchableOpacity>
+
+        {/* Switch Role */}
+        <TouchableOpacity
+          style={[styles.card, { borderColor: "#F472B6" }]}
+          onPress={switcherRole}
+        >
+          <View style={styles.cardContent}>
+            <FontAwesome5 name="exchange-alt" size={28} color="#e11d48" />
+            <Text style={styles.cardText}>
+              {hasOwnerRole ? "Switch to Owner" : "Become Owner"}
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={24} color="#e11d48" />
+        </TouchableOpacity>
+
+        {/* Logout */}
+        <TouchableOpacity
+          style={[styles.card, { borderColor: "#D1D5DB" }]}
+          onPress={logout}
+        >
+          <View style={styles.cardContent}>
+            <Ionicons name="log-out-outline" size={28} color="#6b7280" />
+            <Text style={styles.cardText}>Logout</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={24} color="#6b7280" />
+        </TouchableOpacity>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
+
+const styles = StyleSheet.create({
+  card: {
+    backgroundColor: "#ffffff",
+    borderWidth: 1,
+    borderRadius: 30, // more round like tabs
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    marginBottom: 20,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+
+    // softer shadow like tab bar
+    shadowColor: "#000",
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 2,
+  },
+  cardContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16, // more breathing space between icon & text
+  },
+  cardText: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#111827",
+    letterSpacing: 0.3,
+  },
+});

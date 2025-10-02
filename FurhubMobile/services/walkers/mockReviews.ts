@@ -1,0 +1,23 @@
+// Mock Reviews Data
+export const mockReviews = [
+  { id: "1", name: "Maria Clara", rating: 5, comment: "Amazing walker! My dog loves her walks.", date: "2025-09-20", avatar: "https://i.pravatar.cc/50?img=1" },
+  { id: "2", name: "Juan Dela Cruz", rating: 4, comment: "Good service, very punctual and friendly.", date: "2025-09-18", avatar: "https://i.pravatar.cc/50?img=2" },
+  { id: "3", name: "Ana Santos", rating: 5, comment: "Highly recommended! My dog was very happy.", date: "2025-09-15", avatar: "https://i.pravatar.cc/50?img=3" },
+  { id: "4", name: "Pedro Lopez", rating: 4, comment: "Very caring and professional.", date: "2025-09-14", avatar: "https://i.pravatar.cc/50?img=4" },
+  { id: "5", name: "Luisa Mendoza", rating: 5, comment: "Excellent walker! My pets love her.", date: "2025-09-13", avatar: "https://i.pravatar.cc/50?img=5" },
+  { id: "6", name: "Carlos Rivera", rating: 4, comment: "Friendly and reliable, will book again.", date: "2025-09-12", avatar: "https://i.pravatar.cc/50?img=6" },
+  { id: "7", name: "Sofia Reyes", rating: 5, comment: "My dog is always excited for walks!", date: "2025-09-11", avatar: "https://i.pravatar.cc/50?img=7" },
+  { id: "8", name: "Miguel Torres", rating: 5, comment: "Wonderful service, very patient with pets.", date: "2025-09-10", avatar: "https://i.pravatar.cc/50?img=8" },
+  { id: "9", name: "Isabel Cruz", rating: 4, comment: "Good communication and timely updates.", date: "2025-09-09", avatar: "https://i.pravatar.cc/50?img=9" },
+  { id: "10", name: "Rafael Santos", rating: 5, comment: "Highly skilled and loving with animals.", date: "2025-09-08", avatar: "https://i.pravatar.cc/50?img=10" },
+  { id: "11", name: "Clara Villanueva", rating: 4, comment: "Reliable and trustworthy.", date: "2025-09-07", avatar: "https://i.pravatar.cc/50?img=11" },
+  { id: "12", name: "Josefa Morales", rating: 5, comment: "My pets adore her!", date: "2025-09-06", avatar: "https://i.pravatar.cc/50?img=12" },
+  { id: "13", name: "Andres Ramos", rating: 4, comment: "Good walker, very professional.", date: "2025-09-05", avatar: "https://i.pravatar.cc/50?img=13" },
+  { id: "14", name: "Bianca Lopez", rating: 5, comment: "Excellent, will definitely book again.", date: "2025-09-04", avatar: "https://i.pravatar.cc/50?img=14" },
+  { id: "15", name: "Diego Fernandez", rating: 5, comment: "Takes great care of my dog.", date: "2025-09-03", avatar: "https://i.pravatar.cc/50?img=15" },
+  { id: "16", name: "Elena Gutierrez", rating: 4, comment: "Very professional and friendly.", date: "2025-09-02", avatar: "https://i.pravatar.cc/50?img=16" },
+  { id: "17", name: "Fernando Castro", rating: 5, comment: "My dog looks forward to every walk!", date: "2025-09-01", avatar: "https://i.pravatar.cc/50?img=17" },
+  { id: "18", name: "Gabriela Navarro", rating: 4, comment: "Good service, punctual and caring.", date: "2025-08-31", avatar: "https://i.pravatar.cc/50?img=18" },
+  { id: "19", name: "Hector Diaz", rating: 5, comment: "Wonderful walker, highly recommended.", date: "2025-08-30", avatar: "https://i.pravatar.cc/50?img=19" },
+  { id: "20", name: "Isabella Cruz", rating: 5, comment: "My pets love her, very trustworthy.", date: "2025-08-29", avatar: "https://i.pravatar.cc/50?img=20" },
+];

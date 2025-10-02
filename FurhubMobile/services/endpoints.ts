@@ -1,21 +1,33 @@
 import { API_URL } from "@/constant/config";
 
-// API ENDPOINTS
 export const API_ENDPOINTS = {
-  REFRESH_TOKEN: new URL("api/token/refresh/", API_URL).toString(),
-  LOGIN: new URL("users/login/", API_URL).toString(),
-  REGISTER: new URL("users/register/", API_URL).toString(),
-  VERIFY_EMAIL: new URL("users/verify/", API_URL).toString(),
-  RESEND_CODE: new URL("users/resend-code/", API_URL).toString(),
-  CHECK_MAIL: new URL("users/check-email/", API_URL).toString(),
-  FORGOT_PASSWORD: new URL("users/forgot-password/", API_URL).toString(),
-  VERIFY_CODE: new URL("users/verify-code/", API_URL).toString(),
-  RESET_PASSWORD: new URL("users/reset-password/", API_URL).toString(),
-  CHANGE_PASSWORD: new URL("users/change-password/", API_URL).toString(),
+  // Auth
+  REFRESH_TOKEN: `${API_URL}api/token/refresh/`,
+  LOGIN: `${API_URL}users/login/`,
+  REGISTER: `${API_URL}users/register/`,
+  VERIFY_EMAIL: `${API_URL}users/verify/`,
+  RESEND_CODE: `${API_URL}users/resend-code/`,
+  CHECK_MAIL: `${API_URL}users/check-email/`,
+  FORGOT_PASSWORD: `${API_URL}users/forgot-password/`,
+  VERIFY_CODE: `${API_URL}users/verify-code/`,
+  RESET_PASSWORD: `${API_URL}users/reset-password/`,
+  CHANGE_PASSWORD: `${API_URL}users/change-password/`,
 
-  REQUIREMENTS_UPLOAD: new URL("users/image_upload/", API_URL).toString(),
-  PROFILE_PICTURE: new URL("users/profile/", API_URL).toString(),
+  // User profile
+  REQUIREMENTS_UPLOAD: `${API_URL}users/image_upload/`,
+  PROFILE_PICTURE: `${API_URL}users/profile/`,
+  USER_DETAILS: `${API_URL}users/account-details/`,
+  PET_OWNER_DETAILS: `${API_URL}users/pet-owner-details/`,
 
-  USER_DETAILS: new URL("users/account-details/", API_URL).toString(),
-  PET_OWNER_DETAILS: new URL("users/pet-owner-details/", API_URL).toString(),
+POSTS: `${API_URL}posts/`,
+COMMENTS: `${API_URL}comments/`,
+
+  // ... other endpoints
+
+
+  // Location
+  LOCATIONS: `${API_URL}locations/`, // matches your router.register("locations", ...)
+  CITIES: `${API_URL}dropdown/cities/`,
+  BARANGAYS: `${API_URL}dropdown/barangays/`,
+  STREETS: `${API_URL}dropdown/streets/`,
 } as const;

@@ -86,6 +86,7 @@ class Province(models.Model):
     province_name = models.CharField(max_length=100)
     class Meta:
         db_table = 'province'
+        
 class City(models.Model):
     city_id = models.AutoField(primary_key=True)
     province = models.ForeignKey(Province, on_delete=models.CASCADE, related_name="cities")
@@ -96,11 +97,12 @@ class City(models.Model):
 class Location(models.Model):
     location_id = models.AutoField(primary_key=True)
     city = models.ForeignKey(City, on_delete=models.CASCADE, related_name="locations")
-    barangay = models.CharField(max_length=255, blank=True, null=False)
-    user = models.ForeignKey(Users, on_delete=models.CASCADE, related_name="locations")
+    barangay = models.CharField(max_length=255, blank=True, null=True)
+    user = models.ForeignKey(Users, on_delete=models.CASCADE, related_name="locations", blank=True, null=True)  # ✅ allow null
     street = models.CharField(max_length=255)
     latitude = models.FloatField(blank=True, null=True)
     longitude = models.FloatField(blank=True, null=True)
+
     class Meta:
         db_table = 'location'
 
@@ -459,6 +461,5 @@ class Ledger(models.Model):
 
     class Meta:
         db_table = 'provider_ledger'
-
 
 
