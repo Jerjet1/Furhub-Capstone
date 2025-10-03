@@ -34,3 +34,28 @@ export const userDetailsAPI = {
     }
   },
 };
+
+export const petBoardingAPI = {
+  getDetails: async () => {
+    try {
+      const response = await axiosInstance.get(
+        API_ENDPOINTS.PET_BOARDING_DETAILS
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { details: "Something went wrong" };
+    }
+  },
+  createOrUpdateDetails: async (data) => {
+    try {
+      console.log("Sending to backend:", data); // Debug what's being sent
+      const response = await axiosInstance.post(
+        API_ENDPOINTS.PET_BOARDING_DETAILS,
+        data
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { details: "Something went wrong" };
+    }
+  },
+};
