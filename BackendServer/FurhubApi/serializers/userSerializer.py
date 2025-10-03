@@ -104,10 +104,3 @@ class PetWalkerUpdateProfileSerializer(serializers.ModelSerializer):
         model = PetWalker
         fields = '__all__'
 
-class AdminUpdateProfileSerializer(serializers.ModelSerializer):
-    pass
-
-# class ServiceSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Service
-#         fields = [ 'service_id','service_name']

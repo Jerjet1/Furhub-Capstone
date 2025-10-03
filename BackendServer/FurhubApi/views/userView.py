@@ -123,12 +123,6 @@ class PetBoardingUpdateView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class AdminUpdateView(APIView):
-    permission_classes = [IsAdminRole, IsAuthenticated]
-
-    def patch(self, request, pk):
-        pass
-    
 class AllUserView(APIView):
     permission_classes = [IsAuthenticated, IsAdminRole]
 
@@ -141,40 +135,9 @@ class AllUserView(APIView):
         result_page = self.paginator.paginate_queryset(users, request)
         serializer = UserSerializer(result_page, many=True)
 
-        # return Response(serializer.data)
-
         return self.paginator.get_paginated_response(serializer.data)
 
-# class PendingPetBoarding(APIView):
-#     permission_classes = [IsAuthenticated, IsAdminRole]
-
-#     paginator = PageNumberPagination()
-#     paginator.page_size = 9
-
-#     def get(self, request):
-#         queryset = PetBoarding.objects.filter(status='pending').order_by("user")
-#         result_page = self.paginator.paginate_queryset(queryset, request)
-#         serializer = PetBoardingSerializer(result_page, many=True)
-#         return self.paginator.get_paginated_response(serializer.data)
-    
-# class PendingPetWalker(APIView):
-#     permission_classes = [IsAuthenticated, IsAdminRole]
-
-#     paginator = PageNumberPagination()
-#     paginator.page_size = 9
-
-#     def get(self, request):
-#         queryset = PetWalker.objects.filter(status='pending').order_by("user")
-#         result_page = self.paginator.paginate_queryset(queryset, request)
-#         serializer = PetWalkerSerializer(result_page, many=True)
-#         return self.paginator.get_paginated_response(serializer.data)
 
     
-# class ServiceView(APIView):
-#     permission_classes = [AllowAny]
 
-#     def get(self, request):
-#         services = Service.objects.all()
-#         serializer = ServiceSerializer(services, many=True)
-#         return Response(serializer.data, status=status.HTTP_200_OK)
     

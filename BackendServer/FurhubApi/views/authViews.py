@@ -38,17 +38,6 @@ class LoginView(APIView):
                 user_roles = User_roles.objects.filter(user = user).select_related('role')
                 roles = [ur.role.role_name for ur in user_roles]
 
-                petwalker_status = None
-                petboarding_status = None
-
-                # if PetWalker.objects.filter(user=user).exists():
-                #     petwalker = PetWalker.objects.get(user=user)
-                #     petwalker_status = petwalker.status
-                
-                # if PetBoarding.objects.filter(user=user).exists():
-                #     petboarding = PetBoarding.objects.get(user=user)
-                #     petboarding_status = petboarding.status
-
                 if not user.is_verified:
                     if user.code_expiry is None or user.code_expiry < timezone.now():
                         send_verification_email(user)
@@ -59,13 +48,10 @@ class LoginView(APIView):
                         "refresh": str(refresh),
                         "roles": roles,
                         "is_verified": user.is_verified,
-                        # "pet_walker": petwalker_status,
-                        # "pet_boarding": petboarding_status,
                         "email": user.email,
                         "details": "Account not verified."
                     },status=status.HTTP_200_OK)
                 
-                # print("LoginView is_verified:", user.is_verified)
                 return Response({
                     "id": user.id,
                     "access": str(refresh.access_token),
@@ -73,8 +59,6 @@ class LoginView(APIView):
                     "roles": roles,
                     "email": user.email,
                     "is_verified": user.is_verified,
-                    "pet_walker": petwalker_status,
-                    "pet_boarding": petboarding_status,
                 }, status=status.HTTP_200_OK)
             
             return Response({"details": "Invalid credentials."}, status=status.HTTP_401_UNAUTHORIZED)      
