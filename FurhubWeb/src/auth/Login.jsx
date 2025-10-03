@@ -32,6 +32,7 @@ export const Login = () => {
 
   const loginForm = async (data) => {
     const { email, password } = data;
+    // console.log("Login with:", { email, password });
     setLoading(true);
     try {
       const result = await loginAuth(email, password);
@@ -48,7 +49,6 @@ export const Login = () => {
         result.email || email,
         pet_boarding_status
       );
-      toast.success("Login successfully");
     } catch (error) {
       toast.error(parseError(error));
     } finally {

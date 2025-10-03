@@ -10,15 +10,7 @@ createRoot(document.getElementById("root")).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <App />
-      <Toaster
-        richColors
-        position="top-center"
-        toastOptions={{
-          classNames: {
-            title: "text-lg ",
-          },
-        }}
-      />
+      <Toaster richColors position="top-center" />
     </QueryClientProvider>
   </StrictMode>
 );

@@ -1,55 +1,117 @@
-import { Tabs, usePathname } from "expo-router";
-import { FontAwesome } from "@expo/vector-icons";
+import { Tabs, usePathname, useRouter } from "expo-router";
+import { FontAwesome5 } from "@expo/vector-icons";
+import React, { useEffect, useState, useRef } from "react";
+import { Image, View, Text } from "react-native";
 import CustomTabBarButton from "@/components/Buttons/CustomTabBarButton";
-import React from "react";
-export default function OwnerTabs() {
-  const pathname = usePathname();
+import { mockNotifications } from "@/services/boarding/mockBookings";
 
-  const createScreenOptions = (title: any, iconName: any) => ({
+interface PetWalkerTabsProps {
+  walkerId: string;
+}
+
+export default function PetWalkerTabs({ walkerId }: PetWalkerTabsProps) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const [notificationsCount, setNotificationsCount] = useState(0);
+  const prevNotifications = useRef<Set<string>>(new Set());
+
+  // Notification checker
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const newNotifs = mockNotifications.filter(
+        (n) => n.walkerId === walkerId && !prevNotifications.current.has(n.id)
+      );
+
+      if (newNotifs.length > 0) {
+        newNotifs.forEach((n) => prevNotifications.current.add(n.id));
+        setNotificationsCount((prev) => prev + newNotifs.length);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [walkerId]);
+
+  // Tab screen options generator
+  const createScreenOptions = (
+    title: string,
+    iconName: string,
+    resetRoute?: string,
+    useLogo = false
+  ) => ({
     title,
-    tabBarIcon: ({ color }: { color: any }) => (
-      <FontAwesome name={iconName} size={20} color={color} />
+    headerShown: false,
+    tabBarIcon: ({ color }: { color: string }) =>
+      useLogo ? (
+        <Image
+          source={{ uri: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png" }}
+          style={{ width: 22, height: 22 }}
+        />
+      ) : (
+        <View>
+          <FontAwesome5 name={iconName as any} size={20} color={color} />
+          {title === "Notification" && notificationsCount > 0 && (
+            <View
+              style={{
+                position: "absolute",
+                top: -4,
+                right: -10,
+                backgroundColor: "red",
+                borderRadius: 8,
+                minWidth: 16,
+                height: 16,
+                justifyContent: "center",
+                alignItems: "center",
+                paddingHorizontal: 2,
+              }}
+            >
+              <Text style={{ color: "#fff", fontSize: 10, fontWeight: "700" }}>
+                {notificationsCount}
+              </Text>
+            </View>
+          )}
+        </View>
+      ),
+    tabBarButton: (props: any) => (
+      <CustomTabBarButton
+        {...props}
+        onPress={() => {
+          if (resetRoute) {
+            router.replace(resetRoute);
+          } else {
+            if (title === "Notification") setNotificationsCount(0);
+            props.onPress?.();
+          }
+        }}
+      />
     ),
-    tabBarButton: (props: any) => <CustomTabBarButton {...props} />,
   });
 
-  // ✅ hide only if deeper than SettingScreen
-  const isSettingsRoot =
-    pathname === "/Settings" || pathname === "/Settings/SettingScreen";
-
-  const hideTabs = pathname?.startsWith("/Settings/") && !isSettingsRoot;
+  // Hide tabs on inner screens
+  const hideTabs =
+    (pathname?.startsWith("/Settings/") && pathname !== "/Settings") ||
+    (pathname?.startsWith("/Home/") && pathname !== "/Home");
 
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: "#007AFF", // active color sa tabs
-        tabBarInactiveTintColor: "#512DA8", //inactive color sa tabs
-        tabBarShowLabel: true,
-        tabBarLabelStyle: {
-          fontSize: 11,
-        },
-        tabBarStyle: hideTabs
-          ? { display: "none" }
-          : {
-              height: 55,
-              paddingBottom: 5,
-              backgroundColor: "#F9F8F9",
-            },
-      }}>
-      <Tabs.Screen name="Home" options={createScreenOptions("Home", "home")} />
-      <Tabs.Screen
-        name="Community"
-        options={createScreenOptions("Community", "users")}
-      />
-      <Tabs.Screen
-        name="Search"
-        options={createScreenOptions("Search", "search")}
-      />
-      <Tabs.Screen
-        name="Settings"
-        options={createScreenOptions("Settings", "gear")}
-      />
-    </Tabs>
+<Tabs
+  initialRouteName="Community" // Community opens first
+  screenOptions={{
+    headerShown: false,
+    tabBarActiveTintColor: "#007AFF",
+    tabBarInactiveTintColor: "#999",
+    tabBarShowLabel: true,
+    tabBarLabelStyle: { fontSize: 12, fontWeight: "500" },
+    tabBarStyle: hideTabs
+      ? { display: "none" }
+      : { height: 80, paddingBottom: 10, backgroundColor: "#fff", borderTopWidth: 0.5, borderTopColor: "#ddd" },
+  }}
+>
+  <Tabs.Screen name="Community" options={createScreenOptions("Home", "home")} />
+  <Tabs.Screen name="Home" options={createScreenOptions("Find", "route")} />
+  <Tabs.Screen name="Chat" options={createScreenOptions("Chat", "comments")} />
+  <Tabs.Screen name="Notification" options={createScreenOptions("Notification", "bell")} />
+  <Tabs.Screen name="Bookinglist" options={createScreenOptions("Bookings", "book-open")} />
+  <Tabs.Screen name="Settings" options={createScreenOptions("Settings", "cog")} />
+</Tabs>
+
   );
 }

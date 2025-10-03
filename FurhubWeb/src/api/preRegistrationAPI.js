@@ -2,12 +2,30 @@ import axios from "axios";
 import { API_ENDPOINTS } from "./apiEndpoints";
 import axiosInstance from "./axiosInterceptor";
 
-export const preRegisterAPI = async (email, facility_name, provider_type) => {
+export const preRegisterAPI = async (
+  email,
+  facility_name,
+  provider_type,
+  latitude,
+  longitude,
+  province,
+  city,
+  barangay,
+  street
+) => {
   try {
     const response = await axios.post(API_ENDPOINTS.PRE_REGISTRATION, {
       provider_type,
       email,
       facility_name,
+      location_data: {
+        latitude,
+        longitude,
+        province,
+        city,
+        barangay,
+        street,
+      },
     });
     console.log(response.data);
     return response.data;
@@ -15,6 +33,7 @@ export const preRegisterAPI = async (email, facility_name, provider_type) => {
     throw error.response?.data || { details: "Something went wrong" };
   }
 };
+
 
 // fetch pending providers
 export const fetchPendingProvider = async (

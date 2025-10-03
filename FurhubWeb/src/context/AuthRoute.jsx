@@ -14,11 +14,14 @@ export const AuthRoute = ({ children }) => {
     const activeRole = user.activeRole?.toLowerCase();
 
     if (!user.is_verified) {
+      // console.log("redirect back....");
+      // console.log("is_verified:", user.is_verified);
+      // console.log("role:", user.roles);
       return <Navigate to="/verify" replace />;
     }
 
     if (roles.includes("admin") || activeRole === "admin") {
-      return <Navigate to="/Admin/ManageUsers" replace />;
+      return <Navigate to="/Admin/ManageLocation" replace />;
     } else if (roles.includes("boarding") || activeRole === "boarding") {
       return <Navigate to="/Petboarding/Bookings" replace />;
     } else {
