@@ -33,6 +33,7 @@ class Users(AbstractBaseUser):
     code_expiry = models.DateTimeField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
+    is_superuser = models.BooleanField(default=False)
     is_verified = models.BooleanField(default=False)
     date_field = models.DateTimeField(auto_now_add=True)
 
@@ -130,14 +131,14 @@ class PetBoarding(models.Model):
     class Meta:
         db_table = 'pet_boarding'
 
-class Admin(models.Model):
-    ADMIN_CHOICE = [('Admin', 'Admin'), ('Staff', 'Staff')]
+# class Admin(models.Model):
+#     ADMIN_CHOICE = [('Admin', 'Admin'), ('Staff', 'Staff')]
 
-    user = models.OneToOneField(Users, on_delete=models.CASCADE, primary_key=True)
-    role_title = models.CharField(max_length=50, choices=ADMIN_CHOICE)
-    is_active = models.BooleanField(default=True)
-    class Meta:
-        db_table = 'admin'
+#     user = models.OneToOneField(Users, on_delete=models.CASCADE, primary_key=True)
+#     role_title = models.CharField(max_length=50, choices=ADMIN_CHOICE)
+#     is_active = models.BooleanField(default=True)
+#     class Meta:
+#         db_table = 'admin'
 
 class ProviderApplication(models.Model):
     PROVIDER_TYPE_CHOICE = [
@@ -212,12 +213,12 @@ class UploadedImage(models.Model):
     class Meta:
         db_table = 'uploaded_images'
 
-class Service(models.Model):
-    service_id = models.AutoField(primary_key=True)
-    service_name = models.CharField(max_length=100)
+# class Service(models.Model):
+#     service_id = models.AutoField(primary_key=True)
+#     service_name = models.CharField(max_length=100)
 
-    class Meta:
-        db_table = 'service'
+#     class Meta:
+#         db_table = 'service'
 
 class ProviderService(models.Model):
     PROVIDER_TYPE_CHOICE = [
@@ -225,13 +226,13 @@ class ProviderService(models.Model):
         ('boarding', 'Pet Boarding')
     ]
     providerService_id = models.AutoField(primary_key=True)
-    service = models.ForeignKey(Service, on_delete=models.CASCADE)
+    # service = models.ForeignKey(Service, on_delete=models.CASCADE)
     provider = models.ForeignKey(Users, on_delete=models.CASCADE)
     provider_type = models.CharField(max_length=15, choices=PROVIDER_TYPE_CHOICE)
     # provider_rate = models.DecimalField(decimal_places=2, max_digits=10)
 
     class Meta:
-        unique_together = ['service', 'provider', 'provider_type']
+        unique_together = ['provider', 'provider_type']
         db_table = 'provider_service'
 
 class Booking(models.Model):

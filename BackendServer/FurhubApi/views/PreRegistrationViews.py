@@ -3,7 +3,7 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from FurhubApi.permission import IsAdminRole
 from rest_framework.views import APIView
-from FurhubApi.models import ProviderApplication, User_roles
+from FurhubApi.models import ProviderApplication, User_roles, ProviderService
 from django.db import transaction
 from rest_framework.pagination import PageNumberPagination
 from django.db.models import Q
@@ -353,9 +353,10 @@ class ProviderRegistrationView(APIView):
 
                     # later I add the ProviderService table
                     if application.provider_type == 'walker':
-                        pass
+                        provider = ProviderService.objects.create(provider=user, provider_type=application.provider_type)
                     elif application.provider_type == 'boarding':
-                        pass
+                        provider = ProviderService.objects.create(provider=user, provider_type=application.provider_type)
+                    provider.save()
 
                 return Response({
                     "message": "Provider registration completed successfully. Please verify your email.",

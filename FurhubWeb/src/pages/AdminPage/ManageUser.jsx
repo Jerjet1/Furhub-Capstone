@@ -61,6 +61,7 @@ import { PaginationButton } from "@/components/Buttons/PaginationButton";
 import { searchDebounce } from "../../utils/searchDebounce";
 import { toast } from "sonner";
 import { parseError } from "@/utils/parseError";
+import { LottieSpinner } from "@/components/LottieSpinner";
 
 export const ManageUser = () => {
   const [page, setPage] = useState(1);
@@ -74,6 +75,7 @@ export const ManageUser = () => {
   const [searchQuery, setSearchQuery] = useState(""); // Add search state
   const [rejectReason, setRejectReason] = useState("");
   const queryClient = useQueryClient();
+  const [loading, setLoading] = useState(false);
 
   const debounceSearch = searchDebounce(searchQuery, 300);
 
@@ -252,6 +254,7 @@ export const ManageUser = () => {
   };
 
   const approveProvider = async (providerId) => {
+    setLoading(true);
     // Handle approval logic
     try {
       const result = await approveProviderApplication(providerId);
@@ -259,6 +262,8 @@ export const ManageUser = () => {
       queryClient.invalidateQueries(["providerApplications"]);
     } catch (error) {
       toast.error(parseError(error));
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -298,6 +303,12 @@ export const ManageUser = () => {
           </p>
         </div>
       </div>
+      {loading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 flex-col">
+          <LottieSpinner size={120} />
+          <p className="text-xl font-Fugaz">Loading...</p>
+        </div>
+      )}
       <Tabs defaultValue="pendingProviders">
         <div className="flex justify-between  mb-4">
           {/* tabs button */}

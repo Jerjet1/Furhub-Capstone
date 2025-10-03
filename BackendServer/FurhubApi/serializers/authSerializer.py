@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from FurhubApi.models import Users, Roles, User_roles, PetOwner, PetWalker,Admin, PetBoarding, ProviderApplication
+from FurhubApi.models import Users, Roles, User_roles, PetOwner, PetWalker, PetBoarding, ProviderApplication
 from django.utils import timezone
 from FurhubApi.utils import send_verification_email
 
@@ -66,8 +66,8 @@ class RegisterSerializer(serializers.ModelSerializer): #Pet Owner Serializer
         #Assigned role
         role = Roles.objects.get(role_name = role_name)
 
-        if role.role_name == 'Admin':
-            Admin.objects.create(user = user)
+        # if role.role_name == 'Admin':
+        #     Admin.objects.create(user = user)
         if role.role_name == 'Owner':
             PetOwner.objects.create(user = user)
 

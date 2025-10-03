@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from FurhubApi.models import Booking
+from .PetSerializer import PetSerializer
 
 class BookingSerializer(serializers.ModelSerializer):
 
