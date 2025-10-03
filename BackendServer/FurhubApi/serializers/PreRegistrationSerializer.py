@@ -18,6 +18,11 @@ class BoardingApplicationSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             "user": {"required": False}
         }
+    
+    def validate(self, data):
+        if data.get("provider_type") != "boarding":
+            raise serializers.ValidationError("Invalid provider type for this serializer")
+        return data
 
     def create(self, validated_data):
         location_data = validated_data.pop("location_data")
@@ -69,9 +74,6 @@ class WalkerApplicationSerializer(serializers.ModelSerializer):
         if data.get("provider_type") != "walker":
             raise serializers.ValidationError("Invalid provider type for this serializer")
         return data
-
-# --- Full Provider Serializer (if needed for display) ---
-from rest_framework import serializers
 
 class ProviderApplicationSerializer(serializers.ModelSerializer):
     documents = ProviderDocumentSerializer(many=True, read_only=True)

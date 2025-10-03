@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  Input,
-} from "@/components/ui/Input";
+import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/label";
 import { Layout } from "../components/Layout/Layout";
 import { InputEmail } from "../components/Inputs/InputEmail";
@@ -20,7 +18,7 @@ import { checkEmailAvailable } from "../api/authAPI";
 import { preRegisterAPI } from "@/api/preRegistrationAPI";
 import { requirementsUpload } from "../api/imageUpload";
 import LocationModal from "./LocationModal";
-import { reverseGeocode } from "../api/geocodeAPI"; 
+import { reverseGeocode } from "../api/geocodeAPI";
 
 const validationSchema = yup.object().shape({
   email: yup.string().email("invalid email").required("Email is required"),
@@ -47,7 +45,12 @@ export const PreRegistration = () => {
 
   const navigate = useNavigate();
 
-  const { register, handleSubmit, setValue, formState: { errors } } = useForm({
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm({
     resolver: yupResolver(validationSchema),
   });
 
@@ -106,15 +109,16 @@ export const PreRegistration = () => {
     try {
       // ✅ Wrap location fields in location_data
       const result = await preRegisterAPI(
-      email, 
-      facility_name, 
-      provider_type,      
-      latitude,
-      longitude,
-      province,
-      city,
-      barangay,
-      street,);
+        email,
+        facility_name,
+        provider_type,
+        latitude,
+        longitude,
+        province,
+        city,
+        barangay,
+        street
+      );
 
       const application_id = result.application_id;
 
@@ -129,7 +133,7 @@ export const PreRegistration = () => {
         formData.append("image", files[i]);
         await requirementsUpload(formData);
       }
-
+      navigate("/");
       toast.success(result.message);
     } catch (error) {
       toast.error(parseError(error));
@@ -142,6 +146,7 @@ export const PreRegistration = () => {
     if (e.target.files) {
       let selected = Array.from(e.target.files);
 
+      // Filter only jpg/jpeg/png
       selected = selected.filter((file) => {
         const validTypes = ["image/jpeg", "image/png", "image/jpg"];
         if (!validTypes.includes(file.type)) {
@@ -151,6 +156,7 @@ export const PreRegistration = () => {
         return true;
       });
 
+      // Prevent more than 2
       if (files.length + selected.length > 2) return;
 
       setFiles((prev) => [...prev, ...selected]);
@@ -167,8 +173,7 @@ export const PreRegistration = () => {
         <div className="flex w-full h-fit justify-start items-start flex-col">
           <button
             onClick={() => navigate("/", { replace: true })}
-            className="flex flex-row hover:bg-gray-200/55 pr-2 rounded-sm cursor-pointer"
-          >
+            className="flex flex-row hover:bg-gray-200/55 pr-2 rounded-sm cursor-pointer">
             <FiChevronLeft size={25} />
             Back to Login
           </button>
@@ -177,6 +182,7 @@ export const PreRegistration = () => {
           </h1>
         </div>
 
+        {/* Loading screen */}
         {loading && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 flex-col">
             <LottieSpinner size={120} />
@@ -187,8 +193,7 @@ export const PreRegistration = () => {
         <div className="flex-1 w-full h-full">
           <form
             className="flex flex-col"
-            onSubmit={handleSubmit(preRegistrationForm)}
-          >
+            onSubmit={handleSubmit(preRegistrationForm)}>
             <div className="flex flex-row gap-6">
               {/* Column 1 */}
               <div className="flex-1 border-t-2 border-gray-400 py-2">
@@ -211,8 +216,7 @@ export const PreRegistration = () => {
                   <div className="flex-1 flex-col">
                     <Label
                       htmlFor="facility_name"
-                      className="text-black block mb-2"
-                    >
+                      className="text-black block mb-2">
                       Facility Name
                     </Label>
                     <InputName
@@ -297,12 +301,10 @@ export const PreRegistration = () => {
                       variant="outline"
                       className="w-full bg-[#adabab] flex flex-row justify-center items-center h-9 cursor-pointer"
                       type="button"
-                      onClick={() => setModalVisible(true)}
-                    >
+                      onClick={() => setModalVisible(true)}>
                       <MapPin className="h-4 w-4 mr-1" />
                       {location ? "Location Selected" : "Select Location"}
                     </Button>
-
 
                     {modalVisible && (
                       <LocationModal
@@ -338,8 +340,7 @@ export const PreRegistration = () => {
                       submissionAttempt && files.length < 2
                         ? "border-red-500"
                         : "border-[#E0E0E0] hover:border-[#4285F4]"
-                    }`}
-                >
+                    }`}>
                   {files.length < 2 && (
                     <>
                       <Upload className="h-8 w-8 text-[#9E9E9E] mb-2" />
@@ -362,8 +363,7 @@ export const PreRegistration = () => {
                       {files.map((file, index) => (
                         <li
                           key={index}
-                          className="flex items-center justify-between px-3 py-1 rounded-md"
-                        >
+                          className="flex items-center justify-between px-3 py-1 rounded-md">
                           <span className="truncate">{file.name}</span>
                           <Button
                             type="button"
@@ -373,8 +373,7 @@ export const PreRegistration = () => {
                             onClick={(e) => {
                               e.preventDefault();
                               handleRemoveFile(index);
-                            }}
-                          >
+                            }}>
                             <X className="h-5 w-5" />
                             Remove
                           </Button>
@@ -391,8 +390,7 @@ export const PreRegistration = () => {
                 type="submit"
                 variant="outline"
                 size="sm"
-                className="w-64 bg-blue-500 text-white p-5 rounded hover:bg-blue-600 transition duration-200 mt-2 text-lg cursor-pointer"
-              >
+                className="w-64 bg-blue-500 text-white p-5 rounded hover:bg-blue-600 transition duration-200 mt-2 text-lg cursor-pointer">
                 Submit
               </Button>
             </div>

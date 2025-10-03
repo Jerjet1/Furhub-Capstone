@@ -271,7 +271,8 @@ class ProviderRegistrationView(APIView):
                     },
                     status=status.HTTP_400_BAD_REQUEST
                 )
-
+            
+            # Check if user already registered (in case they clicked link multiple times)
             if application.user:
                 return Response(
                     {"error": "Registration already completed. Please login."},
@@ -329,13 +330,15 @@ class ProviderRegistrationView(APIView):
                     {"error": "Registration link has expired"},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-
+            
+            # Check if user already registered
             if application.user:
                 return Response(
                     {"error": "Registration already completed"},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-
+            
+            # Validate registration data
             serializer = ProviderRegistrationSerializer(
                 data=request.data,
                 context={
@@ -362,6 +365,7 @@ class ProviderRegistrationView(APIView):
                     application.token_expiry = None
                     application.save()
 
+                    # Generate tokens for auto-login
                     refresh = RefreshToken.for_user(user)
                     user_roles = User_roles.objects.filter(user=user).select_related('role')
                     roles = [ur.role.role_name for ur in user_roles]
