@@ -6,8 +6,8 @@ import {
   TextInput,
 } from "react-native";
 import Ionicons from "@expo/vector-icons/FontAwesome";
-import { router } from "expo-router";
-import React, { useState, useEffect } from "react";
+import { router, useLocalSearchParams } from "expo-router";
+import React, { useCallback, useState, useEffect } from "react";
 import ProfileImage from "@/components/ProfileImage";
 import CustomToast from "@/components/CustomToast";
 import EditModalField from "@/components/Modals/EditModalField";
@@ -15,6 +15,8 @@ import * as Yup from "yup";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import InputName from "@/components/Inputs/InputName";
+import InputPhone from "@/components/Inputs/InputPhone";
+import InputPassword from "@/components/Inputs/InputPassword";
 import { uploadImageAPI } from "@/services/imageUpload";
 import { parseError } from "@/utils/parseError";
 import SubmitButton from "@/components/Buttons/SubmitButton";
@@ -24,6 +26,10 @@ import InputPassword from "@/components/Inputs/InputPassword";
 // import { updateProfileAPI, changePasswordAPI } from "@/services/profileApi"; // Assume these API functions exist
 import { userDetailsAPI, petOwnerAPI } from "@/services/userAPI";
 import { changePasswordAPI } from "@/services/api";
+import { userDetailsAPI, petOwnerAPI } from "@/services/userAPI";
+import { changePasswordAPI } from "@/services/api";
+import { useFocusEffect } from "@react-navigation/native";
+import { locationAPI } from "@/services/userAPI"; // import the new API
 
 // Validation schemas
 const validationSchemas = {
