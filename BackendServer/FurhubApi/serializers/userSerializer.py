@@ -10,7 +10,7 @@ class UserSerializer(serializers.ModelSerializer):
 class PetOwnerUpdateProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = PetOwner
-        fields = ['emergency_no', 'bio']
+        fields = ['user', 'emergency_no', 'bio']
 
 class PetBoardingUpdateProfileSerializer(serializers.ModelSerializer):
     boarding_policy = BoardingPolicySerializer(many=True, required=False)

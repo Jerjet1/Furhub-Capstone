@@ -14,6 +14,9 @@ from FurhubApi.views.userView import AllUserView, BaseUserUpdateView, PetOwnerUp
 # Image Upload Views
 from FurhubApi.views.imageUploadView import ProfileUploadView, ProviderDocumentView
 
+# Booking Views
+from FurhubApi.views.BookingView import PendingBookingBoardingView, RequestBookingView, PetOwnerBookingView, ApprovingBookingView, DecliningBookingView
+
 # Pre-registration Views
 from FurhubApi.views.PreRegistrationViews import (
     ProviderApplicationView, ProviderApplicationListView, 
@@ -50,6 +53,13 @@ urlpatterns = [
     path('users/account-details/', BaseUserUpdateView.as_view(), name='account-details'),
     path('users/pet-owner-details/', PetOwnerUpdateView.as_view(), name="pet-owner-details"),
     path('users/pet-boarding-details/', PetBoardingUpdateView.as_view(), name='pet-boarding-details'),
+
+    # Bookings
+    path('boarding/list_bookings/', PendingBookingBoardingView.as_view(),name='list_bookings'),
+    path('boarding/approve_booking/<int:booking_id>/', ApprovingBookingView.as_view(), name='approve_booking'),
+    path('boarding/decline_booking/<int:booking_id>/', DecliningBookingView.as_view(), name='decline_booking'),
+    path('owner/request_booking/', RequestBookingView.as_view(),name='request_booking'),
+    path('owner/booking_details/', PetOwnerBookingView.as_view(), name="booking_details"),
 
     # Admin
     path('administrator/pending_applications/', ProviderApplicationListView.as_view(), name='pending_applications'),

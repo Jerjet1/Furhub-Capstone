@@ -108,7 +108,7 @@ class Location(models.Model):
         db_table = 'location'
 
 class PetOwner(models.Model):
-    user = models.OneToOneField(Users, on_delete=models.CASCADE, primary_key=True)
+    user = models.OneToOneField(Users, on_delete=models.CASCADE, primary_key=True, related_name='pet_owner')
     emergency_no = models.CharField(max_length=15, blank=True, null=True)
     bio = models.TextField(blank=True, null=True)
 
@@ -116,7 +116,7 @@ class PetOwner(models.Model):
         db_table = 'pet_owner'
 
 class PetWalker(models.Model):
-    user = models.OneToOneField(Users, on_delete=models.CASCADE, primary_key=True)
+    user = models.OneToOneField(Users, on_delete=models.CASCADE, primary_key=True, related_name='pet_walker')
     emergency_no = models.CharField(max_length=15, null=True, blank=True)
     max_pet_walk = models.PositiveIntegerField(default=1)
 
@@ -125,7 +125,7 @@ class PetWalker(models.Model):
 
 class PetBoarding(models.Model):
 
-    user = models.OneToOneField(Users, on_delete=models.CASCADE, primary_key=True)
+    user = models.OneToOneField(Users, on_delete=models.CASCADE, primary_key=True, related_name='pet_boarding')
     hotel_name = models.CharField(max_length=255, null=True, blank=True)
     max_capacity = models.PositiveIntegerField(default=1)
     facility_phone = models.CharField(max_length=15, null=True, blank=True)

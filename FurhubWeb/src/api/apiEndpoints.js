@@ -18,7 +18,11 @@ export const API_ENDPOINTS = {
   REQUIREMENTS_UPLOAD: `${API_URL}users/documents_upload/`,
   PROFILE_PICTURE: `${API_URL}users/profile/`,
   USER_DETAILS: `${API_URL}users/account-details/`,
+  // Provider
   PET_BOARDING_DETAILS: `${API_URL}users/pet-boarding-details/`,
+  PET_BOARDING_BOOKING_LIST: `${API_URL}boarding/list_bookings/`,
+  PET_BOARDING_APPROVE_BOOKING: `${API_URL}boarding/approve_booking/`,
+  PET_BOARDING_DECLINE_BOOKING: `${API_URL}boarding/decline_booking/`,
 
   // Admin
   USERS: `${API_URL}administrator/all_users/`,

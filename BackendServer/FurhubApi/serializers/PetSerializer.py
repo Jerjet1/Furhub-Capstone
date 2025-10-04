@@ -7,9 +7,9 @@ class PetSerializer(serializers.ModelSerializer):
         model = Pet
         fields = ['pet_id','owner', 'name', 'breed', 'age', 'size', 'is_active']
 
-# class Pet_form(serializers.ModelSerializer):
-#     pet = PetSerializer(read_only=True)
+class PetFormSerializer(serializers.ModelSerializer):
+    pet = PetSerializer(read_only=True)
 
-#     class Meta:
-#         model = Pet_Form
-#         fields = ['booking', 'pet', 'welfare_note']
+    class Meta:
+        model = Pet_Form
+        fields = ['pet', 'welfare_note']

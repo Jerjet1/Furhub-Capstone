@@ -14,6 +14,7 @@ export type Booking = {
 export type Notification = {
   id: number;
   bookingId: number;
+  walkerId?: string;
   message: string;
   createdAt: Date;
   for: "owner" | "walker";

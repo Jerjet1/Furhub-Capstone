@@ -23,6 +23,7 @@ import { uploadImageAPI } from "@/api/imageUpload";
 import { LottieSpinner } from "@/components/LottieSpinner";
 import { parseError } from "@/utils/parseError";
 import { toast } from "sonner";
+import { getInitials } from "@/utils/formatName";
 
 const personalInfoSchema = yup.object().shape({
   first_name: yup.string().required(""),
@@ -238,15 +239,6 @@ export const ProfilePage = () => {
   };
 
   const name = `${userDetails?.first_name} ${userDetails?.last_name}`;
-
-  const getInitials = (name) => {
-    if (!name) return "?";
-    const parts = name.trim().split(" ");
-    const firstInitial = parts[0]?.charAt(0).toUpperCase() || "";
-    const lastInitial =
-      parts.length > 1 ? parts[parts.length - 1].charAt(0).toUpperCase() : "";
-    return firstInitial + lastInitial;
-  };
 
   useEffect(() => {
     if (userDetails) {

@@ -316,6 +316,7 @@ export const ManageUser = () => {
 
   return (
     <UserLayoutPage>
+      {/* headers */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-[#212121]">User Management</h1>
@@ -324,6 +325,7 @@ export const ManageUser = () => {
           </p>
         </div>
       </div>
+      {/* loader state */}
       {loading && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 flex-col">
           <LottieSpinner size={120} />
