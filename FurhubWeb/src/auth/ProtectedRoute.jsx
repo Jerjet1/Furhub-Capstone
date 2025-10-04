@@ -1,6 +1,6 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
-import { useAuth } from "../context/AuthProvider";
+import { useAuth } from "../context/useAuth";
 import { LottieSpinner } from "../components/LottieSpinner";
 export const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   const { user, isLoading } = useAuth();
@@ -15,12 +15,16 @@ export const ProtectedRoute = ({ children, allowedRoles = [] }) => {
   if (!user) {
     return <Navigate to="/" replace />;
   }
+  if (!user.is_verified) {
+    return <Navigate to="/verify" replace />;
+  }
+
   if (
     allowedRoles.length > 0 &&
     !user.roles.some((role) => allowedRoles.includes(role))
   ) {
     // If user does not have the required role, redirect to unauthorized page
-    return <Navigate to="/unauthorize" replace />;
+    return <Navigate to="/unauthorized" replace />;
   }
   return children;
 };

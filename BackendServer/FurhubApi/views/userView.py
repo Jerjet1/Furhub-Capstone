@@ -1,0 +1,143 @@
+# from django.shortcuts import render
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+from FurhubApi.models import PetOwner, PetBoarding, PetWalker, Users
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.pagination import PageNumberPagination
+from FurhubApi.permission import IsAdminRole
+# import socket
+from FurhubApi.serializers.userSerializer import (UserSerializer, 
+                                    PetWalkerUpdateProfileSerializer, PetOwnerUpdateProfileSerializer, 
+                                   PetBoardingUpdateProfileSerializer)
+# Create your views here.
+
+class BaseUserUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request):
+        user = request.user
+        
+        serializer = UserSerializer(user, data=request.data, partial = True)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def get(self, request):
+        user = request.user
+        serializer = UserSerializer(user)
+        return Response(
+            serializer.data, status=status.HTTP_200_OK
+        )
+
+class PetWalkerUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+    def patch(self, request):
+        try:
+            walker = request.user.petwalker
+        except PetWalker.DoesNotExist:
+            return Response({"detail": "Walker Profile not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = PetWalkerUpdateProfileSerializer(walker, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def get(self, request):
+        try:
+            walker = request.user.petwalker
+        except PetWalker.DoesNotExist:
+            return Response({"details": "Pet Walker not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = PetWalkerUpdateProfileSerializer(walker)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class PetOwnerUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request):
+        try:
+            owner = request.user.petowner
+        except PetOwner.DoesNotExist:
+            return Response({"detail": "Pet Owner not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = PetOwnerUpdateProfileSerializer(owner, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def get(self, request):
+        try:
+            owner = request.user.petowner
+        except PetOwner.DoesNotExist:
+            return Response({"details": "Pet Owner not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = PetOwnerUpdateProfileSerializer(owner)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class PetBoardingUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        try:
+            boarding = PetBoarding.objects.select_related(
+                'boarding_rate'
+            ).prefetch_related(
+                'boarding_policy',
+                'user__operational_hours'  # Prefetch operational hours through the user relation
+            ).get(user=request.user)
+        except PetBoarding.DoesNotExist:
+            return Response({"detail": "Pet Boarding not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = PetBoardingUpdateProfileSerializer(boarding)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, *args, **kwargs):
+        # Try to get existing
+        boarding = PetBoarding.objects.filter(user=request.user).first()
+
+        if boarding:
+            # Update existing (acts like PATCH)
+            serializer = PetBoardingUpdateProfileSerializer(
+                boarding, data=request.data, partial=True
+            )
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            # Create new
+            serializer = PetBoardingUpdateProfileSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save(user=request.user)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class AllUserView(APIView):
+    permission_classes = [IsAuthenticated, IsAdminRole]
+
+    paginator = PageNumberPagination()
+    paginator.page_size = 9
+
+    def get(self, request):
+
+        users = Users.objects.all().order_by('id').filter(is_verified = True)
+        result_page = self.paginator.paginate_queryset(users, request)
+        serializer = UserSerializer(result_page, many=True)
+
+        return self.paginator.get_paginated_response(serializer.data)
+
+
+    
+
+    

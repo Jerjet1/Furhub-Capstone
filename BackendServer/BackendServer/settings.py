@@ -2,23 +2,19 @@ from pathlib import Path
 import os
 from datetime import timedelta
 import socket
-# from dotenv import load_dotenv
+from dotenv import load_dotenv
 
 hostname = socket.gethostname()
 local_ip = socket.gethostbyname(hostname)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-# load_dotenv(BASE_DIR/'.env')
-# os.environ['GDAL_LIBRARY_PATH'] = r'C:\OSGeo4W\bin\gdal310.dll'
-# GDAL_DDL = BASE_DIR / 'gdal' / 'gdal310.dll'
-if os.name == 'nt':  # Windows
-    OSGEO4W = r"C:\OSGeo4W"
-    os.environ['OSGEO4W_ROOT'] = OSGEO4W
-    os.environ['GDAL_DATA'] = os.path.join(OSGEO4W, 'share', 'gdal')
-    os.environ['PROJ_LIB'] = os.path.join(OSGEO4W, 'share', 'proj')
-    os.environ['PATH'] = os.path.join(OSGEO4W, 'bin') + ';' + os.environ['PATH']
-    GDAL_LIBRARY_PATH = os.path.join(OSGEO4W, 'bin', 'gdal310.dll')  # Match your version
+load_dotenv(os.path.join(BASE_DIR/'.env'))
+
+PAYPAL_CLIENT_ID = os.getenv("PAYPAL_CLIENT_ID")
+PAYPAL_CLIENT_SECRET = os.getenv('PAYPAL_CLIENT_SECRET')
+PAYPAL_BASE_URL = os.getenv('PAYPAL_BASE_URL', 'https://api-m.sandbox.paypal.com')
+PAYPAL_WEBHOOK_ID = os.getenv('PAYPAL_WEBHOOK_ID')
 
 
 
@@ -27,8 +23,8 @@ SECRET_KEY = 'django-insecure-=9um0w6h1lt=epz-f8uhiqhj_+4r0o#no&cczzte5a!+!a58ku
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
-ALLOWED_HOSTS = []
+# NGROK_DOMAIN = "osvaldo-gigantesque-expostulatingly.ngrok-free.app"
+# ALLOWED_HOSTS = [NGROK_DOMAIN]
 
 
 # Application definition
@@ -40,7 +36,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.gis',
     'FurhubApi',
     'rest_framework',
     'corsheaders',
@@ -60,13 +55,29 @@ MIDDLEWARE = [
 ]
 
 # CORS_ALLOWED_ORIGINS = ['http://localhost:5173', 'exp://192.168.1.3:8081']
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', local_ip] #change sa Ip address para makaconnect sa web & mobile
-CORS_ALLOWED_CREDENTIALS = True
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:8081",  # React Native Web/Expo Go via browser
-    "http://127.0.0.1:8081",  # In case you use this format
-    f"http://{local_ip}:8081", # change sa inyong IP address para makaconnect sa web & mobile
-    "http://localhost:5173",
+ALLOWED_HOSTS = ["*"]
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = True
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:5173",     # vite
+#     "http://127.0.0.1:5173",
+#     "http://localhost:8081",     # expo web
+#     "http://127.0.0.1:8081",
+#     f"http://{local_ip}:8081",
+# ]
+# USE_X_FORWARDED_HOST = True  # 👈 Add this
+# SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+    "ngrok-skip-browser-warning",
 ]
 
 # EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
@@ -74,24 +85,32 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_FILE_PATH = '/tmp/django-emails'  # Folder where emails will be saved
 
 # EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = 'smtp.gmail.com'
-# EMAIL_PORT = 587
-# EMAIL_USE_TLS = True
-# EMAIL_HOST_USER = 'furhub.test.mail@gmail.com'  # The new email you created
-# EMAIL_HOST_PASSWORD = 'viex akeq dzux ysck'    # The app password you generated
-# DEFAULT_FROM_EMAIL = 'Furhub@gmail.com'
+# EMAIL_HOST = os.getenv('EMAIL_HOST')
+# EMAIL_PORT = os.getenv('EMAIL_PORT')
+# EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS')
+# EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')  # The new email you created
+# EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')    # The app password you generated
+# DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
+    'UPDATE_LAST_LOGIN': False,
+
+    # Ensure these match your frontend
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
 }
 
 ROOT_URLCONF = 'BackendServer.urls'
@@ -117,14 +136,26 @@ WSGI_APPLICATION = 'BackendServer.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.contrib.gis.db.backends.postgis',
+#         'NAME': 'furhubv2',
+#         'USER': 'postgres',
+#         'PASSWORD': '1190716',
+#         'HOST': 'localhost',
+#         'PORT': '5432',
+#     }
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'furhub',
-        'USER': 'postgres',
-        'PASSWORD': '1190716',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'ENGINE':'django.db.backends.postgresql',
+        'NAME': os.getenv('DATABASE_NAME'),
+        'USER': os.getenv('DATABASE_USER'),
+        'PASSWORD': os.getenv('DATABASE_PASSWORD'),
+        'HOST': os.getenv('DATABASE_HOST'),
+        'PORT': os.getenv('DATABASE_PORT')
+
     }
 }
 
@@ -174,3 +205,4 @@ AUTH_USER_MODEL = 'FurhubApi.Users'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+# MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

@@ -1,32 +1,36 @@
 import {
   View,
   Text,
-  TextInput,
-  Pressable,
   TouchableOpacity,
   ScrollView,
+  TextInput,
 } from "react-native";
 import { useLocalSearchParams } from "expo-router";
-import Icon from "@expo/vector-icons/Ionicons";
 import Ionicons from "@expo/vector-icons/FontAwesome";
-import { Controller, useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { router } from "expo-router";
 import Layout from "@/components/Layouts/Layout";
 import * as Yup from "yup";
-import { registerUser, checkEmailAvailability } from "@/services/api";
+import { checkEmailAvailability, registerUserAPI } from "@/services/api";
 import CustomToast from "@/components/CustomToast";
 import ProgressIndicator from "@/components/ProgressIndicator";
 import { ActivityIndicator } from "react-native";
+import { useAuth } from "@/context/useAuth";
 import { useRegistration } from "@/context/RegistrationProvider";
 import React, { useState, useEffect } from "react";
+import InputName from "@/components/Inputs/InputName";
+import InputEmail from "@/components/Inputs/InputEmail";
+import InputPassword from "@/components/Inputs/InputPassword";
+import InputPhone from "@/components/Inputs/InputPhone";
+import { parseError } from "@/utils/parseError";
 
 const formValidation = Yup.object().shape({
   first_name: Yup.string().required("Fill this field"),
   last_name: Yup.string().required("Fill this field"),
   phone_no: Yup.string()
     .required("Fill this field")
-    .matches(/^[0-9]{11}$/, "Phone number must be 11 digit"),
+    .matches(/^09[0-9]{9}$/, "Phone number must start with 09 and be 11 digit"),
   email: Yup.string().email("invalid email").required("Email is required"),
   password: Yup.string()
     .required("Password is required")
@@ -44,27 +48,26 @@ const formValidation = Yup.object().shape({
 
 export default function RegistrationForm() {
   const { role } = useLocalSearchParams<{ role: "Owner" | "Walker" }>();
-  const [showPassword, setShowPassword] = useState(false);
   const [emailError, setEmailError] = useState("");
-  const [showConfirmPassword, setshowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<{
     message: string;
     type?: "success" | "error";
   } | null>(null);
   const { formData, setFormData, setUploadedImages } = useRegistration();
+  const { registerUser } = useAuth();
 
-  const steps =
-    role === "Walker"
-      ? ["Choose Role", "Account details", "Upload Requirements"]
-      : ["Choose Role", "Fill Form"];
+  // const steps =
+  //   role === "Walker"
+  //     ? ["Choose Role", "Account details", "Upload Requirements"]
+  //     : ["Choose Role", "Fill Form"];
+  const steps = ["Choose Role", "Fill Form"];
 
   const {
     control,
     handleSubmit,
     setValue,
     formState: { errors },
-    reset,
   } = useForm({
     resolver: yupResolver(formValidation),
     mode: "onChange",
@@ -89,54 +92,36 @@ export default function RegistrationForm() {
         return;
       }
 
-      if (role === "Walker") {
-        router.replace({
-          pathname: "/auth/Forms/RequirementsUpload",
-          params: { ...data, role }, // pass form data and role
-        });
-      } else {
-        const result = await registerUser({ ...data, role });
-        // ✅ Reset the form after successful registration
-        setUploadedImages({
-          barangayClearance: null,
-          validID: null,
-          selfieWithID: null,
-        });
-        setFormData({
-          first_name: "",
-          last_name: "",
-          email: "",
-          phone_no: "",
-          password: "",
-          confirm_password: "",
-        });
-        // ✅ Optionally clear stored context formData
-        console.log("Success", result);
-        router.replace({
-          pathname: "/auth/VerificationPage",
-          params: { email: data.email },
-        });
-        // return result;
-      }
+      const result = await registerUserAPI({ ...data, role });
+      const is_verified = result.is_verified === true;
+
+      // Save user data in context
+      registerUser(
+        result.access,
+        result.roles,
+        is_verified,
+        result.email,
+        result.pet_walker,
+        result.refresh
+      );
+      setFormData({
+        first_name: "",
+        last_name: "",
+        email: "",
+        phone_no: "",
+        password: "",
+        confirm_password: "",
+      });
+
+      router.replace({
+        pathname: "/auth/VerificationPage",
+        params: { email: result.email },
+      });
+      return result;
     } catch (error: any) {
       console.log("error", error);
-      let message = "Unexpected error occured";
-
-      if (typeof error === "string") {
-        message = error;
-      } else if (typeof error.details === "string") {
-        message = error.details;
-      } else if (typeof error.detail === "string") {
-        message = error.detail;
-      } else if (typeof error.message === "string") {
-        message = error.message;
-      } else if (Array.isArray(error)) {
-        message = error.join("\n");
-      } else if (typeof error === "object") {
-        message = Object.values(error).flat().join("\n");
-      }
       setToast({
-        message: message,
+        message: parseError(error),
         type: "error",
       });
     } finally {
@@ -149,7 +134,7 @@ export default function RegistrationForm() {
       <ScrollView
         contentContainerStyle={{
           flexGrow: 1,
-          paddingBottom: 300, // Extra space for keyboard
+          paddingBottom: 50, // Extra space for keyboard
         }}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}>
@@ -165,6 +150,13 @@ export default function RegistrationForm() {
           </View>
         </View>
 
+        {/* Loading State */}
+        {loading && (
+          <View className="absolute top-0 left-0 right-0 bottom-0 z-50 justify-center items-center bg-black/20">
+            <ActivityIndicator size={50} color="black" />
+          </View>
+        )}
+
         {toast && (
           <CustomToast
             message={toast.message}
@@ -173,59 +165,42 @@ export default function RegistrationForm() {
             onHide={() => setToast(null)}
           />
         )}
+
         {/* Form Container (no absolute positioning!) */}
-        <View className="w-[85%] mx-auto bg-white rounded-xl p-5">
+        <View className="w-[90%] mx-auto bg-white rounded-xl p-5">
           {/* First & Last Name Row */}
           <View className="flex-row gap-4">
             <View className="flex-1">
               <Text className="text-xl text-black font-poppins">
                 First Name
               </Text>
-              <Controller
+              <InputName
                 control={control}
                 name="first_name"
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <>
-                    <TextInput
-                      placeholder="First Name"
-                      className="border-b border-gray-500 text-lg font-poppins"
-                      onBlur={onBlur}
-                      onChangeText={onChange}
-                      value={value}
-                      autoComplete="off"
-                    />
-                    {errors.first_name && (
-                      <Text className="text-red-600 mt-1">
-                        {errors.first_name.message}
-                      </Text>
-                    )}
-                  </>
-                )}
+                placeholder="First Name"
               />
+              <View className="min-h-[24px]">
+                {errors.first_name && (
+                  <Text className="text-red-600 mt-1">
+                    {errors.first_name.message}
+                  </Text>
+                )}
+              </View>
             </View>
             <View className="flex-1">
               <Text className="text-xl text-black font-poppins">Last Name</Text>
-              <Controller
+              <InputName
                 control={control}
                 name="last_name"
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <>
-                    <TextInput
-                      placeholder="Last Name"
-                      className="border-b border-gray-500 text-lg font-poppins"
-                      onBlur={onBlur}
-                      onChangeText={onChange}
-                      value={value}
-                      autoComplete="off"
-                    />
-                    {errors.last_name && (
-                      <Text className="text-red-600 mt-1">
-                        {errors.last_name.message}
-                      </Text>
-                    )}
-                  </>
-                )}
+                placeholder="Last Name"
               />
+              <View className="min-h-[24px]">
+                {errors.last_name && (
+                  <Text className="text-red-600 mt-1">
+                    {errors.last_name.message}
+                  </Text>
+                )}
+              </View>
             </View>
           </View>
 
@@ -233,139 +208,75 @@ export default function RegistrationForm() {
           <Text className="text-xl text-black font-poppins mt-1">
             Phone No.
           </Text>
-          <Controller
-            control={control}
-            name="phone_no"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <>
-                <TextInput
-                  placeholder="09"
-                  keyboardType="phone-pad"
-                  className="border-b border-gray-500 text-lg font-poppins"
-                  onBlur={onBlur}
-                  onChangeText={(text) => onChange(text)}
-                  value={value}
-                  autoCapitalize="none"
-                  autoComplete="off"
-                  maxLength={11}
-                />
-                {errors.phone_no && (
-                  <Text className="text-red-600 mt-1">
-                    {errors.phone_no.message}
-                  </Text>
-                )}
-              </>
+          <InputPhone control={control} name="phone_no" placeholder="09" />
+          <View className="min-h-[24px]">
+            {errors.phone_no && (
+              <Text className="text-red-600 mt-1">
+                {errors.phone_no.message}
+              </Text>
             )}
-          />
+          </View>
 
           {/* Email Input */}
           <Text className="text-xl text-black font-poppins mt-1">Email</Text>
           <Controller
             control={control}
             name="email"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <>
-                <TextInput
-                  placeholder="sample@mail.com"
-                  keyboardType="email-address"
-                  className="border-b border-gray-500 text-lg font-poppins"
-                  onBlur={onBlur}
-                  onChangeText={(text) => {
-                    setEmailError("");
-                    onChange(text);
-                  }}
-                  value={value}
-                  autoCapitalize="none"
-                  autoComplete="off"
-                />
-                {emailError && (
-                  <Text className="text-red-600 mt-1">{emailError}</Text>
-                )}
-                {errors.email && (
-                  <Text className="text-red-600 mt-1">
-                    {errors.email.message}
-                  </Text>
-                )}
-              </>
+            render={({ field: { onChange, value } }) => (
+              <TextInput
+                value={value}
+                onChangeText={(text) => {
+                  onChange(text);
+                  if (emailError) setEmailError(""); // Clear error immediately on typing
+                }}
+                placeholder="JohnDoe@mail.com"
+                className="border-b border-gray-500 text-lg font-poppins"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoComplete="off"
+              />
             )}
           />
+          <View className="min-h-[24px]">
+            {emailError && (
+              <Text className="text-red-600 mt-1">{emailError}</Text>
+            )}
+            {errors.email && (
+              <Text className="text-red-600 mt-1">{errors.email.message}</Text>
+            )}
+          </View>
 
           {/* Password Input */}
           <Text className="text-xl text-black font-poppins mt-1">Password</Text>
-          <Controller
+          <InputPassword
             control={control}
             name="password"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <>
-                <View className="border-b border-gray-500 flex-row items-center">
-                  <TextInput
-                    placeholder="Password"
-                    keyboardType="default"
-                    secureTextEntry={!showPassword}
-                    className="font-poppins text-lg py-2 flex-1"
-                    onChangeText={onChange}
-                    onBlur={onBlur}
-                    value={value}
-                    autoCorrect={false}
-                    autoComplete="off"
-                  />
-                  <Pressable
-                    onPress={() => setShowPassword(!showPassword)}
-                    className="px-3">
-                    <Icon
-                      name={showPassword ? "eye-off" : "eye"}
-                      size={20}
-                      color="#6b7280"
-                    />
-                  </Pressable>
-                </View>
-                {errors.password && (
-                  <Text className="text-red-600 mt-1">
-                    {errors.password.message}
-                  </Text>
-                )}
-              </>
-            )}
+            placeholder="Password"
           />
+          <View className="min-h-[24px]">
+            {errors.password && (
+              <Text className="text-red-600 mt-1">
+                {errors.password.message}
+              </Text>
+            )}
+          </View>
 
           {/* Confirmation Password Input */}
           <Text className="text-xl text-black font-poppins mt-1">
             Confirmation Password
           </Text>
-          <Controller
+          <InputPassword
             control={control}
             name="confirm_password"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <>
-                <View className="border-b border-gray-500 flex-row items-center">
-                  <TextInput
-                    placeholder="Confirm Password"
-                    keyboardType="default"
-                    secureTextEntry={!showConfirmPassword}
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    value={value}
-                    autoComplete="off"
-                    className="font-poppins text-lg py-2 flex-1"
-                  />
-                  <Pressable
-                    onPress={() => setshowConfirmPassword(!showConfirmPassword)}
-                    className="px-3">
-                    <Icon
-                      name={showConfirmPassword ? "eye-off" : "eye"}
-                      size={20}
-                      color="#6b7280"
-                    />
-                  </Pressable>
-                </View>
-                {errors.confirm_password && (
-                  <Text className="text-red-600 mt-1">
-                    {errors.confirm_password.message}
-                  </Text>
-                )}
-              </>
-            )}
+            placeholder="Confirm Password"
           />
+          <View className="min-h-[24px]">
+            {errors.confirm_password && (
+              <Text className="text-red-600 mt-1">
+                {errors.confirm_password.message}
+              </Text>
+            )}
+          </View>
 
           {/* Register Button */}
           <TouchableOpacity

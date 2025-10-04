@@ -1,70 +1,92 @@
-import React from "react";
-import { FiBell } from "react-icons/fi";
-import { AdminNavbar } from "./AdminNavbar";
-import { BoardingNavbar } from "./BoardingNavbar";
+import React, { useState } from "react";
+import { Bell } from "lucide-react";
+import { AdminNavbar } from "../Navbar/AdminNavbar";
+import { BoardingNavbar } from "../Navbar/BoardingNavbar";
+import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "react-router-dom";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+
 export const UserLayoutPage = ({ children }) => {
+  const [activeTab, setActiveTab] = useState("all");
   const location = useLocation();
   const path = location.pathname;
 
   const isPetboarding = path.includes("/Petboarding");
-  const isReport = path.includes("/Admin/Reports");
-
-  const navbarSelection = isReport ? "reports" : "default";
-
   return (
-    <div className="w-screen h-screen flex flex-col bg-indigo-200">
-      {/* Header */}
-      <header className="bg-white/40 flex justify-between items-center">
-        <h1 className="text-[20px] sm:text-[40px] font-Fugaz ml-5">Furhub</h1>
-        <div className="flex justify-between w-full h-full ml-[50px]">
-          <div className="flex space-x-5">
-            {isPetboarding ? (
-              <>
-                <Link
-                  to="/Petboarding/Dashboard"
-                  className="border-b-0 hover:border-b-1 hover:border-b-amber-900 w-full h-full flex justify-center items-center">
-                  <h2 className="text-xl font-semibold">Dashboard</h2>
-                </Link>
-
-                <Link
-                  to="/Petboarding/Reports"
-                  className="border-b-0 hover:border-b-1 hover:border-b-amber-900 w-full h-full flex justify-center items-center">
-                  <h2 className="text-xl font-semibold">Reports</h2>
-                </Link>
-              </>
-            ) : (
-              <>
-                <Link
-                  to="/Admin/Dashboard"
-                  className="border-b-0 hover:border-b-1 hover:border-b-amber-900 w-full h-full flex justify-center items-center">
-                  <h2 className="text-xl font-semibold">Dashboard</h2>
-                </Link>
-
-                <Link
-                  to="/Admin/Reports"
-                  className="border-b-0 hover:border-b-1 hover:border-b-amber-900 w-full h-full flex justify-center items-center">
-                  <h2 className="text-xl font-semibold">Reports</h2>
-                </Link>
-              </>
-            )}
-          </div>
-          <div className="flex justify-center items-center">
-            <button className="bg-gray-400/40 p-1 sm:p-3 rounded-full hover:bg-gray-400/90 mr-5 cursor-pointer">
-              <FiBell className="w-[10px] h-[10px] sm:w-[20px] sm:h-[20px]" />
-            </button>
-          </div>
+    <div className="w-screen h-screen flex bg-[#F7F7F6]">
+      {/* Sidebar */}
+      <aside className="flex flex-col w-64 bg-[#FAFAFA] border-r border-[#E0E0E0] px-2">
+        <div className="py-2 text-center">
+          <h1 className="text-[40px] text-[#212121] font-Fugaz">Furhub</h1>
         </div>
-      </header>
 
-      {/* main Content */}
-      <div className="flex-1 flex min-h-0">
-        {isPetboarding ? (
-          <BoardingNavbar />
-        ) : (
-          <AdminNavbar section={navbarSelection} />
-        )}
-        <main className="flex-1 p-2 overflow-auto">{children}</main>
+        {/* Sidebar Navigation */}
+        <div className="flex-1">
+          {isPetboarding ? <BoardingNavbar /> : <AdminNavbar />}
+        </div>
+      </aside>
+
+      {/* Right Side (Topbar + Content) */}
+      <div className="flex flex-col flex-1 min-h-0">
+        {/* Topbar with notification button*/}
+        <nav className="bg-white/40 flex justify-end items-center px-4 py-2 shadow">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                size="icon"
+                className="border-[#E0E0E0] text-[#616161] hover:bg-[#F5F5F5] bg-transparent mr-2">
+                <Bell className="h-4 w-4 text-black" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent
+              className="w-[300px] max-h-64 overflow-y-auto"
+              align="end">
+              <div className="font-medium mb-2 text-lg">Notifications</div>
+              {/* Tabs */}
+              <div className="flex gap-3 mb-3">
+                <Button
+                  onClick={() => setActiveTab("all")}
+                  className={`px-3 py-1 ${
+                    activeTab === "all"
+                      ? "bg-blue-500 text-white hover:bg-blue-600"
+                      : "border-[#E0E0E0] text-[#616161] bg-transparent hover:bg-[#F5F5F5]"
+                  }`}>
+                  All
+                </Button>
+                <Button
+                  onClick={() => setActiveTab("unread")}
+                  className={`px-3 py-1 ${
+                    activeTab === "unread"
+                      ? "bg-blue-500 text-white hover:bg-blue-600"
+                      : "border-[#E0E0E0] text-[#616161] bg-transparent hover:bg-[#F5F5F5]"
+                  }`}>
+                  Unread
+                </Button>
+              </div>
+
+              {/* Notification list */}
+              <div className="space-y-2">
+                {activeTab === "all" ? (
+                  <p className="text-gray-500 text-sm text-center">
+                    No notifications
+                  </p>
+                ) : (
+                  <p className="text-gray-500 text-sm text-center">
+                    No unread notifications
+                  </p>
+                )}
+              </div>
+            </PopoverContent>
+          </Popover>
+        </nav>
+
+        {/* Main Content */}
+        <main className="flex-1 p-5 overflow-auto">{children}</main>
       </div>
     </div>
   );

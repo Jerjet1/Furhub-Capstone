@@ -24,11 +24,11 @@ export default function RoleSelectionPage() {
         <View>
           <ProgressIndicator
             currentStep={1}
-            steps={["Choose Role", "Account details"]}
+            steps={["Choose Role", "Fill Form"]}
           />
         </View>
       </View>
-      <View className="flex justify-center items-center w-[80%] mx-auto h-[15rem] bg-white rounded-xl p-9 gap-10 mt-2">
+      <View className="flex justify-center items-center w-[90%] mx-auto h-[15rem] bg-white rounded-xl p-9 gap-10 mt-2">
         <TouchableOpacity
           className="bg-indigo-500 p-4 w-full rounded-xl"
           onPress={() => selectRole("Owner")}>

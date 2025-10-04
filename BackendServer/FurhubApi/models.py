@@ -2,7 +2,7 @@ from django.db import models
 import random
 from django.utils import timezone
 from datetime import timedelta
-from django.contrib.gis.db import models as gis_models
+import secrets
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 # Create your models here.
 
@@ -23,7 +23,7 @@ class CustomUserManager(BaseUserManager):
         return self.create_user(email, password, **extra_fields)
     
 class Users(AbstractBaseUser):
-    user_id = models.AutoField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
     phone_no = models.CharField(max_length=15)
@@ -33,6 +33,7 @@ class Users(AbstractBaseUser):
     code_expiry = models.DateTimeField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
+    is_superuser = models.BooleanField(default=False)
     is_verified = models.BooleanField(default=False)
     date_field = models.DateTimeField(auto_now_add=True)
 
@@ -48,10 +49,6 @@ class Users(AbstractBaseUser):
         self.save()
         return code
 
-    @property
-    def id(self):
-        return self.user_id
-
     def __str__(self):
         return f'{self.email}\n{self.first_name}\n{self.last_name}'
     
@@ -65,8 +62,8 @@ class Roles(models.Model):
         db_table = 'roles'
 
 class User_roles(models.Model):
-    user = models.ForeignKey(Users, on_delete=models.CASCADE)
-    role = models.ForeignKey(Roles, on_delete=models.CASCADE)
+    user = models.ForeignKey(Users, on_delete=models.CASCADE, related_name="roles")
+    role = models.ForeignKey(Roles, on_delete=models.CASCADE, related_name="users")
     class Meta:
         constraints = [
             models.UniqueConstraint(
@@ -78,7 +75,7 @@ class User_roles(models.Model):
 
 class User_logs(models.Model):
     log_id = models.AutoField(primary_key=True)
-    user = models.ForeignKey(Users, on_delete=models.CASCADE)
+    user = models.ForeignKey(Users, on_delete=models.CASCADE, related_name="logs")
     action = models.CharField(max_length=100)
     ip_address = models.GenericIPAddressField()
     date_field = models.DateTimeField(auto_now_add=True)
@@ -90,25 +87,28 @@ class Province(models.Model):
     province_name = models.CharField(max_length=100)
     class Meta:
         db_table = 'province'
+        
 class City(models.Model):
     city_id = models.AutoField(primary_key=True)
-    province = models.ForeignKey(Province, on_delete=models.CASCADE)
+    province = models.ForeignKey(Province, on_delete=models.CASCADE, related_name="cities")
     city_name = models.CharField(max_length=100)
     class Meta:
         db_table = 'city'
 
 class Location(models.Model):
     location_id = models.AutoField(primary_key=True)
-    city = models.ForeignKey(City, on_delete=models.CASCADE)
-    barangay = models.CharField(max_length=255, blank=True, null=False)
-    user = models.ForeignKey(Users, on_delete=models.CASCADE)
+    city = models.ForeignKey(City, on_delete=models.CASCADE, related_name="locations")
+    barangay = models.CharField(max_length=255, blank=True, null=True)
+    user = models.ForeignKey(Users, on_delete=models.CASCADE, related_name="locations", blank=True, null=True)  # ✅ allow null
     street = models.CharField(max_length=255)
-    coordinates = gis_models.PointField(geography=True, blank=True, null=True)
+    latitude = models.FloatField(blank=True, null=True)
+    longitude = models.FloatField(blank=True, null=True)
+
     class Meta:
         db_table = 'location'
 
 class PetOwner(models.Model):
-    user = models.OneToOneField(Users, on_delete=models.CASCADE, primary_key=True)
+    user = models.OneToOneField(Users, on_delete=models.CASCADE, primary_key=True, related_name='pet_owner')
     emergency_no = models.CharField(max_length=15, blank=True, null=True)
     bio = models.TextField(blank=True, null=True)
 
@@ -116,64 +116,111 @@ class PetOwner(models.Model):
         db_table = 'pet_owner'
 
 class PetWalker(models.Model):
-
-    STATUS_CHOICE = [("pending", "Pending") ,
-                     ("approved", "Approved"), 
-                     ("rejected", "Rejected")]
-
-    user = models.OneToOneField(Users, on_delete=models.CASCADE, primary_key=True)
-    availability = models.CharField(max_length=255, null=True, blank=True)
-    status = status = models.CharField(max_length=20,default="pending")
+    user = models.OneToOneField(Users, on_delete=models.CASCADE, primary_key=True, related_name='pet_walker')
+    emergency_no = models.CharField(max_length=15, null=True, blank=True)
+    max_pet_walk = models.PositiveIntegerField(default=1)
 
     class Meta:
         db_table = 'pet_walker'
 
 class PetBoarding(models.Model):
 
-    STATUS_CHOICE = [("pending", "Pending") ,
-                     ("approved", "Approved"), 
-                     ("rejected", "Rejected")]
-    
-    user = models.OneToOneField(Users, on_delete=models.CASCADE, primary_key=True)
+    user = models.OneToOneField(Users, on_delete=models.CASCADE, primary_key=True, related_name='pet_boarding')
     hotel_name = models.CharField(max_length=255, null=True, blank=True)
-    availability = models.CharField(max_length=255, null=True, blank=True)
-    status = status = models.CharField(max_length=20,default="pending")
+    max_capacity = models.PositiveIntegerField(default=1)
+    facility_phone = models.CharField(max_length=15, null=True, blank=True)
 
     class Meta:
         db_table = 'pet_boarding'
 
-class Admin(models.Model):
-    ADMIN_CHOICE = [('Admin', 'Admin'), ('Staff', 'Staff')]
+# class Admin(models.Model):
+#     ADMIN_CHOICE = [('Admin', 'Admin'), ('Staff', 'Staff')]
 
-    user = models.OneToOneField(Users, on_delete=models.CASCADE, primary_key=True)
-    role_title = models.CharField(max_length=50, choices=ADMIN_CHOICE)
-    is_active = models.BooleanField(default=True)
+#     user = models.OneToOneField(Users, on_delete=models.CASCADE, primary_key=True)
+#     role_title = models.CharField(max_length=50, choices=ADMIN_CHOICE)
+#     is_active = models.BooleanField(default=True)
+#     class Meta:
+#         db_table = 'admin'
+
+class ProviderApplication(models.Model):
+    PROVIDER_TYPE_CHOICE = [
+        ('walker', 'Pet Walker'),
+        ('boarding', 'Pet Boarding')
+    ]
+    STATUS_CHOICE = [("pending", "Pending") ,
+                     ("approved", "Approved"), 
+                     ("rejected", "Rejected")]
+
+    application_id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(Users, on_delete=models.SET_NULL, related_name="applications", blank=True, null=True)
+    provider_type = models.CharField(max_length=20, choices=PROVIDER_TYPE_CHOICE)
+    email = models.EmailField(blank=True, null=True)
+    first_name = models.CharField(max_length=50, blank=True, null=True) # for pet walker field
+    last_name = models.CharField(max_length=50, blank=True, null=True) # for pet walker field
+    facility_name = models.CharField(max_length=255, blank=True, null=True)  # boarding only
+    location = models.ForeignKey(Location, on_delete=models.CASCADE, null=True, blank=True)
+    status = models.CharField(max_length=20, default="pending", choices=STATUS_CHOICE)
+    reject_reason = models.TextField(blank=True, null=True)
+    applied_at = models.DateTimeField(auto_now_add=True)
+
+    registration_token = models.CharField(max_length=100, blank=True, null=True, unique=True)
+    token_expiry = models.DateTimeField(blank=True, null=True)
+    email_sent = models.BooleanField(default=False)
+    email_sent_at = models.DateTimeField(blank=True, null=True)
+
+    def generate_registration_token(self):
+        self.registration_token = secrets.token_urlsafe(32)
+        self.token_expiry = timezone.now() + timedelta(days=7)
+        self.save()
+        return self.registration_token
+
+    def is_token_valid(self):
+        return self.registration_token and self.token_expiry and self.token_expiry > timezone.now()
+
     class Meta:
-        db_table = 'admin'
+        db_table = 'provider_application'
+
+class ProviderDocument(models.Model):
+    DOCUMENT_TYPE_CHOICES = [
+        ("valid_id", "Valid ID"),
+        ("selfie_with_id", "Selfie with ID"),
+    ]
+
+    application = models.ForeignKey(
+        ProviderApplication,
+        on_delete=models.CASCADE,
+        related_name="documents"
+    )
+    user = models.ForeignKey(Users, on_delete=models.CASCADE, related_name="documents", blank=True, null=True)
+    document_type = models.CharField(max_length=50, choices=DOCUMENT_TYPE_CHOICES)
+    image = models.FileField(upload_to="provider_documents/")  # or ImageField if always images
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "provider_documents"
+
 
 class UploadedImage(models.Model):
     CATEGORY_CHOICES = [
         ("profile_picture", "Profile Picture"),
         ("community_post", "Community Post"),
-        ("walker_requirement", "Walker Requirement"),
-        ("boarding_requirement", "Boarding Requirement"),
     ]
 
     user = models.ForeignKey(Users, on_delete=models.CASCADE)
     image = models.ImageField(upload_to='uploads/')
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
-    label = models.CharField(max_length=100, blank=True)  # e.g., "NBI Clearance", "Barangay Clearance"
+    # label = models.CharField(max_length=100, blank=True)  # e.g., "Valid Id, Selfie with ID"
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = 'uploaded_images'
 
-class Service(models.Model):
-    service_id = models.AutoField(primary_key=True)
-    service_name = models.CharField(max_length=100)
+# class Service(models.Model):
+#     service_id = models.AutoField(primary_key=True)
+#     service_name = models.CharField(max_length=100)
 
-    class Meta:
-        db_table = 'service'
+#     class Meta:
+#         db_table = 'service'
 
 class ProviderService(models.Model):
     PROVIDER_TYPE_CHOICE = [
@@ -181,11 +228,239 @@ class ProviderService(models.Model):
         ('boarding', 'Pet Boarding')
     ]
     providerService_id = models.AutoField(primary_key=True)
-    service = models.ForeignKey(Service, on_delete=models.CASCADE)
+    # service = models.ForeignKey(Service, on_delete=models.CASCADE)
     provider = models.ForeignKey(Users, on_delete=models.CASCADE)
     provider_type = models.CharField(max_length=15, choices=PROVIDER_TYPE_CHOICE)
-    provider_rate = models.DecimalField(decimal_places=2, max_digits=10)
+    # provider_rate = models.DecimalField(decimal_places=2, max_digits=10)
 
     class Meta:
-        unique_together = ['service', 'provider', 'provider_type']
+        unique_together = ['provider', 'provider_type']
         db_table = 'provider_service'
+
+class Booking(models.Model):
+    STATUS_CHOICE = [("pending", "Pending"),
+                     ("approved", "Approved"),
+                     ("ongoing", "Ongoing"),
+                     ("checked_in", "Checked In"),
+                     ("checked_out", "Checked Out"),
+                     ("canceled", "Canceled"),
+                     ("completed", "Completed"),
+                     ("rejected", "Rejected")]
+    
+    DURATION_UNITS = [
+    ("hour", "Hour"),
+    ("day", "Day"),
+    ("week", "Week"),
+]
+    
+    booking_id = models.AutoField(primary_key=True)
+    owner = models.ForeignKey(PetOwner, on_delete=models.CASCADE, related_name="bookings")
+    provider = models.ForeignKey(ProviderService, on_delete=models.CASCADE, related_name="bookings")
+    status = models.CharField(max_length=15, choices=STATUS_CHOICE, default="pending")
+    duration_value = models.PositiveIntegerField(null=True, blank=True)  # e.g., 3
+    duration_unit = models.CharField(max_length=10, choices=DURATION_UNITS, null=True, blank=True)
+    start_at = models.DateTimeField()
+    end_at = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'booking'
+
+class Pet(models.Model):
+    pet_id = models.AutoField(primary_key=True)
+    owner = models.ForeignKey(PetOwner, on_delete=models.CASCADE, related_name="pets")
+    name = models.CharField(max_length=150)
+    breed = models.CharField(max_length=150)
+    age = models.IntegerField()
+    size = models.IntegerField()
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'pet'
+
+class Pet_Form(models.Model):
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name="pet_forms")
+    pet =  models.ForeignKey(Pet, on_delete=models.SET_NULL, related_name="forms",blank=True, null=True )
+    welfare_note = models.TextField(max_length=200, blank=True, null=True)
+
+    class Meta:
+        db_table = 'pet_form'
+
+class PetSchedule(models.Model):
+    SERVICE_CHOICE = [("feeding", "Feeding"),
+                      ("walking", "Walking")]
+    
+    pet_form = models.ForeignKey(Pet_Form, on_delete=models.CASCADE, related_name="schedules")
+    schedule_type = models.CharField(max_length=20,choices=SERVICE_CHOICE)
+    time = models.TimeField()
+    frequency_per_day = models.PositiveIntegerField(default=1)
+
+    class Meta:
+        db_table = 'pet_schedule'
+
+class OperationalHours(models.Model):
+    DAYS_OF_WEEKS = [
+        ('monday', 'Monday'),
+        ('tuesday', 'Tuesday'),
+        ('wednesday', 'Wednesday'),
+        ('thursday', 'Thursday'),
+        ('friday', 'Friday'),
+        ('saturday', 'Saturday'),
+        ('sunday', 'Sunday'),
+    ]
+
+    provider = models.ForeignKey(Users, on_delete=models.CASCADE, related_name="operational_hours")
+    day = models.CharField(max_length=12, choices=DAYS_OF_WEEKS)
+    open_time = models.TimeField(blank=True, null=True)
+    close_time = models.TimeField(blank=True, null=True)
+    is_open = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'operational_hours'
+        unique_together = ['provider', 'day']
+
+class WalkerRate(models.Model):
+    pet_walker = models.OneToOneField(PetWalker, on_delete=models.CASCADE, primary_key=True, related_name='walker_rate')
+    per_walk_rate = models.DecimalField(max_digits=10, decimal_places=2)
+
+    class Meta:
+        db_table = 'walker_rate'
+
+class BoardingRate(models.Model):
+
+
+    pet_boarding = models.OneToOneField(PetBoarding, on_delete=models.CASCADE,related_name='boarding_rate')
+    hourly_rate = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    daily_rate = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    weekly_rate = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    class Meta:
+        db_table = 'boarding_rate'
+
+class BoardingPolicy(models.Model):
+    POLICY_TYPES = [
+        ("late_pickup", "Late Pickup"),
+        ("cancellation", "Cancellation"),
+    ]
+
+    pet_boarding = models.ForeignKey(PetBoarding, on_delete=models.CASCADE, related_name="boarding_policy")
+    policy_type = models.CharField(max_length=50, choices=POLICY_TYPES)
+    description = models.TextField()
+    fee = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # if extra charge applies
+    grace_period_minutes = models.PositiveIntegerField(null=True, blank=True)  # optional for late pickup, etc.
+    active = models.BooleanField(default=True)
+    last_edited = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "boarding_policy"
+
+class WalkerPolicy(models.Model):
+    pet_walker = models.ForeignKey(PetWalker, on_delete=models.CASCADE, related_name="policies")
+    policy_type = models.CharField(max_length=50)  # "cancellation", "extra_pet_fee", "group_walk"
+    description = models.TextField()
+    fee = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    active = models.BooleanField(default=True)
+    last_edited = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "walker_policy"
+
+class Payment(models.Model):
+    PAYMENT_TYPE_CHOICES = [
+        ('downpayment', "Downpayment"),
+        ("balance", "Balance"),
+        ("full", "Full Payment"),
+    ]
+
+    PAYMENT_METHOD_CHOICES = [
+        ('paypal', 'PayPal')
+    ]
+
+    STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("completed", "Completed"),
+        ("failed", "Failed"),
+        ("refunded", "Refunded"),
+    ]
+
+    payment_id = models.AutoField(primary_key=True)
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name="payments")
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    payment_type = models.CharField(max_length=20, choices=PAYMENT_TYPE_CHOICES)
+    payment_method = models.CharField(max_length=50, choices=PAYMENT_METHOD_CHOICES)
+    date = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    order_id = models.CharField(max_length=255, null=True, blank=True)
+    capture_id = models.CharField(max_length=255, null=True, blank=True)
+    currency_code = models.CharField(max_length=10, null=True, blank=True)
+    transaction_fee = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    paypal_subscription_id = models.CharField(max_length=255, null=True, blank=True)
+
+    class Meta:
+        db_table = "payment"
+
+class TransactionLogs(models.Model):
+    transaction_id = models.AutoField(primary_key=True)
+    payment = models.ForeignKey(Payment, on_delete=models.CASCADE, related_name="transactions")
+    action =models.CharField(max_length=100)
+    external_id = models.CharField(max_length=255, null=True, blank=True)  # paypal id / batch id
+    meta = models.JSONField(null=True, blank=True)  # raw payload or structured metadata
+    timestamp = models.DateTimeField(auto_now_add=True)
+    remarks = models.TextField(blank=True, null=True)
+
+    class Meta:
+        db_table = "transaction_logs"
+
+class UserBalance(models.Model):
+    provider = models.OneToOneField(ProviderService, on_delete=models.CASCADE, related_name="balance")
+    available_balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    pending_balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    total_earning = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    last_updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'user_balance'
+
+class Payout(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('processing', 'Processing'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+        ('unclaimed', 'Unclaimed'),
+    ]
+
+    payout_id = models.AutoField(primary_key=True)
+    provider = models.ForeignKey(ProviderService, on_delete=models.CASCADE, related_name="payouts")
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name="payout")
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    paypal_batch_id = models.CharField(max_length=255, blank=True, null=True)
+    payout_item_id = models.CharField(max_length=255, blank=True, null=True)
+    failure_reason = models.TextField(blank=True, null=True) # status is failed/unclaimed
+    created_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        db_table = "payout"
+
+class Ledger(models.Model):
+    ENTRY_TYPE = [
+        ("sale", "Sale"),
+        ("payout", "Payout"),
+        ('refunded', "Refunded")
+    ]
+
+    ledger_id = models.AutoField(primary_key=True)
+    provider = models.ForeignKey(ProviderService, on_delete=models.CASCADE, related_name="ledger_entries")
+    entry_type = models.CharField(max_length=20, choices=ENTRY_TYPE)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, null=True, blank=True)
+    payment = models.ForeignKey(Payment, on_delete=models.SET_NULL, null=True, blank=True)
+    payout = models.ForeignKey(Payout, on_delete=models.SET_NULL, null=True, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    running_balance = models.DecimalField(max_digits=10, decimal_places=2) # CRITICAL FIELD
+
+    class Meta:
+        db_table = 'provider_ledger'
+
+

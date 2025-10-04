@@ -1,5 +1,5 @@
 import React from "react";
-import { useAuth } from "./AuthProvider";
+import { useAuth } from "../context/useAuth";
 import { Navigate } from "react-router-dom";
 
 export const AuthRoute = ({ children }) => {
@@ -13,12 +13,18 @@ export const AuthRoute = ({ children }) => {
     const roles = user.roles?.map((role) => role.toLowerCase()) || [];
     const activeRole = user.activeRole?.toLowerCase();
 
+    if (!user.is_verified) {
+      return <Navigate to="/verify" replace />;
+    }
+
     if (roles.includes("admin") || activeRole === "admin") {
-      return <Navigate to="/Admin/Dashboard" replace />;
+      return <Navigate to="/Admin/ManageUsers" replace />;
     } else if (roles.includes("boarding") || activeRole === "boarding") {
-      return <Navigate to="/Petboarding/Dashboard" replace />;
+      return <Navigate to="/Petboarding/Bookings" replace />;
     } else {
-      return <Navigate to="/unauthorize" replace />;
+      console.log("AuthRoute: unauthorized");
+      console.log("pet_boarding:", user.pet_boarding_status);
+      return <Navigate to="/unauthorized" replace />;
     }
   }
   return children;
